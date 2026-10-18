@@ -1,0 +1,112 @@
+{
+    "name":  "KuwaitParkour",
+    "tree":  {
+                 "$className":  "DataModel",
+                 "Workspace":  {
+                                   "$className":  "Workspace",
+                                   "$properties":  {
+                                                       "Gravity":  196.2
+                                                   },
+                                   "Map":  {
+                                               "$path":  "src/map/Map.rbxmx"
+                                           },
+                                   "Island":  {
+                                                  "$path":  "src/world/Island.rbxm"
+                                              }
+                               },
+                 "Lighting":  {
+                                  "$className":  "Lighting",
+                                  "$properties":  {
+                                                      "ClockTime":  16.3,
+                                                      "Brightness":  2.2,
+                                                      "ExposureCompensation":  0.0,
+                                                      "Ambient":  [
+                                                                      0.46,
+                                                                      0.46,
+                                                                      0.48
+                                                                  ],
+                                                      "OutdoorAmbient":  [
+                                                                             0.5,
+                                                                             0.5,
+                                                                             0.52
+                                                                         ],
+                                                      "ColorShift_Top":  [
+                                                                             1.0,
+                                                                             0.86,
+                                                                             0.68
+                                                                         ],
+                                                      "Technology":  "Future",
+                                                      "EnvironmentDiffuseScale":  0.9,
+                                                      "EnvironmentSpecularScale":  0.6,
+                                                      "GlobalShadows":  true
+                                                  },
+                                  "Atmosphere":  {
+                                                     "$className":  "Atmosphere",
+                                                     "$properties":  {
+                                                                         "Density":  0.24,
+                                                                         "Offset":  0.12,
+                                                                         "Color":  [
+                                                                                       0.86,
+                                                                                       0.85,
+                                                                                       0.82
+                                                                                   ],
+                                                                         "Decay":  [
+                                                                                       0.92,
+                                                                                       0.76,
+                                                                                       0.6
+                                                                                   ],
+                                                                         "Glare":  0.35,
+                                                                         "Haze":  1.1
+                                                                     }
+                                                 },
+                                  "Bloom":  {
+                                                "$className":  "BloomEffect",
+                                                "$properties":  {
+                                                                    "Intensity":  0.2,
+                                                                    "Size":  24,
+                                                                    "Threshold":  2.2
+                                                                }
+                                            },
+                                  "Tone":  {
+                                               "$className":  "ColorCorrectionEffect",
+                                               "$properties":  {
+                                                                   "Saturation":  0.14,
+                                                                   "Contrast":  0.1,
+                                                                   "TintColor":  [
+                                                                                     1,
+                                                                                     0.975,
+                                                                                     0.94
+                                                                                 ]
+                                                               }
+                                           },
+                                  "SunRays":  {
+                                                  "$className":  "SunRaysEffect",
+                                                  "$properties":  {
+                                                                      "Intensity":  0.08,
+                                                                      "Spread":  0.8
+                                                                  }
+                                              }
+                              },
+                 "ReplicatedStorage":  {
+                                           "$className":  "ReplicatedStorage",
+                                           "Shared":  {
+                                                          "$path":  "src/shared"
+                                                      }
+                                       },
+                 "ServerScriptService":  {
+                                             "$className":  "ServerScriptService",
+                                             "Server":  {
+                                                            "$path":  "src/server"
+                                                        }
+                                         },
+                 "StarterPlayer":  {
+                                       "$className":  "StarterPlayer",
+                                       "StarterPlayerScripts":  {
+                                                                    "$className":  "StarterPlayerScripts",
+                                                                    "Client":  {
+                                                                                   "$path":  "src/client"
+                                                                               }
+                                                                }
+                                   }
+             }
+}

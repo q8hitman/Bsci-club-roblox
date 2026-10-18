@@ -1,0 +1,151 @@
+"""Chaos Campus prototype map (separate project): lobby + three minigame arenas.
+Run: python tools/chaos_gen.py chaos-campus/src/map/Map.rbxmx
+Names the server looks for:
+  LobbySpawn (SpawnLocation)            Arena_<Name> folders with ArenaSpawn parts
+  FallTile (Petri Floor)                OrbSpot (ATP Rush)        SweepHub (Enzyme Sweeper)
+  KillFloor|<arena>                     ScoreBoard (lobby sign updated by the server)
+"""
+import math
+import os
+import random
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import genmap as G  # noqa: E402
+
+box, vcyl, disc, ball, sign = G.box, G.vcyl, G.disc, G.ball, G.sign
+rng = random.Random(42)
+PASTEL = [(250, 222, 170), (205, 232, 60), (220, 165, 238), (160, 218, 236), (232, 150, 166)]
+Y = 100.0
+
+
+def lobby():
+    with G.Group("Lobby"):
+        disc("LobbyFloor", 0, Y - 1, 0, 90, 2, (110, 92, 150), "SmoothPlastic")   # deep lilac: no glare
+        disc("LobbyRim", 0, Y - 0.6, 0, 91, 0.8, (120, 255, 200), "Neon", collide=False, shadow=False)  # a ring under the floor edge
+        for i in range(10):
+            a = i * 2 * math.pi / 10
+            vcyl("LobbyPillar", 40 * math.cos(a), Y, Y + 14, 40 * math.sin(a), 3, PASTEL[i % 5], "SmoothPlastic")
+            ball("LobbyLamp", 40 * math.cos(a), Y + 15.5, 40 * math.sin(a), 3, PASTEL[i % 5], "Neon", collide=False, shadow=False,
+                 light=(1, 22, PASTEL[i % 5]))
+        G.part("LobbySpawn", (12, 1, 12), (0, Y + 0.5, 12), (64, 140, 108), "SmoothPlastic", cls="SpawnLocation",
+               extra='<bool name="Neutral">true</bool><int name="Duration">0</int>',
+               text=dict(face="Top", text="CHAOS", color=(255, 255, 255), bg=(36, 96, 74), bg_t=0.0))
+        sign("Title", "⚡ CHAOS CAMPUS ⚡\nفوضى الكلية", (0, Y + 16, -30), (34, 9, 0.6), "Back", bg=(80, 30, 110))
+        G.part("ScoreBoard", (26, 16, 0.6), (-24, Y + 9, -22), (20, 24, 34), "SmoothPlastic", rot=(0, 35, 0),
+               text=dict(face="Back", text="🏆", color=(255, 236, 160), bg=(20, 28, 44), bg_t=0.0))
+        sign("HowTo", "كيف تلعب؟\n• كل جولة لعبة مختلفة + طفرة عشوائية 🧬\n• آخر واحد يبقى أو أكثر نقاط يفوز\n• الفوز = نقاط ولقب",
+             (24, Y + 9, -22), (26, 14, 0.6), "Back", bg=(30, 50, 70))
+        # spectator balcony view of the sweeper arena is not needed: players watch from the lobby screens
+
+
+def arena_spawns(name, cx, cz, r, y):
+    for i in range(12):
+        a = i * 2 * math.pi / 12
+        G.part("ArenaSpawn", (2, 1, 2), (cx + r * math.cos(a), y + 0.5, cz + r * math.sin(a)), (0, 0, 0), "SmoothPlastic",
+               transp=1, collide=False, shadow=False)
+
+
+def petri_floor(cx=300.0, cz=0.0):
+    """two layers of hexagonal tiles; each tile drops shortly after someone steps on it"""
+    with G.Group("Arena_PetriFloor"):
+        for layer, ly in enumerate((Y, Y - 26)):
+            R, d = 7, 6.2
+            for q in range(-R, R + 1):
+                for r in range(-R, R + 1):
+                    if abs(q + r) > R:
+                        continue
+                    x = cx + d * (q + r / 2)
+                    z = cz + d * r * math.sqrt(3) / 2
+                    col = PASTEL[(q * 2 + r + layer) % 5]
+                    G.part("FallTile", (1, d * 1.1, d * 1.1), (x, ly - 0.5, z), col, "SmoothPlastic", shape="Cylinder",
+                           rot=(0, 0, 90))
+        disc("PetriGlass", cx, Y - 70, cz, 120, 2, (200, 230, 240), "Glass", transp=0.5, collide=False)
+        G.part("KillFloor|PetriFloor", (200, 2, 200), (cx, Y - 60, cz), (255, 80, 80), "Neon", transp=0.6, collide=False)
+        arena_spawns("PetriFloor", cx, cz, 24, Y)
+
+
+def atp_rush(cx=-300.0, cz=0.0):
+    """open arena with cover; glowing ATP orbs spawn on the OrbSpots"""
+    with G.Group("Arena_ATPRush"):
+        disc("RushFloor", cx, Y - 1, cz, 120, 2, (60, 90, 140), "SmoothPlastic")
+        for i in range(24):
+            a = rng.uniform(0, 2 * math.pi)
+            rr = rng.uniform(8, 52)
+            G.part("OrbSpot", (1, 1, 1), (cx + rr * math.cos(a), Y + 2.5, cz + rr * math.sin(a)), (0, 0, 0), "SmoothPlastic",
+                   transp=1, collide=False, shadow=False)
+        for i in range(8):
+            a = i * math.pi / 4 + 0.2
+            box("RushRamp", (10, 1, 16), (cx + 34 * math.cos(a), Y + 2, cz + 34 * math.sin(a)), PASTEL[i % 5], "SmoothPlastic",
+                rot=(-14, -math.degrees(a) + 90, 0))
+            vcyl("RushPillar", cx + 18 * math.cos(a + 0.4), Y, Y + 8, cz + 18 * math.sin(a + 0.4), 4, PASTEL[(i + 2) % 5],
+                 "SmoothPlastic")
+        n = 40
+        for i in range(n):
+            a = i * 2 * math.pi / n
+            G.part("RushWall", (1.5, 10, 2 * math.pi * 60 / n + 0.5), (cx + 60 * math.cos(a), Y + 5, cz + 60 * math.sin(a)),
+                   (120, 200, 255), "SmoothPlastic", transp=0.5, rot=(0, -math.degrees(a), 0))
+        G.part("KillFloor|ATPRush", (200, 2, 200), (cx, Y - 40, cz), (255, 80, 80), "Neon", transp=0.6, collide=False)
+        arena_spawns("ATPRush", cx, cz, 20, Y)
+
+
+def enzyme_sweeper(cx=0.0, cz=300.0):
+    """round platform; the server spins kill bars around the hub, faster and faster"""
+    with G.Group("Arena_EnzymeSweeper"):
+        disc("SweepFloor", cx, Y - 1, cz, 70, 2, (70, 80, 110), "SmoothPlastic")
+        for i in range(12):
+            a = i * 2 * math.pi / 12
+            disc("SweepTile", cx + 22 * math.cos(a), Y + 0.04, cz + 22 * math.sin(a), 6, 0.08, PASTEL[i % 5], "SmoothPlastic",
+                 collide=False, shadow=False)
+        vcyl("SweepHubBase", cx, Y, Y + 5, cz, 6, (60, 64, 74), "Metal")
+        G.part("SweepHub", (2, 2, 2), (cx, Y + 2.2, cz), (0, 0, 0), "SmoothPlastic", transp=1, collide=False, shadow=False)
+        G.part("KillFloor|EnzymeSweeper", (200, 2, 200), (cx, Y - 40, cz), (255, 80, 80), "Neon", transp=0.6, collide=False)
+        arena_spawns("EnzymeSweeper", cx, cz, 26, Y)
+
+
+LAST_RINGS = (14.0, 22.0, 30.0, 38.0)   # outer radius of each membrane ring (the nucleus is r < 6)
+
+
+def last_cell(cx=0.0, cz=-300.0):
+    """v37 "Last Cell Standing": a round cell floating in the cytoplasm. Four membrane rings (segments named
+    MembraneSeg|<ring>) drop from the outside in during the round; the nucleus in the middle never drops. Hazards
+    (spores, cilia waves, lysosome shields) are spawned by the server module at run time."""
+    cols = [(120, 200, 150), (150, 210, 120), (230, 200, 120), (240, 160, 150)]
+    with G.Group("Arena_LastCell"):
+        disc("Nucleus", cx, Y - 1, cz, 12, 2, (150, 110, 220), "SmoothPlastic")
+        disc("Nucleolus", cx, Y + 0.05, cz, 5, 0.1, (110, 70, 190), "Neon", collide=False, shadow=False)
+        inner = 6.0
+        for k, outer in enumerate(LAST_RINGS):
+            n = 8 + k * 4
+            rm = (inner + outer) / 2
+            chord = 2 * rm * math.sin(math.pi / n) + 1.4
+            for i in range(n):
+                a = (i + 0.5) * 2 * math.pi / n
+                G.part("MembraneSeg|%d" % (k + 1), (outer - inner + 0.2, 2, chord), (cx + rm * math.cos(a), Y - 1, cz + rm * math.sin(a)),
+                       cols[k] if i % 2 else tuple(min(255, v + 14) for v in cols[k]), "SmoothPlastic",
+                       rot=(0, -math.degrees(a), 0))
+            inner = outer
+        # glowing lipid rim under the outer edge (decor only)
+        for i in range(36):
+            a = i * 2 * math.pi / 36
+            ball("LastRim", cx + (LAST_RINGS[-1] + 0.6) * math.cos(a), Y - 2.2, cz + (LAST_RINGS[-1] + 0.6) * math.sin(a), 1.6,
+                 (255, 196, 120) if i % 2 else (255, 150, 170), "SmoothPlastic", collide=False, shadow=False)
+        G.part("KillFloor|LastCell", (200, 2, 200), (cx, Y - 40, cz), (255, 80, 80), "Neon", transp=0.6, collide=False)
+        arena_spawns("LastCell", cx, cz, 30, Y)
+
+
+if __name__ == "__main__":
+    out = sys.argv[1] if len(sys.argv) > 1 else "chaos-campus/src/map/Map.rbxmx"
+    lobby()
+    petri_floor()
+    atp_rush()
+    enzyme_sweeper()
+    last_cell()
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    with open(out, "w", encoding="utf-8") as f:
+        f.write('<roblox version="4"><Item class="Folder" referent="%s"><Properties><string name="Name">Map</string>'
+                '</Properties>' % G.rid())
+        for chunk in G.buf:
+            f.write(chunk)
+        f.write("</Item></roblox>")
+    print("parts:", G.nparts[0])

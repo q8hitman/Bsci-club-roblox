@@ -1,0 +1,24 @@
+# Studio places / backups (kept on the Desktop, not in Git)
+*.rbxlx
+*.rbxl
+*.rbxl.lock
+*.lock
+# generated: python tools/genmap9.py rebuilds it
+kuwait-parkour/src/map/Map.rbxmx
+# third-party tool binaries and downloads (see BSC_ARCHITECTURE.md for versions)
+tools/rojo/
+tools/lune/
+tools/stylua/
+tools/selene/
+tools/ytdlp/
+tools/packs/
+# media / scratch
+photos/
+frames/
+video-src/
+/*.png
+bsc-island-photos.html
+__pycache__/
+*.pyc
+# built from tools/packs (Roblox Synty packs) by tools/world/island.luau; not redistributed here
+kuwait-parkour/src/world/Island.rbxm

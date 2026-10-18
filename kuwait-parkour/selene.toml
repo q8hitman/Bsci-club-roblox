@@ -1,0 +1,4 @@
+std = "roblox"
+
+[rules]
+global_usage = "allow"  # _G.BSCPlay/_G.BSCToast are shared on purpose between client scripts
