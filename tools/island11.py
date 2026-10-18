@@ -187,6 +187,7 @@ def arcade():
     CG.atp_rush(AX - 300, AZ)
     CG.enzyme_sweeper(AX, AZ + 300)
     CG.last_cell(AX, AZ - 300)   # v37: Last Cell Standing
+    CG.lab_rush(AX - 300, AZ + 300)   # v38: Lab Rush (co-op)
 
 
 def exam_hall_dressing():
@@ -274,7 +275,8 @@ def arcade_dressing():
                  collide=False, shadow=False)
         # signposts pointing at the arenas that float in the distance
         arenas = (((1, 0), "🧫 أرضية بتري\nPetri Floor"), ((-1, 0), "⚡ سباق ATP\nATP Rush"), ((0, 1), "🧹 كانسة الإنزيم\nEnzyme Sweeper"),
-                  ((0, -1), "🦠 آخر خلية صامدة\nLast Cell Standing"))
+                  ((0, -1), "🦠 آخر خلية صامدة\nLast Cell Standing"),
+                  ((-0.7, 0.7), "🧪 مختبر الفوضى\nLab Rush"))
         for (dx, dz), text in arenas:
             x, z = AX + dx * 36 + (16 if dz else 0), AZ + dz * 36   # keep clear of the exit portal at z+40
             vcyl("ArenaSignPost", x, AY, AY + 9, z, 0.8, (60, 50, 80), "Metal", collide=False)

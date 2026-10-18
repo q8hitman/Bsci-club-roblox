@@ -10,7 +10,7 @@ Status values: `idea`, `planned`, `in progress`, `review` (ready for review), `r
 | 4 | Optional short welcome card | 1 | review | v37: "choose a world" button or X to stay |
 | 5 | Fewer duplicate portals and HQ copies | 1 | planned | Portals still work; decide which ones to remove together with the owner |
 | 6 | Last Cell Standing | 2 | review | v37: shrinking membrane, spores, cilia waves, shield bubbles; uses the Arcade loop |
-| 7 | Lab Rush (co-op) | 2 | planned | |
+| 7 | Lab Rush (co-op) | 2 | review | v38: 4 stations, order board, co-op mode; tested solo with a bot |
 | 8 | Co-op puzzle rooms | 2 | planned | Data-driven rooms, hint system, reset on leave |
 | 9 | BSC Game Show | 2 | planned | Many round formats; licensed media only |
 | 10 | Micro Racers / Laser Escape / Tower Defense / Rhythm / Bosses | 5 | idea | |

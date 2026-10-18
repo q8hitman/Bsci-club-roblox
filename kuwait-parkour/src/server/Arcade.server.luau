@@ -200,12 +200,25 @@ local function playRound(players)
 		if game_.mode == "survive" and (count == 0 or (#players > 1 and count <= 1)) then
 			break
 		end
+		-- v38 co-op: the round ends as soon as the team reaches its goal (or when nobody is left)
+		if game_.mode == "coop" and (ctx.teamDone or count == 0) then
+			break
+		end
 	end
 	ctx.running = false
 	local winners = {}
 	if game_.mode == "survive" then
 		for p in pairs(ctx.alive) do
 			table.insert(winners, p)
+		end
+	elseif game_.mode == "coop" then
+		-- everyone who played wins together when the team goal was met
+		if ctx.teamDone then
+			for _, p in ipairs(players) do
+				if p.Parent then
+					table.insert(winners, p)
+				end
+			end
 		end
 	else
 		local best = 0

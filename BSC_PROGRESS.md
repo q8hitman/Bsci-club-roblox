@@ -1,5 +1,32 @@
 # Progress log
 
+## v38 (2026-10-19), branch `dev/v38`, NOT published
+**Done:**
+- **Lab Rush (co-op):**
+  - Four stations, all using ProximityPrompts: DNA Mixer, Mutation Machine, Sample Sorter, Lab Reactor.
+  - An order board that always shows 3 orders.
+  - The team goal is 4 + 2 per extra player + tier.
+  - Solo play works.
+  - The board says this is a fantasy lab.
+- **Arcade co-op mode:** added to the round loop. **Last Cell Standing** has a fourth arena signpost and Lab Rush has a
+  fifth, set on a diagonal.
+
+**Tested (Studio, solo, with a client bot that reads the board and triggers the prompts):**
+- **Round 1** (goal 4): finished in 9 s.
+  - The win reward was paid: coins, plus research 1 + 3.
+  - 0 prompts and 0 temporary parts were left over.
+  - 0 errors.
+- **Round 2** (goal 5): every station was used, including one deliberately wrong sort, and the team finished.
+- **Shield in Last Cell Standing:** with the shield on for a whole round, 13 hazards produced 0 pushes. Without the
+  shield, an earlier run produced 5 pushes.
+- **World menu destinations:** none is inside a solid part. The island has terrain only at run time; travel there
+  was confirmed in v37.
+
+**Not tested:**
+- 2 or more players: co-op with real teammates, and the 2.5 s reactor window.
+- The phone layout of the prompts and the board.
+- The board's readability from far away.
+
 ## v37 (2026-10-18), branch `dev/v37`, NOT published
 **Backup:** `Desktop\KuwaitParkour\backup_v36_20261018`, which contains the last stable state before v37.
 **Build:** `Desktop\KuwaitParkour\KuwaitParkour_v37.rbxlx`

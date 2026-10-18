@@ -134,6 +134,55 @@ def last_cell(cx=0.0, cz=-300.0):
         arena_spawns("LastCell", cx, cz, 30, Y)
 
 
+def lab_rush(cx=-300.0, cz=300.0):
+    """v38 "Lab Rush" (co-op): a bright fantasy lab. The server (Minigames/LabRush.luau) adds ProximityPrompts to the
+    named stations at run time: DNABin|A/T/G/C + DNAConsole, MutIngredient|1..3 + MutMachine + MutOutput,
+    SorterBelt + SortBin|1..3, ReactorLever|1..2 + ReactorCore, and writes the orders on OrderBoard."""
+    W, D = 84.0, 64.0
+    with G.Group("Arena_LabRush"):
+        box("LabFloor", (W, 2, D), (cx, Y - 1, cz), (232, 238, 240), "SmoothPlastic")
+        for i in range(-3, 4):   # floor stripes
+            box("LabStripe", (0.6, 0.06, D - 4), (cx + i * 12, Y + 0.03, cz), (180, 220, 230), "SmoothPlastic", collide=False,
+                shadow=False)
+        for sx, sz, sw, sd in ((0, -D / 2, W, 1), (0, D / 2, W, 1), (-W / 2, 0, 1, D), (W / 2, 0, 1, D)):
+            box("LabWall", (sw, 4, sd), (cx + sx, Y + 2, cz + sz), (90, 170, 200), "SmoothPlastic")
+        G.part("OrderBoard", (40, 10, 0.6), (cx, Y + 9, cz - D / 2 + 0.6), (20, 30, 44), "SmoothPlastic",
+               text=dict(face="Back", text="🧪 Lab Rush", color=(255, 255, 255), bg=(20, 30, 44), bg_t=0.0))
+        vcyl("BoardLeg", cx - 16, Y, Y + 4.4, cz - D / 2 + 0.6, 0.8, (60, 64, 74), "Metal", collide=False)
+        vcyl("BoardLeg", cx + 16, Y, Y + 4.4, cz - D / 2 + 0.6, 0.8, (60, 64, 74), "Metal", collide=False)
+        # DNA mixer (west): four base bins and the console
+        dx, dz = cx - 28, cz - 12
+        for i, (L, col) in enumerate((("A", (230, 80, 80)), ("T", (80, 140, 230)), ("G", (80, 200, 110)), ("C", (240, 200, 60)))):
+            G.part("DNABin|" + L, (4, 3, 4), (dx - 6 + i * 4.6, Y + 1.5, dz), col, "SmoothPlastic",
+                   text=dict(face="Back", text=L, color=(255, 255, 255), bg=col, bg_t=0.0))
+        G.part("DNAConsole", (12, 4, 3), (dx + 1, Y + 2, dz - 6), (60, 64, 80), "SmoothPlastic",
+               text=dict(face="Back", text="🧬 DNA Mixer\nخلّاط الـDNA", color=(255, 255, 255), bg=(60, 64, 80), bg_t=0.0))
+        # mutation machine (east): three ingredient shelves, the machine and an output pad
+        mx, mz = cx + 26, cz - 12
+        for i, col in enumerate(((255, 170, 60), (170, 120, 255), (90, 220, 200))):
+            G.part("MutIngredient|%d" % (i + 1), (3.4, 3.4, 3.4), (mx - 7 + i * 7, Y + 1.7, mz + 4), col, "SmoothPlastic")
+        G.part("MutMachine", (8, 7, 6), (mx, Y + 3.5, mz - 5), (200, 90, 160), "SmoothPlastic",
+               text=dict(face="Back", text="🧪 Mutation Machine\nآلة الطفرات", color=(255, 255, 255), bg=(200, 90, 160), bg_t=0.0))
+        disc("MutOutput", mx + 9, Y + 0.1, mz - 5, 5, 0.2, (255, 230, 120), "Neon", collide=False, shadow=False)
+        # sample sorter (south-west): belt start + three bins
+        sx_, sz_ = cx - 22, cz + 16
+        box("SorterBeltBase", (16, 1.2, 4), (sx_, Y + 0.6, sz_), (70, 74, 84), "SmoothPlastic")
+        G.part("SorterBelt", (2, 0.4, 2), (sx_ - 6, Y + 1.4, sz_), (0, 0, 0), "SmoothPlastic", transp=1, collide=False, shadow=False)
+        for i, (sym, col) in enumerate((("●", (230, 80, 80)), ("■", (80, 140, 230)), ("▮", (240, 200, 60)))):
+            G.part("SortBin|%d" % (i + 1), (4.4, 3.4, 4.4), (sx_ - 6 + i * 6, Y + 1.7, sz_ + 7), col, "SmoothPlastic",
+                   text=dict(face="Front", text=sym, color=(255, 255, 255), bg=col, bg_t=0.0))
+        # lab reactor (south-east): two levers far apart + the core between them
+        rx, rz = cx + 24, cz + 18
+        for i, ox in enumerate((-14, 14)):
+            G.part("ReactorLever|%d" % (i + 1), (2, 4, 2), (rx + ox, Y + 2, rz), (250, 140, 60), "SmoothPlastic")
+            box("LeverBase", (4, 1, 4), (rx + ox, Y + 0.5, rz), (60, 64, 74), "Metal")
+        ball("ReactorCore", rx, Y + 4, rz + 4, 6, (120, 255, 200), "Neon", transp=0.2, shadow=False)
+        G.part("KillFloor|LabRush", (200, 2, 200), (cx, Y - 40, cz), (255, 80, 80), "Neon", transp=0.6, collide=False)
+        for i in range(8):
+            G.part("ArenaSpawn", (2, 1, 2), (cx - 14 + i * 4, Y + 0.5, cz + 4), (0, 0, 0), "SmoothPlastic", transp=1,
+                   collide=False, shadow=False)
+
+
 if __name__ == "__main__":
     out = sys.argv[1] if len(sys.argv) > 1 else "chaos-campus/src/map/Map.rbxmx"
     lobby()
@@ -141,6 +190,7 @@ if __name__ == "__main__":
     atp_rush()
     enzyme_sweeper()
     last_cell()
+    lab_rush()
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w", encoding="utf-8") as f:
         f.write('<roblox version="4"><Item class="Folder" referent="%s"><Properties><string name="Name">Map</string>'
