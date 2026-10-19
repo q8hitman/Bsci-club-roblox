@@ -84,3 +84,5 @@ Never run several screen captures in parallel: Studio crashed once doing that.
 - The regular ChatGPT conversation is the supervisor (ideas, finds problems). The owner briefs it first; Claude contacts it
   only after the owner says so. Its advice never overrides the owner's rules (no publish, no deleting systems, no horror world).
 - Gemini (Gemini desktop app, chat "التحكم في الحاسوب الشخصي") is on the team as a reviewer/content writer: it cannot touch local files or the private repo. It wrote the Game Show question bank.
+
+2026-10-19 supervisor review: v47 commit4406daf accepted developmentally, no mandatory correction. Selected v48 Laser Escape: five actual movement/timing rooms, fair telegraphed hazards, checkpoints/unlimited retries, solo and two-client independence, Passport reward, full Studio QA. Real-phone performance and human driving enjoyment remain owner release tests. No publish/merge approval.
