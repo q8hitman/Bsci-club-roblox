@@ -577,6 +577,8 @@ def build():
     gateway("Portal|Lab", 136, 45, (-1, 0), "🔬 معهد الأبحاث", "", (140, 220, 255))
     quiz_center()
     gateway("Portal|Quiz", 146, 108, (-1, 0), "🎓 مركز التحديات", "", (255, 200, 120))
+    import gameshow
+    gameshow.build()   # v40: BSC Game Show studio at (0, 300, -7000)
     course_backdrop()
     course_finish_exit()
     exam_hall()

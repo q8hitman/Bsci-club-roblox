@@ -20,6 +20,7 @@ local WORLDS = {
 	{ "Quiz", "🏆", "مركز التحديات", "Challenge Center", Color3.fromRGB(190, 150, 40) },
 	{ "Exam", "📝", "الاختبار الجماعي", "Group Exam", Color3.fromRGB(90, 100, 120) },
 	{ "Puzzle", "🧩", "غرف الألغاز", "Puzzle Rooms", Color3.fromRGB(110, 70, 150) },
+	{ "Show", "🎤", "استوديو المسابقات", "Game Show", Color3.fromRGB(200, 120, 40) },
 }
 
 local gui = Instance.new("ScreenGui")

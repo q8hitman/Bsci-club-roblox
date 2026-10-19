@@ -194,7 +194,7 @@ local function areaAt(p)
 			end
 		end
 		return "z" .. (CartRooms.zones[room] or 1)
-	elseif math.abs(p.X) < 1000 and p.Z < -5000 and p.Z > -7000 then
+	elseif math.abs(p.X) < 1000 and p.Z < -5000 and p.Z > -7100 then
 		return "quiz"
 	elseif p.Z < -12300 then
 		return "virus"

@@ -7,8 +7,8 @@ Read `BSC_RESUME.md`, `BSC_ARCHITECTURE.md` and `BSC_MASTER_VISION.md` first. Th
 - no horror world.
 
 ## Where things are
-- **Branch:** `dev/v39`. Branches are stacked: v37 → v38 → v39.
-- **Last stable build:** `Desktop\KuwaitParkour\KuwaitParkour_v39.rbxlx`.
+- **Branch:** `dev/v40`. Branches are stacked: v37 → v38 → v39 → v40.
+- **Last stable build:** `Desktop\KuwaitParkour\KuwaitParkour_v40.rbxlx`.
 - **Backups:** `Desktop\KuwaitParkour\backup_v39_20261019`. Make a new backup before you change anything.
 - **Not in Git:** the tool binaries (Rojo 7.7.1, Lune 0.11.0, StyLua 2.5.2, selene 0.32.0), the generated
   `Map.rbxmx` and `Island.rbxm`, and the packs. Regenerate them with the commands in BSC_ARCHITECTURE.md.
@@ -20,7 +20,32 @@ Read `BSC_RESUME.md`, `BSC_ARCHITECTURE.md` and `BSC_MASTER_VISION.md` first. Th
   - Each room is defined in `PuzzleRoomDefs/`, and puzzle types live in `PuzzleTypes/`.
   - **To add a room:** create a `PuzzleRoom_<id>` map folder (see `chaos_gen.cell_control_room`) and a def module.
 
-## Next task: BSC Game Show (directive section 6)
+- **v40:** BSC Game Show studio with Guess the picture and Category challenge. The content bank is
+  `GameShowBank.luau`.
+
+## Team
+- **Gemini** (desktop app) reviews ideas and writes content. It cannot edit files.
+- **ChatGPT** supervises.
+- **Codex** takes over the code when Claude stops.
+- Never let two agents edit the same files at the same time.
+
+## Next task: Light Microscopy lab (directive section 7)
+Extend the existing Lab world: `Lab.server`/`Lab.client` and `shared/LabData`. Requirements:
+- the microscope parts;
+- slide handling;
+- objective lenses and magnification;
+- focus and light;
+- samples;
+- a notebook;
+- mistakes explained;
+- a practice mode and a test mode.
+
+Use Arabic and English terms, and add a "simulation, not the real procedure" note. It needs expert review before
+it's called final.
+
+Also still open for the Game Show: the sound mode (licensed clips only) and the memory mode.
+
+## (done in v40) BSC Game Show (directive section 6)
 **Supervisor's direction (ChatGPT, 2026-10-19).** Do not build every mode at once.
 1. **The studio itself:**
    - a host stage;

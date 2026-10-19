@@ -1,5 +1,43 @@
 # Progress log
 
+## v40 (2026-10-19), branch `dev/v40`, NOT published
+**Done:**
+- **BSC Game Show studio** at (0, 300, -7000).
+  - Built in `tools/gameshow.py`, run by `server/GameShow.server.luau`.
+  - Stage with the host mascot, a main screen, a scoreboard, two team screens, a picture board with a 5×5 cover,
+    and four answer podiums (taps, so it works on phones).
+- **Two complete formats** (the supervisor's plan):
+  - **Guess the picture:** the cover tiles fall away over time. Answering earlier scores more (10 down to 3).
+  - **Category challenge:** players vote a category on the podiums, then answer a question from it. Points are
+    5 / 8 / 10 by difficulty.
+- **Rounds:** a show has 6 rounds alternating between the two formats.
+- **Teams and timing:**
+  - Solo play, or Red/Blue teams when there are 2 or more players. Late joiners are added to a team.
+  - A question closes as soon as everyone has answered. The 40 s limit only stops an AFK player from stalling it.
+- **Rewards:** +3 coins for everyone, +13 coins and +2 research for winners, once per player every 10 minutes.
+- **Content bank** in `server/GameShowBank.luau`, separate from the code:
+  - 24 category questions written by **Gemini** (team member). Claude checked them and fixed one wrong-answer label.
+  - 18 emoji pictures. They're free to use, so no image licence is needed.
+- **Display:** Arabic-only on screen. "(English)" parentheticals are hidden, because mixed lines render scrambled.
+- **Access:** world menu card "Show" (12 cards), and a `Portal|Campus` exit in the studio.
+
+**Tested (Studio, solo, client bot):**
+- **First full show:** all 6 rounds completed and the participation reward was paid (+3).
+- **Second show:** no reward was paid, which confirms the cooldown.
+- **Logged run:**
+  - The rounds alternated picture → category.
+  - The vote picked biology, and the questions came from biology.
+  - 4/25 covers were off after 3 s.
+  - Wrong answers scored 0. A correct picture answer scored +9 (it was early), and a correct biology answer scored +5.
+    The final score was 14.
+- 0 errors.
+- The host mascot was moved after the screenshot showed it covering the main screen.
+
+**Not tested:**
+- Real teams with 2+ players.
+- Phone layout.
+- Main-screen readability from the back of the studio.
+
 ## v39 (2026-10-19), branch `dev/v39`, NOT published
 **Done:**
 - **Puzzle-room framework:** `server/PuzzleRooms.server.luau` runs the rooms.

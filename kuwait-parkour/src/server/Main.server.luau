@@ -52,6 +52,7 @@ local destinations = {
 	Quiz = mapFolder:FindFirstChild("QuizSpawn", true),
 	Train = mapFolder:FindFirstChild("TrainSpawnPoint", true),
 	Puzzle = mapFolder:FindFirstChild("PuzzleSpawn", true), -- v39 puzzle rooms (next to the arcade)
+	Show = mapFolder:FindFirstChild("GameShowSpawn", true), -- v40 BSC Game Show studio
 }
 
 local notify = Instance.new("RemoteEvent")
@@ -174,6 +175,7 @@ local TRAVEL = {
 	Quiz = true,
 	Exam = true,
 	Puzzle = true,
+	Show = true,
 }
 local travelEvent = Instance.new("RemoteEvent")
 travelEvent.Name = "Travel"

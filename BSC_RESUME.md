@@ -1,7 +1,7 @@
 # Resume here
 
 ## State (2026-10-18)
-- **Version:** v39 on branch `dev/v39` (stacked: v37 → v38 → v39). It is stable; see BSC_PROGRESS.md. Codex handoff: CODEX_HANDOFF.md
+- **Version:** v40 on branch `dev/v40` (stacked: v37 → v38 → v39 → v40). It is stable; see BSC_PROGRESS.md. Codex handoff: CODEX_HANDOFF.md
 - **Not published.** The live game is still the v20+NPC update (PRIVATE, PlaceId 97395090487008).
 - **Studio:** two windows are open (v34, v35). The v35 window has the v37 map and scripts hot-swapped in, unsaved.
   Close those windows only if needed.
@@ -14,7 +14,7 @@
    - Reuse the Arcade loop: add a `mode = "coop"` path with a shared team score.
    - Add a new arena via chaos_gen.
 3. ~~Puzzle rooms~~ done in v39 (Cell Control Room).
-4. **Batch 2:** BSC Game Show. Reuse `QuizBank` and `QuizCenter`, and add round formats.
+4. ~~Game Show (picture + category)~~ done in v40. Still to add: the sound and memory modes.
 5. **Batch 3:** Light Microscopy. Extend the Lab world (`Lab.server`/`Lab.client`, `shared/LabData`).
 
 ## How to hot-swap a build into the open Studio
@@ -30,3 +30,4 @@ Never run several screen captures in parallel: Studio crashed once doing that.
   Roblox plugins/skills it recommends.
 - The regular ChatGPT conversation is the supervisor (ideas, finds problems). The owner briefs it first; Claude contacts it
   only after the owner says so. Its advice never overrides the owner's rules (no publish, no deleting systems, no horror world).
+- Gemini (Gemini desktop app, chat "التحكم في الحاسوب الشخصي") is on the team as a reviewer/content writer: it cannot touch local files or the private repo. It wrote the Game Show question bank.
