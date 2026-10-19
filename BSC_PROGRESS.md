@@ -1,3 +1,27 @@
+# v48 — Laser Escape — 2026-10-19 (finished by Claude after Codex's limit ran out)
+
+Branch `dev/v48`; before-edit backup `backup_before_v48_20261019` (Codex). Five fictional timing rooms at (-6000,300,-8000..-8400),
+entrance gate in the Arcade lobby (`Laser48.Entry`). Codex wrote the plan, generator, rules, server and client; Claude
+tested them in Studio and fixed what broke:
+- **Room 4 (moving bridge) could not be crossed.** The server "carried" riders with `PivotTo` every 0.05 s, which fought
+  client movement: MoveDirection dropped to 0 and anyone at the deck edge was dragged sideways. Now the anchored bridge
+  gets a real `AssemblyLinearVelocity` (conveyor style) so the engine carries riders and they keep control; the movement
+  guard still allows the carried distance.
+- **Room 3 door opened for anyone who walked up to it** (the anti-crush "hold" also opened a closed door), making the
+  pressure plate pointless. Now a character only keeps an already-open door open.
+- **Room 3 door had a 3-stud gap at each side** (52 wide between walls 58 apart): widened to 57.8.
+- **Plate signs in rooms 3 and 5 were solid at waist height** and blocked the walk from the checkpoint to the plate:
+  raised above head height.
+
+Tested in Studio (solo, real Humanoid walking, no teleports): full run rooms 1→5 with 0 failures (64 s); +40 Passport XP
+once, coins/research unchanged; replay finished again (47 s) with XP still 40; standing in a red beam sends you back
+to the room checkpoint (+1 retry); "الأركيد" exit returns to ArcadeSpawn and clears the HUD. Pure tests pass;
+selene 0 errors / 26 known warnings; validator OK. No new game errors.
+Not tested: two real clients in Laser Escape, phone layout of the Laser HUD, real phone, live DataStore.
+Build `Desktop\KuwaitParkour\KuwaitParkour_v48.rbxlx`. Not published, not merged.
+
+---
+
 # v47 — Micro Racers — 2026-10-19
 
 Supervisor accepted v46 and selected two-track racing. `dev/v47`; full before-edit backup `backup_before_v47_20261019`.

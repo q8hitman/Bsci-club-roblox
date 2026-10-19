@@ -6,6 +6,7 @@ return {
 	LevelXP = 100,
 	MuseumXP = 10,
 	RaceXP = 20,
+	EscapeXP = 40,
 	Races = { cell = true, helix = true },
 	Museum = {
 		micro = true,

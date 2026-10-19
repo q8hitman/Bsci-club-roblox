@@ -36,6 +36,9 @@ local function weight(key)
 	if type(key) ~= "string" or #key > 80 then
 		return nil
 	end
+	if key == "escape:laser48" then
+		return D.EscapeXP
+	end
 	local n = key:match("^stage:(%d+)$")
 	if n and int(tonumber(n), 1, 100) then
 		return D.StageXP
@@ -129,6 +132,8 @@ function S.record(s, kind, id, now)
 		p.weekly.stages[tostring(id)] = true
 	elseif kind == "museum" and type(id) == "string" and D.Museum[id] then
 		p.stamps["museum:" .. id] = true
+	elseif kind == "escape" and id == "laser48" then
+		p.stamps["escape:laser48"] = true
 	elseif kind == "race" and type(id) == "string" and D.Races[id] then
 		p.stamps["race:" .. id] = true
 	end

@@ -29,6 +29,9 @@ function Service.refresh(player)
 		if data.museum == 8 then
 			Profiles.award(player, "museum8")
 		end
+		if s.passport.stamps["escape:laser48"] then
+			Profiles.award(player, "laser48")
+		end
 		if data.races == 2 then
 			Profiles.award(player, "racer2")
 		end

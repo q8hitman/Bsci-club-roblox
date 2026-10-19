@@ -223,6 +223,14 @@ table.insert(P.Achievements, {
 	title = "سائق الجزيئات 🏁",
 })
 
+table.insert(P.Achievements, {
+	id = "laser48",
+	ar = "الهروب الآمن",
+	desc = "أكمل غرف Laser Escape الخمس",
+	coins = 0,
+	title = "خبير التوقيت ✨",
+})
+
 P.Trails = {
 	{
 		id = "leaf",

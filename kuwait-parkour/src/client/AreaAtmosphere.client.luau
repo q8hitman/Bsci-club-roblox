@@ -182,7 +182,7 @@ do
 end
 
 local function areaAt(p)
-	if player:GetAttribute("InMicroRace") then
+	if player:GetAttribute("InMicroRace") or player:GetAttribute("InLaserEscape") then
 		return "racing"
 	end
 	if p.X > 10000 then
