@@ -30,8 +30,10 @@ local function refresh()
 	local stage = player:GetAttribute("Stage") or 0
 	local total = player:GetAttribute("Total") or 0
 	label.Text = ("المرحلة %d / %d"):format(stage, total)
+	label.Visible = player:GetAttribute("InCourse") == true -- the stage counter only matters in the parkour course
 end
 
+player:GetAttributeChangedSignal("InCourse"):Connect(refresh)
 player:GetAttributeChangedSignal("Stage"):Connect(refresh)
 player:GetAttributeChangedSignal("Total"):Connect(refresh)
 refresh()

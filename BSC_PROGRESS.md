@@ -72,6 +72,20 @@
 - **Portrait does not apply:** `StarterGui.ScreenOrientation` is LandscapeSensor, so phones always show the game in
   landscape.
 
+**Final-QA fixes (supervisor's list):**
+- **Stage counter** (`HUD.client`): "المرحلة N/100" now shows only while `InCourse`.
+  - Tested: hidden on the campus, shown in the course, hidden in the show.
+- **Game Show host** (`tools/gameshow.py`): the mascot moved to the right end of the stage (x +25), clear of the main
+  screen (x -20..20).
+- **Game Show spawn:** moved from SZ+30 to SZ+18.
+  - Before, the default camera sat inside Portal|Campus on the studio's back wall, 11 studs behind the spawn, and the
+    whole screen turned cyan on arrival.
+  - Tested: on arrival in all 12 world-menu destinations, the camera is not inside any portal.
+- **All 37 portals:** each one, stood on in Play, sends the player to the right world. Zones 2–8 are locked by stage,
+  as designed.
+- **Performance:** 60 fps on the PC in 6 worlds. The game has about 25.4k parts and 80k instances, with
+  StreamingEnabled off. Streaming is deferred to a separate tested step.
+
 **Not tested:**
 - A real phone.
 - A small Android phone.

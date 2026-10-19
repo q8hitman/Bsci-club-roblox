@@ -27,11 +27,11 @@ def build():
                 box("StudioLamp", (8, 0.4, 3), (SX + lx, SY + 25.8, SZ + lz), (255, 236, 200), "Neon", collide=False,
                     shadow=False, light=(1.1, 34, (255, 236, 200)))
         G.part("StudioBounds", (W, 30, D), (SX, SY + 14, SZ), (0, 0, 0), "SmoothPlastic", transp=1, collide=False, shadow=False)
-        G.part("GameShowSpawn", (8, 1, 8), (SX, SY + 0.5, SZ + 30), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
+        G.part("GameShowSpawn", (8, 1, 8), (SX, SY + 0.5, SZ + 18), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
         # stage + host
         box("Stage", (60, 3, 16), (SX, SY + 1.5, SZ - 32), (70, 40, 110), "SmoothPlastic")
         box("StageEdge", (60.4, 0.5, 0.5), (SX, SY + 3.1, SZ - 23.8), (255, 200, 90), "Neon", collide=False, shadow=False)
-        G.mascot(SX - 15, SY + 3, SZ - 29)   # beside the main screen, not in front of it
+        G.mascot(SX + 25, SY + 3, SZ - 29)   # right end of the stage: clear of the main screen (x -20..20) from the spawn view
         G.part("HostDesk", (10, 4, 3), (SX + 6, SY + 5, SZ - 26), (24, 80, 56), "SmoothPlastic",
                text=dict(face="Back", text="🎙️ ابدأ الحلقة\nStart the show", color=(255, 255, 255), bg=(24, 80, 56), bg_t=0.0))
         G.part("MainScreen", (40, 15, 0.6), (SX, SY + 15, SZ - 40.5), (14, 16, 26), "SmoothPlastic",

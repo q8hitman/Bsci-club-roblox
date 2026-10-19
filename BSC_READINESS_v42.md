@@ -60,9 +60,10 @@
 - The new-player experience with a real first-time player.
 
 ## Known issues (not blockers)
-- In the Game Show, the host mascot partly covers the left of the main screen from the spawn view. The HUD shows the
-  same text.
-- The parkour stage counter "المرحلة 0/100" shows in every world.
+- Fixed after the first version of this report:
+  - the Game Show host covering the screen;
+  - the stage counter showing in every world;
+  - the screen turning cyan when arriving at the Game Show.
 - Duplicate portals (5 HQ, 8 Island) are still there, waiting for the owner's decision (backlog #5).
 - Asset `rbxassetid://203785492` logs "Asset type does not match" in Studio. It is not one of our scripts' errors.
 
