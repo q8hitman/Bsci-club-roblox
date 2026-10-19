@@ -36,6 +36,23 @@ Read `BSC_RESUME.md`, `BSC_ARCHITECTURE.md` and `BSC_MASTER_VISION.md` first. Th
 - **Codex check (2026-10-19):** Codex can read the GitHub repo. It cannot run local commands or edit local files from
   the chat, and Studio control was not verified.
 
+## Next steps after v42 (supervisor's order, 2026-10-19)
+Done in v42: the phone pass and Gemini's science review of the microscope.
+
+Next:
+1. **Real multiplayer:** in Studio, Test → Clients and Servers → Start, with 2–3 clients.
+   - Check the Arcade games, puzzles, Game Show and microscope.
+   - Check joining and leaving mid-round, sync, rewards with no doubles, and round reset.
+   - This needs the Studio UI. It was blocked this session because a Windows TextInputHost popup was in front.
+2. **Portrait and tablet:** use the Device Simulator orientation and device list.
+3. **Final QA:**
+   - all portals and the world menu;
+   - saving;
+   - performance;
+   - errors in Output.
+
+   Then write a release-readiness report for the owner. No publish and no merge.
+
 ## Next task (supervisor, 2026-10-19)
 Test v39–v41 on a phone and with real teams, fix what breaks, and improve the whole experience. Do not open new
 side projects.
