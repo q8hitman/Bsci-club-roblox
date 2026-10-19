@@ -7,6 +7,10 @@ Read `BSC_RESUME.md`, `BSC_ARCHITECTURE.md` and `BSC_MASTER_VISION.md` first. Th
 - no horror world.
 
 ## Where things are
+- **Full local working copy** (code, Git, and the Rojo/Lune/StyLua/selene binaries):
+  `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full`.
+  - Work there. It is on branch `dev/v42`.
+  - Rebuild with the commands in `CLAUDE.md` § Build, run from that folder.
 - **Branch:** `dev/v42`. Branches are stacked: v37 → v38 → v39 → v40 → v41 → v42.
 - **Last stable build:** `Desktop\KuwaitParkour\KuwaitParkour_v42.rbxlx`.
 - **Backups:** `Desktop\KuwaitParkour\backup_v42_20261019`. Make a new backup before you change anything.
