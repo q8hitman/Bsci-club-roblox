@@ -66,10 +66,15 @@
 - A full two-player puzzle solve with a reward for both players.
 - Real disconnects. Leaving was simulated by travelling out.
 
+**Tablet and orientation:**
+- **iPad 10th Generation (1179×819):** the microscope is clear and roomy. On the Game Show HUD the maximum text size
+  was raised from 24 to 32 so it fills the panel.
+- **Portrait does not apply:** `StarterGui.ScreenOrientation` is LandscapeSensor, so phones always show the game in
+  landscape.
+
 **Not tested:**
 - A real phone.
-- Portrait orientation.
-- Other device sizes (tablet, small Android).
+- A small Android phone.
 - Real multiplayer.
 
 ## v41 (2026-10-19), branch `dev/v41`, NOT published

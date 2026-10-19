@@ -46,7 +46,7 @@ Next:
    - Check the Arcade games, puzzles, Game Show and microscope.
    - Check joining and leaving mid-round, sync, rewards with no doubles, and round reset.
    - This needs the Studio UI. It was blocked this session because a Windows TextInputHost popup was in front.
-2. **Portrait and tablet:** use the Device Simulator orientation and device list.
+2. **Portrait and tablet:** done in v42. iPad is OK, and portrait does not apply because the game is landscape-only.
 3. **Final QA:**
    - all portals and the world menu;
    - saving;

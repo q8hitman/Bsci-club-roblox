@@ -53,7 +53,7 @@ local function text(y, h, color)
 	t.Font = Enum.Font.GothamBold
 	t.Parent = panel
 	local c = Instance.new("UITextSizeConstraint", t)
-	c.MinTextSize, c.MaxTextSize = 10, 24
+	c.MinTextSize, c.MaxTextSize = 10, 32
 	return t
 end
 local score = text(0.03, 0.13, Color3.fromRGB(255, 220, 110))
