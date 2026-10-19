@@ -9,7 +9,7 @@ Read `BSC_RESUME.md`, `BSC_ARCHITECTURE.md` and `BSC_MASTER_VISION.md` first. Th
 ## Where things are
 - **Branch:** `dev/v40`. Branches are stacked: v37 → v38 → v39 → v40.
 - **Last stable build:** `Desktop\KuwaitParkour\KuwaitParkour_v40.rbxlx`.
-- **Backups:** `Desktop\KuwaitParkour\backup_v39_20261019`. Make a new backup before you change anything.
+- **Backups:** `Desktop\KuwaitParkour\backup_v40_20261019`. Make a new backup before you change anything.
 - **Not in Git:** the tool binaries (Rojo 7.7.1, Lune 0.11.0, StyLua 2.5.2, selene 0.32.0), the generated
   `Map.rbxmx` and `Island.rbxm`, and the packs. Regenerate them with the commands in BSC_ARCHITECTURE.md.
 
