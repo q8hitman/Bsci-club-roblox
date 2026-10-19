@@ -182,12 +182,17 @@ def arcade():
         G.part("Portal|Island", (10, 12, 0.6), (AX, AY + 6.2, AZ + 40), (120, 255, 200), "Neon", transp=0.45, collide=False,
                shadow=False)
         sign("ArcadeExit", "↩ الجزيرة", (AX, AY + 14, AZ + 40.4), (10, 2.2, 0.4), "Front", bg=GREEN)
+        # v39: door to the puzzle rooms, next to the exit
+        G.part("Portal|Puzzle", (8, 12, 0.6), (AX - 18, AY + 6.2, AZ + 40), (255, 200, 90), "Neon", transp=0.45, collide=False,
+               shadow=False)
+        sign("ArcadePuzzleSign", "🧩 غرف الألغاز", (AX - 18, AY + 14, AZ + 40.4), (10, 2.2, 0.4), "Front", bg=(110, 70, 150))
     CG.Y = AY
     CG.petri_floor(AX + 300, AZ)
     CG.atp_rush(AX - 300, AZ)
     CG.enzyme_sweeper(AX, AZ + 300)
     CG.last_cell(AX, AZ - 300)   # v37: Last Cell Standing
     CG.lab_rush(AX - 300, AZ + 300)   # v38: Lab Rush (co-op)
+    CG.cell_control_room(AX, AZ - 650)   # v39: first puzzle room
 
 
 def exam_hall_dressing():

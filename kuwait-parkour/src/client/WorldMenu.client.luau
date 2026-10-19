@@ -19,6 +19,7 @@ local WORLDS = {
 	{ "Lab", "🔬", "المختبرات", "Biology Labs", Color3.fromRGB(40, 130, 110) },
 	{ "Quiz", "🏆", "مركز التحديات", "Challenge Center", Color3.fromRGB(190, 150, 40) },
 	{ "Exam", "📝", "الاختبار الجماعي", "Group Exam", Color3.fromRGB(90, 100, 120) },
+	{ "Puzzle", "🧩", "غرف الألغاز", "Puzzle Rooms", Color3.fromRGB(110, 70, 150) },
 }
 
 local gui = Instance.new("ScreenGui")
@@ -107,8 +108,8 @@ grid.Position = UDim2.fromScale(0.03, 0.2)
 grid.Size = UDim2.fromScale(0.94, 0.77)
 grid.Parent = panel
 local layout = Instance.new("UIGridLayout")
-layout.CellSize = UDim2.fromScale(0.185, 0.46)
-layout.CellPadding = UDim2.fromScale(0.0185, 0.04)
+layout.CellSize = UDim2.fromScale(0.155, 0.46)
+layout.CellPadding = UDim2.fromScale(0.014, 0.04)
 layout.SortOrder = Enum.SortOrder.LayoutOrder
 layout.Parent = grid
 

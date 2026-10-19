@@ -183,6 +183,60 @@ def lab_rush(cx=-300.0, cz=300.0):
                    collide=False, shadow=False)
 
 
+def cell_control_room(cx=0.0, cz=-650.0):
+    """v39 puzzle room "Cell Control Room" (co-op or solo, no timer). Anchors used by server/PuzzleTypes/*:
+    CircuitTile|r|c (3x4 floor grid) + CircuitSource + CircuitSink, Pedestal|1..4 + SpecimenClues, CorePanel|1..2 +
+    CoreLever + Core, SymbolScreen|1..2, HintTerminal, ResetTerminal, RoomBounds, PuzzleSpawn."""
+    W, D = 76.0, 60.0
+    with G.Group("PuzzleRoom_CellControl"):
+        box("PuzzleFloor", (W, 2, D), (cx, Y - 1, cz), (96, 108, 132), "SmoothPlastic")
+        for lx in (-24, 0, 24):   # ceiling lamps: the arcade's dusk lighting made the room too dark to read
+            for lz in (-14, 10):
+                box("PuzzleLamp", (10, 0.4, 4), (cx + lx, Y + 13, cz + lz), (255, 246, 226), "Neon", collide=False, shadow=False,
+                    light=(1.2, 30, (255, 246, 226)))
+        for sx, sz, sw, sd in ((0, -D / 2, W, 1.2), (-W / 2, 0, 1.2, D), (W / 2, 0, 1.2, D)):
+            box("PuzzleWall", (sw, 12, sd), (cx + sx, Y + 6, cz + sz), (110, 140, 170), "SmoothPlastic")
+            box("PuzzleTrim", (sw + 0.2, 0.4, sd + 0.2), (cx + sx, Y + 12.1, cz + sz), (120, 255, 200), "Neon", collide=False,
+                shadow=False)
+        for sx in (-1, 1):   # south wall with a wide doorway
+            box("PuzzleWall", (W / 2 - 8, 12, 1.2), (cx + sx * (W / 4 + 4), Y + 6, cz + D / 2), (110, 140, 170), "SmoothPlastic")
+        G.part("RoomBounds", (W, 30, D), (cx, Y + 14, cz), (0, 0, 0), "SmoothPlastic", transp=1, collide=False, shadow=False)
+        G.part("PuzzleSpawn", (8, 1, 8), (cx, Y + 0.5, cz + D / 2 - 6), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
+        sign("PuzzleTitle", "🧩 غرفة التحكم بالخلية\nCell Control Room", (cx, Y + 10, cz - D / 2 + 0.7), (26, 4.4, 0.4), "Back",
+             bg=(24, 80, 56))
+        # 1) energy circuit: 3 x 4 floor tiles, source on the west, device on the east (west half of the room)
+        for r in range(3):
+            for c in range(4):
+                G.part("CircuitTile|%d|%d" % (r + 1, c + 1), (5.4, 0.4, 5.4), (cx - 30 + c * 6, Y + 0.2, cz - 6 + r * 6),
+                       (70, 78, 96), "SmoothPlastic")
+        box("CircuitSource", (3, 3, 3), (cx - 35, Y + 1.5, cz), (255, 200, 60), "Neon")
+        G.part("CircuitSink", (3, 4, 3), (cx - 7.5, Y + 2, cz), (80, 90, 110), "SmoothPlastic")
+        G.part("SymbolScreen|1", (8, 5, 0.4), (cx - 21, Y + 8, cz - D / 2 + 0.7), (16, 20, 30), "SmoothPlastic",
+               text=dict(face="Back", text="⚡ ؟", color=(255, 255, 255), bg=(16, 20, 30), bg_t=0.0))
+        # 2) specimen detective: four pedestals + the clue board (east half)
+        for i in range(4):
+            vcyl("Pedestal|%d" % (i + 1), cx + 12 + i * 6.5, Y, Y + 3, cz - 4, 3.6, (200, 206, 214), "Marble")
+        G.part("SpecimenClues", (0.4, 9, 22), (cx + W / 2 - 0.8, Y + 6, cz - 4), (16, 20, 30), "SmoothPlastic",
+               text=dict(face="Left", text="🔍", color=(255, 255, 255), bg=(16, 20, 30), bg_t=0.0))
+        G.part("SymbolScreen|2", (8, 5, 0.4), (cx + 21, Y + 8, cz - D / 2 + 0.7), (16, 20, 30), "SmoothPlastic",
+               text=dict(face="Back", text="🔬 ؟", color=(255, 255, 255), bg=(16, 20, 30), bg_t=0.0))
+        # 3) core activation (north centre)
+        ball("Core", cx, Y + 6, cz - 21, 7, (90, 100, 130), "Glass", transp=0.2, shadow=False)
+        vcyl("CoreStand", cx, Y, Y + 2.6, cz - 21, 5, (60, 64, 80), "Metal")
+        for i, ox in enumerate((-7, 7)):
+            G.part("CorePanel|%d" % (i + 1), (4, 4, 1.2), (cx + ox, Y + 2, cz - 13), (40, 50, 70), "SmoothPlastic")
+        G.part("CoreLever", (1.6, 4, 1.6), (cx, Y + 2, cz - 12), (250, 140, 60), "SmoothPlastic")
+        # help desks by the door
+        G.part("HintTerminal", (3, 4, 2), (cx - 8, Y + 2, cz + D / 2 - 10), (60, 140, 220), "SmoothPlastic",
+               text=dict(face="Back", text="💡\nتلميح", color=(255, 255, 255), bg=(60, 140, 220), bg_t=0.0))
+        G.part("ResetTerminal", (3, 4, 2), (cx + 8, Y + 2, cz + D / 2 - 10), (200, 90, 90), "SmoothPlastic",
+               text=dict(face="Back", text="🔄\nإعادة", color=(255, 255, 255), bg=(200, 90, 90), bg_t=0.0))
+        G.part("Portal|Arcade", (8, 10, 0.6), (cx, Y + 5.2, cz + D / 2 + 3), (120, 255, 200), "Neon", transp=0.45,
+               collide=False, shadow=False)
+        sign("PuzzleExit", "↩ الأركيد", (cx, Y + 11, cz + D / 2 + 3.3), (8, 1.8, 0.4), "Back", bg=(24, 80, 56))
+        G.part("KillFloor|Puzzle", (200, 2, 200), (cx, Y - 40, cz), (255, 80, 80), "Neon", transp=0.6, collide=False)
+
+
 if __name__ == "__main__":
     out = sys.argv[1] if len(sys.argv) > 1 else "chaos-campus/src/map/Map.rbxmx"
     lobby()
