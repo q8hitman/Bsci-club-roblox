@@ -42,6 +42,10 @@ local function weight(key)
 	end
 	local id = key:match("^collect:(.+)$")
 	local exhibit = key:match("^museum:(.+)$")
+	local race = key:match("^race:(.+)$")
+	if race and D.Races[race] then
+		return D.RaceXP
+	end
 	if exhibit and D.Museum[exhibit] then
 		return D.MuseumXP
 	end
@@ -125,6 +129,8 @@ function S.record(s, kind, id, now)
 		p.weekly.stages[tostring(id)] = true
 	elseif kind == "museum" and type(id) == "string" and D.Museum[id] then
 		p.stamps["museum:" .. id] = true
+	elseif kind == "race" and type(id) == "string" and D.Races[id] then
+		p.stamps["race:" .. id] = true
 	end
 end
 local function count(t)
@@ -149,10 +155,14 @@ function S.summary(s, now)
 	local p = S.sync(s, now)
 	local xp = 0
 	local museum = 0
+	local races = 0
 	for key in pairs(p.stamps) do
 		xp += weight(key) or 0
 		if key:match("^museum:") then
 			museum += 1
+		end
+		if key:match("^race:") then
+			races += 1
 		end
 	end
 	local challenges = {}
@@ -170,6 +180,7 @@ function S.summary(s, now)
 	return {
 		xp = xp,
 		museum = museum,
+		races = races,
 		level = 1 + math.floor(xp / D.LevelXP),
 		progress = xp % D.LevelXP,
 		nextXP = D.LevelXP,

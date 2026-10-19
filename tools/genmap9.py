@@ -27,6 +27,7 @@ import ku_science33  # noqa: E402  (v33: satellite corrections)
 import ku_science34  # noqa: E402  (v34: south complex + garden walk from the aerial view)
 import north_campus44  # noqa: E402  (v44: modular north prototype; photo16/17 room types)
 import museum46  # noqa: E402  (v46: fictional additive museum pavilion)
+import racers47  # noqa: E402  (v47: standalone arcade racing)
 
 box, vcyl, disc, ball, sign = G.box, G.vcyl, G.disc, G.ball, G.sign
 rect = C5.rect
@@ -110,6 +111,7 @@ if __name__ == "__main__":
     collectibles9.build(G8.zone_starts())   # absolute coordinates (needs the course already written)
     extras10.build()   # virus arena, graduation stage, secret roof, daily board (absolute coordinates)
     island11.build()   # BSC Island gameplay layer, exam hall, arcade (absolute coordinates)
+    racers47.build()
     gap, rise, bad, n = M2.validate()
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     size = 0
@@ -122,6 +124,7 @@ if __name__ == "__main__":
         f.write("</Item></roblox>")
     G8.write_zones_module(os.path.join(os.path.dirname(os.path.dirname(out_path)), "shared", "Zones.luau"))
     cartride.write_rooms_module(cartride.ROOMS, os.path.join(os.path.dirname(os.path.dirname(out_path)), "shared", "CartRooms.luau"))
+    racers47.write_data(os.path.join(os.path.dirname(os.path.dirname(out_path)), "shared", "RacerData.luau"))
     print("parts:", G.nparts[0], "| steps:", n, "| gap %.2f rise %.2f" % (gap, rise), "| violations:", len(bad),
           "| KB:", size // 1024, "| zone starts:", G8.zone_starts(), "| cart points:", n_cart, "clashes:", cart_bad)
     for v in bad[:8]:

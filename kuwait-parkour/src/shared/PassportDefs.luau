@@ -5,6 +5,8 @@ return {
 	ActivityXP = 40,
 	LevelXP = 100,
 	MuseumXP = 10,
+	RaceXP = 20,
+	Races = { cell = true, helix = true },
 	Museum = {
 		micro = true,
 		enzyme = true,

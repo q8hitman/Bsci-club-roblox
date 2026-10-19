@@ -64,6 +64,13 @@ local PRESETS = {
 		{ 0.3, 1.6, rgb(230, 190, 235), rgb(255, 160, 220) },
 		{ rgb(255, 238, 255), 0.25, 0.12 },
 	}, -- inside a giant cell, neon dusk
+	racing = {
+		13.5,
+		rgb(156, 166, 178),
+		rgb(168, 182, 196),
+		{ 0.4, 1.4, rgb(210, 230, 242), rgb(170, 200, 228) },
+		{ rgb(245, 252, 255), 0.08, 0.06 },
+	}, -- daylight racing: silhouettes and road edges remain readable
 	virus = {
 		18.5,
 		rgb(100, 120, 96),
@@ -175,6 +182,9 @@ do
 end
 
 local function areaAt(p)
+	if player:GetAttribute("InMicroRace") then
+		return "racing"
+	end
 	if p.X > 10000 then
 		local zone = 1
 		for i, z0 in ipairs(zoneZ) do

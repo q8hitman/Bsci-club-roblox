@@ -1,0 +1,41 @@
+{
+  "ok": true,
+  "result": {
+    "clients": 2,
+    "deathRespawn": true,
+    "timeoutAccelerated": true,
+    "disconnect": true,
+    "mode": "normal durations; real clients; test emits only driving intents; no position/lap injection",
+    "passed": true,
+    "results": {
+      "ok": true,
+      "replayNoXP": true,
+      "queueDeparture": true,
+      "xp": 40,
+      "forgeryDenied": true,
+      "results": [
+        {
+          "track": "cell",
+          "seconds": 56.014978885650635,
+          "xp": 20,
+          "bots": 2,
+          "rank": 4
+        },
+        {
+          "track": "cell",
+          "seconds": 56.21368598937988,
+          "xp": 20,
+          "bots": 3,
+          "rank": 4
+        },
+        {
+          "track": "helix",
+          "seconds": 90.84625601768494,
+          "xp": 40,
+          "bots": 2,
+          "rank": 3
+        }
+      ]
+    }
+  }
+}

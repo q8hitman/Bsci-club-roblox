@@ -1,6 +1,25 @@
 # Handoff to Codex (from Claude Code)
 
-## Current handoff: v46 (2026-10-19)
+## Current handoff: v47 (2026-10-19)
+- Supervisor accepted v46 commit73d3b4c and selected Micro Racers. Owner authorized continued development/direct reporting.
+- Branch dev/v47; full before-edit backup backup_before_v47_20261019 includes v46 build. No publish/main merge.
+- Two original tracks in separate Arcade race lobby; manual keyboard/touch drive, three ordered laps, solo AI and multiplayer,
+  boosts/shield/spores, recovery, ranks/results/replay. Authoritative20Hz planar simulation prevents rollovers/off-road falls.
+- One-time20XP per track and racer2 cosmetic title via existing Passport. No coin/research/weekly economy changes.
+- Solo keyboard both3laps:118.8s/122.7s; actual XR Touch screen-button cell3laps159.6s. Tool input needs+47px horizontal calibration.
+- Two actual clients passed normal complete races, repeat XP20 unchanged, both40XP/title, death/respawn/disconnect,
+  departed queue/AI fill, recovery/forgery rejection and exit/timeout cleanup. Only timeout fixture shortened runtime duration;
+  source races remain180s. Test intent controller does not inject positions, gates or laps.
+- Independent review P2s fixed/re-reviewed; late-GUI restoration addition reviewed and tested. No open actionable findings.
+- Fresh local build KuwaitParkour_v47.rbxlx,75sources;326newparts/386descendants. All original Workspace equals v46 excluding Racers47.
+- Fresh Studio id c3d07503-474d-4f49-b351-9b9e96699853 titled KuwaitParkour_v47.rbxlx works; prefer it and obtain current IDs.
+  Left in Edit/default viewport. Old v43/v46/blank sessions remain open; don't close them. Temporary test sessions ended normally.
+- All12 Travel, Museum micro/replay, queue→HQ cleanup, actual Exit and late GUI hide/restore passed in the clean build.
+  Racing sample~60FPS on this PC; background multiplayer sample~15FPS editor limit. No real-phone/live persistence/long human test.
+- Evidence docs/racers_v47_report.md, docs/v47/, tools/studio_tests/racers47.*.luau. Fixtures removed from Studio and excluded from build.
+- Next: direct supervisor report/review before selecting v48 Laser Escape. Respect owner rules; no publish/merge/horror/secrets.
+
+## Historical handoff: v46 (2026-10-19)
 - Supervisor accepted v45 (07a3cb4) and selected the eight-exhibit Biology Discovery Museum.
 - Branch `dev/v46`; full backup `backup_before_v46_20261019` includes v45 build. No publishing or merging.
 - Fictional pavilion east of Campus, x210..370/z-150..50, lit approach via the front plaza around parking.

@@ -215,6 +215,14 @@ table.insert(P.Achievements, {
 	title = "دليل الاكتشاف 🔬",
 })
 
+table.insert(P.Achievements, {
+	id = "racer2",
+	ar = "متسابق العالم المجهري",
+	desc = "أنهِ ثلاث لفات في كلتا حلبتي Micro Racers",
+	coins = 0,
+	title = "سائق الجزيئات 🏁",
+})
+
 P.Trails = {
 	{
 		id = "leaf",

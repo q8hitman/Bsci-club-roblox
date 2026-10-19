@@ -1,6 +1,16 @@
 # Resume here
 
-## Current state (2026-10-19, v46)
+## Current state (2026-10-19, v47)
+- Repo only; dev/v47. Backup backup_before_v47_20261019. Supervisor accepted v46 and selected Micro Racers.
+- Two-track manual racing,3laps, AI/multiplayer, boost/shield/spores/recovery/results/replay, server intent-only simulation.
+- One-time20XP per track and racer2 title.326parts/386descendants added; old Workspace identical after excluding Racers47.
+- Keyboard3laps both, XR actual Touch3laps cell, two actual clients/full races/replay/lifecycle/security/timeout passed.
+- Fresh build KuwaitParkour_v47.rbxlx opened in NEW Studio titledv47, Edit/default viewport. Prefer it; keep all old sessions open.
+-75sources, no test fixtures in build/Studio, Streaming=false. Static/Lune/question banks passed; selene0errors/26knownwarnings.
+- Docs/photos/raw results: docs/racers_v47_report.md and docs/v47/. No live persistence or real-phone claim.
+- Direct report to supervisor for review and v48 scope. No publish/main merge, secrets, horror or old-system deletion.
+
+## Historical state (2026-10-19, v46)
 - Work only in `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full`, branch `dev/v46`.
 - v45 was accepted developmentally; supervisor selected Museum46. Owner authorized continued development and direct reports.
 - Backup `backup_before_v46_20261019`; local build `Desktop\KuwaitParkour\KuwaitParkour_v46.rbxlx`.

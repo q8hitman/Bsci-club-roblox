@@ -1,3 +1,14 @@
+# v47 — Micro Racers — 2026-10-19
+
+Supervisor accepted v46 and selected two-track racing. `dev/v47`; full before-edit backup `backup_before_v47_20261019`.
+Two drivable tracks, Solo AI/multiplayer, three ordered laps, boost/shield/spores, recovery, ranks/results/replay.
+Authoritative intent-only simulation; one-time20XP per track and racer2 title. Campus/old Workspace unchanged except the additive Racers47 subtree.
+Keyboard Solo both tracks completed; phone XR actual Touch screen-button three-lap cell race completed. Two actual clients passed full races/replay/no duplicate XP, death/respawn/disconnect, queue reclamation, forgery denial and terminal cleanup. Timeout-only fixture shortened runtime duration; shipped races180s.
+Source/static/pure checks passed; independent review P2s fixed/re-reviewed. Detailed report `docs/racers_v47_report.md` and images `docs/v47/`.
+No publish/main merge; no real-phone/live persistence claim. Existing Studio sessions remain open. Local build KuwaitParkour_v47.rbxlx,75sources/326newparts; fresh titlev47 in Edit/default viewport. Test fixtures removed. Final racing sample~60FPS on this PC only; old worlds/Travel12/Museum regression passed.
+
+---
+
 # Progress log
 
 ## v46 (2026-10-19), branch `dev/v46`, NOT published or merged
