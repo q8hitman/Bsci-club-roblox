@@ -53,7 +53,8 @@
 ## Not tested
 - A real phone or a weak device.
 - DataStore on a live server.
-- A full co-op Lab Rush finish with 2 players, including the 2.5 s reactor window.
+- A full co-op Lab Rush finish with 2 real players. The 2.5 s reactor window was verified with 2 clients; scripted
+  prompt presses stop reaching the server after a few presses in multi-client mode, which is a harness limit.
 - A full two-player puzzle-room solve with the reward for both.
 - Real disconnects. Leaving was simulated by travelling away.
 - 3 or more players.

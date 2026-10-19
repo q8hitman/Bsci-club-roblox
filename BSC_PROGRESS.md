@@ -61,8 +61,19 @@
 - **Lab Rush:** with 2 players the goal shows 0/7, matching the rule 4 + 2 per extra player + tier 1.
 - **Puzzle room:** a hint asked for by P1 reached P2 too. A tile turned by P2 matched on the server and on P1.
 
+**Lab Rush co-op, 2 clients (second session):**
+- The goal is 4 + 2 per extra player + tier (6 at tier 1, 8 at tier 3).
+- The reactor needs a player on each lever within the 2.5 s window, and it completed orders several times.
+- Station presses from each player reached the server; the team reached 4/8 in one round.
+- **Harness limit:** in Server & Clients, a client's scripted `InputHoldBegin` reaches the server for the first few
+  presses, then stops reaching it. The client-side Triggered still fires, but the server receives nothing.
+  - The press was at 4.8 studs, the prompt was shown, and the camera faced it.
+  - Solo Play in v38 finished full rounds with the same bot, so this looks like a limit of scripted prompt input
+    across several windows, not a game bug.
+  - A full co-op finish needs two real people.
+
 **Not tested in multiplayer:**
-- A full co-op Lab Rush finish, and the 2.5 s reactor window.
+- A full co-op Lab Rush finish by two real people.
 - A full two-player puzzle solve with a reward for both players.
 - Real disconnects. Leaving was simulated by travelling out.
 
