@@ -11,7 +11,7 @@ Status values: `idea`, `planned`, `in progress`, `review` (ready for review), `r
 | 5 | Fewer duplicate portals and HQ copies | 1 | planned | Portals still work; decide which ones to remove together with the owner |
 | 6 | Last Cell Standing | 2 | review | v37: shrinking membrane, spores, cilia waves, shield bubbles; uses the Arcade loop |
 | 7 | Lab Rush (co-op) | 2 | review | v38: 4 stations, order board, co-op mode; tested solo with a bot |
-| 8 | Co-op puzzle rooms | 2 | planned | Data-driven rooms, hint system, reset on leave |
+| 8 | Co-op puzzle rooms | 2 | review | v39: framework + Cell Control Room (Circuit, Specimens, Core); tested solo with a bot |
 | 9 | BSC Game Show | 2 | planned | Many round formats; licensed media only |
 | 10 | Micro Racers / Laser Escape / Tower Defense / Rhythm / Bosses | 5 | idea | |
 | 11 | Light Microscopy lab (first full lab) | 3 | planned | The existing Lab world has slides, gels and PCR; extend it, needs expert review |

@@ -1,5 +1,38 @@
 # Progress log
 
+## v39 (2026-10-19), branch `dev/v39`, NOT published
+**Done:**
+- **Puzzle-room framework:** `server/PuzzleRooms.server.luau` runs the rooms.
+  - Each room is defined by one module in `PuzzleRoomDefs/`. Reusable puzzle types live in `PuzzleTypes/`: Circuit,
+    Specimens and Core.
+  - No timer.
+  - 3 hint levels per step, from the Hint terminal.
+  - A Reset terminal.
+  - The room resets itself after 60 s empty.
+  - Shared state with no owner, so nobody gets stuck when a teammate leaves.
+  - The reward is +15 coins and +3 research, once per player every 15 minutes.
+- **First room, "Cell Control Room"** (the supervisor's idea), next to the arcade:
+  - Energy Circuit: a 3×4 grid of pipe tiles; a new random layout on every reset.
+  - Specimen Detective: 4 fantasy creatures; the clue board gives colour + eye count, and only the combination is unique.
+  - Core Activation: the two revealed symbols go on the panels, then the lever.
+- **Access:** a `Portal|Puzzle` in the arcade lobby, plus a "Puzzle" card in the world menu (now 11 cards).
+- Room lighting and name-tag size were fixed after reviewing the first screenshot.
+
+**Tested (Studio, solo, client bot):**
+- One manual tile turn, then the circuit was solved through hints. That was 8 presses; at level 3 each press fixes
+  one tile.
+- Specimens solved purely by observation: the bot read the clues and the creatures' colour and eyes, and got 4/4 names
+  right.
+- The core activated and the reward was paid (coins 0 → 15).
+- The Reset terminal gave a new layout. The lever refused before solving and paid nothing.
+- Leaving mid-puzzle: after 72 s empty, the room had reset.
+- 0 errors.
+
+**Not tested:**
+- Two real players in one room.
+- The phone layout.
+- The reward cooldown on a second solve.
+
 ## v38 (2026-10-19), branch `dev/v38`, NOT published
 **Done:**
 - **Lab Rush (co-op):**

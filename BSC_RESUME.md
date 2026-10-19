@@ -1,7 +1,7 @@
 # Resume here
 
 ## State (2026-10-18)
-- **Version:** v38 on branch `dev/v38` (stacked on dev/v37). It is stable; see BSC_PROGRESS.md. Codex handoff: CODEX_HANDOFF.md
+- **Version:** v39 on branch `dev/v39` (stacked: v37 → v38 → v39). It is stable; see BSC_PROGRESS.md. Codex handoff: CODEX_HANDOFF.md
 - **Not published.** The live game is still the v20+NPC update (PRIVATE, PlaceId 97395090487008).
 - **Studio:** two windows are open (v34, v35). The v35 window has the v37 map and scripts hot-swapped in, unsaved.
   Close those windows only if needed.
@@ -13,7 +13,7 @@
 2. ~~Lab Rush~~ done in v38. Next:
    - Reuse the Arcade loop: add a `mode = "coop"` path with a shared team score.
    - Add a new arena via chaos_gen.
-3. **Batch 2:** co-op puzzle rooms, as a data-driven room list.
+3. ~~Puzzle rooms~~ done in v39 (Cell Control Room).
 4. **Batch 2:** BSC Game Show. Reuse `QuizBank` and `QuizCenter`, and add round formats.
 5. **Batch 3:** Light Microscopy. Extend the Lab world (`Lab.server`/`Lab.client`, `shared/LabData`).
 
