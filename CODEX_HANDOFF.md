@@ -1,5 +1,20 @@
 # Handoff to Codex (from Claude Code)
 
+## Current handoff: v43 (2026-10-19)
+- Codex is the primary developer. The owner relayed the supervisor's v43 directive: improve existing world-menu cards only.
+- Completed and tested: 12 short Arabic activity descriptions; Arcade marked **مقترح للبداية**. No new windows or tutorial.
+- Current branch: `dev/v43`. Latest local build: `Desktop\KuwaitParkour\KuwaitParkour_v43.rbxlx`.
+- Before-edit backup: `Desktop\KuwaitParkour\backup_before_v43_20261019` (includes v42 build).
+- Studio still open on `KuwaitParkour_v37.rbxlx` with v42 content plus the tested v43 WorldMenu script, in Edit mode.
+  Do not close it: login may be lost. Device simulation has been reset to the default viewport.
+- Studio verification: iPhone XR landscape + desktop layout, all 12 card destinations via mouse input, and locked
+  Zone 2-8 portals at stage 0 passed. See BSC_PROGRESS.md for exact evidence and remaining v42 testing gaps.
+- Next: **wait for the emperor's test feedback. Do not add features.** Private publishing also needs his explicit approval.
+- Supervisor reports go in `REPORT_FOR_CHATGPT.md` and Git; the owner relays them. The send-message tool accepted a
+  request, but its delivery/reply could not be verified, so do not claim a reliable direct ChatGPT channel.
+- Codex can run local commands and use Studio MCP. The MCP device-simulator API also works; desktop-window activation
+  failed in this session, so device tests used StudioDeviceSimulatorService through MCP instead.
+
 Read `BSC_RESUME.md`, `BSC_ARCHITECTURE.md` and `BSC_MASTER_VISION.md` first. The owner's rules always win:
 - never publish;
 - never merge;
@@ -9,10 +24,10 @@ Read `BSC_RESUME.md`, `BSC_ARCHITECTURE.md` and `BSC_MASTER_VISION.md` first. Th
 ## Where things are
 - **Full local working copy** (code, Git, and the Rojo/Lune/StyLua/selene binaries):
   `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full`.
-  - Work there. It is on branch `dev/v42`.
+  - Work there. It is on branch `dev/v43`.
   - Rebuild with the commands in `CLAUDE.md` § Build, run from that folder.
-- **Branch:** `dev/v42`. Branches are stacked: v37 → v38 → v39 → v40 → v41 → v42.
-- **Last stable build:** `Desktop\KuwaitParkour\KuwaitParkour_v42.rbxlx`.
+- **Branch:** `dev/v43`. Branches are stacked: v37 → v38 → v39 → v40 → v41 → v42 → v43.
+- **Latest tested local build:** `Desktop\KuwaitParkour\KuwaitParkour_v43.rbxlx`.
 - **Backups:** `Desktop\KuwaitParkour\backup_v42_20261019`. Make a new backup before you change anything.
 - **Not in Git:** the tool binaries (Rojo 7.7.1, Lune 0.11.0, StyLua 2.5.2, selene 0.32.0), the generated
   `Map.rbxmx` and `Island.rbxm`, and the packs. Regenerate them with the commands in BSC_ARCHITECTURE.md.
@@ -30,7 +45,7 @@ Read `BSC_RESUME.md`, `BSC_ARCHITECTURE.md` and `BSC_MASTER_VISION.md` first. Th
 ## Team
 - **Gemini** (desktop app) reviews ideas and writes content. It cannot edit files.
 - **ChatGPT** supervises.
-- **Codex** takes over the code when Claude stops.
+- **Codex** is the primary developer after Claude's handoff.
 - Never let two agents edit the same files at the same time.
 
 - **v41:** the Light Microscopy lab: `LightMicroscope.client`, `shared/MicroscopyData` and `Lab.server` lm* actions.

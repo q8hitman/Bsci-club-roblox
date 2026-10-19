@@ -23,6 +23,22 @@ local WORLDS = {
 	{ "Show", "🎤", "استوديو المسابقات", "Game Show", Color3.fromRGB(200, 120, 40) },
 }
 
+-- Short activity descriptions stay inside the existing cards; travel keys are unchanged.
+local DESCRIPTIONS = {
+	Campus = "تجوّل في\nكلية العلوم",
+	HQ = "استرح واستكشف\nمقر النادي",
+	Island = "استكشف الجزيرة\nوبوابات العوالم",
+	Course = "اقفز وتقدّم\nعبر المراحل",
+	Cart = "جولة بين\nتخصصات الأحياء",
+	Train = "جولة داخل\nالخلية",
+	Arcade = "تنافس وتعاون\nمقترح للبداية",
+	Lab = "جرّب المجهر\nوالتجارب",
+	Quiz = "اختبر معلوماتك\nفي الأحياء",
+	Exam = "جاوب الأسئلة\nمع المجموعة",
+	Puzzle = "حلّ الألغاز\nمع فريقك",
+	Show = "خمّن الصور\nوتحدّ الأسئلة",
+}
+
 local gui = Instance.new("ScreenGui")
 gui.Name = "WorldMenu"
 gui.ResetOnSpawn = false
@@ -133,16 +149,31 @@ for i, w in ipairs(WORLDS) do
 	card.BackgroundColor3 = w[5]
 	card.Parent = grid
 	corner(card, 0.1)
-	label(card, w[2], UDim2.fromScale(0.1, 0.06), UDim2.fromScale(0.8, 0.38))
-	label(card, w[3], UDim2.fromScale(0.05, 0.48), UDim2.fromScale(0.9, 0.24))
+	label(card, w[2], UDim2.fromScale(0.1, 0.04), UDim2.fromScale(0.8, 0.24))
+	local title = label(card, w[3], UDim2.fromScale(0.05, 0.3), UDim2.fromScale(0.9, 0.23))
+	title.TextWrapped = true
 	label(
 		card,
 		w[4],
-		UDim2.fromScale(0.05, 0.74),
-		UDim2.fromScale(0.9, 0.16),
+		UDim2.fromScale(0.05, 0.55),
+		UDim2.fromScale(0.9, 0.11),
 		Color3.fromRGB(235, 240, 238),
 		Enum.Font.Gotham
 	)
+	local description = label(
+		card,
+		DESCRIPTIONS[w[1]],
+		UDim2.fromScale(0.04, 0.7),
+		UDim2.fromScale(0.92, 0.26),
+		if w[1] == "Arcade" then Color3.fromRGB(255, 245, 180) else Color3.new(1, 1, 1),
+		Enum.Font.Gotham
+	)
+	description.Name = "Description"
+	description.TextWrapped = true
+	local textSize = Instance.new("UITextSizeConstraint")
+	textSize.MinTextSize = 10
+	textSize.MaxTextSize = 18
+	textSize.Parent = description
 	card.Activated:Connect(function()
 		if busy then
 			return

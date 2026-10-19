@@ -1,5 +1,17 @@
 # Resume here
 
+## Current state (2026-10-19, v43)
+- Work only in `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full`, branch `dev/v43`.
+- v43 adds Arabic activity descriptions to the 12 existing world-menu cards and marks Arcade **مقترح للبداية**.
+- Backup: `Desktop\KuwaitParkour\backup_before_v43_20261019`. Build: `Desktop\KuwaitParkour\KuwaitParkour_v43.rbxlx`.
+- Desktop and iPhone XR landscape passed; all 12 card routes and locked Zone 2-8 portals passed in solo Studio Play.
+- Studio stays open on `KuwaitParkour_v37.rbxlx`, with v42 content plus the tested v43 WorldMenu script; currently Edit,
+  default viewport. Do not close Studio.
+- **Wait for the emperor's feedback. No further features, publishing, merging, or StreamingEnabled changes.**
+- Reports: `BSC_PROGRESS.md` and `REPORT_FOR_CHATGPT.md`; the owner relays the supervisor's replies.
+
+The older notes below are historical; the current state above and the owner's latest instructions take precedence.
+
 ## State (2026-10-18)
 - **Version:** v41 on branch `dev/v41` (stacked: v37 → … → v41). It is stable; see BSC_PROGRESS.md. Codex handoff: CODEX_HANDOFF.md
 - **Not published.** The live game is still the v20+NPC update (PRIVATE, PlaceId 97395090487008).

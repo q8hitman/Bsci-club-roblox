@@ -1,5 +1,48 @@
 # Progress log
 
+## v43 (2026-10-19), branch `dev/v43`, NOT published or merged
+**Done: descriptions inside the existing world-menu cards (supervisor's single-task directive).**
+
+- First confirmed in source and running Studio that all 12 cards had names but no activity descriptions.
+- Backup made before edits: `Desktop\KuwaitParkour\backup_before_v43_20261019` (full working copy and v42 build).
+- Only gameplay source changed: `kuwait-parkour/src/client/WorldMenu.client.luau`.
+- Added short Arabic activity descriptions to all 12 destinations. Arcade includes **مقترح للبداية** in a warm highlight.
+- Kept the same grid (`CellSize = 0.155, 0.46`), card colours, Arabic/English names, destinations and activation logic.
+  Adjusted the space inside each card for the two-line description. No tutorial or new window.
+
+**Executed in Studio 0.743.0.7431133, solo Play, one client:**
+- Existing `KuwaitParkour_v37.rbxlx` session with v42 content; updated only its existing WorldMenu LocalScript from disk.
+- Before/after screenshots reviewed via MCP (captures `v42_menu_before_unobstructed`, `v43_menu_tablet_first`,
+  `v43_menu_iphone_xr`, `v43_menu_desktop`; captures are session evidence, not files committed to Git).
+- **iPhone XR, landscape, touch enabled, viewport 801x413:** all 12 descriptions and names fit. Assertions checked
+  `TextFits`, containment inside each card, and no overlap between text/icon label rectangles. Description glyph bounds
+  were 24-26 px high for two lines. Arcade recommendation is visible.
+- **Average Laptop, viewport 1365x768:** all 12 cards and descriptions fit; screenshot reviewed. Additional smoke check
+  passed in the default desktop viewport (1096x457). iPad (1179x819) was also visually reviewed.
+- **All 12 destinations clicked using MCP mouse input**, through the real WorldMenu buttons. Each arrived at its
+  expected spawn (horizontal distance 0 for the measured routes), and the menu closed. Course continued at stage 0.
+- **Zone portals 2-8:** moved the stage-0 test character onto each actual portal. All seven produced the locked message,
+  stayed outside the course, and kept stage 0. These are progression portals, not additional world-menu cards.
+- Coins, research and stage stayed at 0 throughout the route/lock checks. Reward and profile code was not changed.
+- Fresh final Play Output: no errors from game scripts. Existing unpublished-place DataStore warnings, Roblox UIBlox
+  warnings, and asset `203785492` type-mismatch messages remain. Earlier test probes had two harness-only failures
+  (Welcome had already closed; an isolated Profiles lookup returned no state); neither was a gameplay error, and neither
+  recurred in the fresh final smoke session.
+- Stopped Play and returned Studio to Edit with the default viewport. Studio remains open. StreamingEnabled remains false.
+
+**Static/build checks:**
+- StyLua format and `--check src` passed after generation (the generator emits CRLF in two shared files).
+- selene: 0 errors, 27 existing warnings, 0 parse errors; WorldMenu alone: 0 warnings.
+- Question validator: 48 base questions, 80 challenge questions, 5 practical generators x 400 draws passed.
+- `genmap9.py`: 0 violations, 0 clashes; regenerated Map SHA256 matches the pre-v43 backup exactly.
+- Rojo built `Desktop\KuwaitParkour\KuwaitParkour_v43.rbxlx` successfully.
+- Compared sources in the v42/v43 builds: 63 scripts in each; only WorldMenu changed. Its built source matches the
+  source loaded and tested in Studio. The other 62 script sources match v42.
+
+**Not tested / next:** real phone, live DataStore, full human multiplayer and weak-device performance remain as in v42.
+No new feature work: wait for the emperor's feedback. No publish, merge, or streaming change. Supervisor report:
+`REPORT_FOR_CHATGPT.md` (owner relays it; direct ChatGPT messaging was not verified).
+
 ## v42 (2026-10-19), branch `dev/v42`, NOT published
 **Done: phone pass** (Studio Device Simulator, iPhone XR landscape, viewport 801×413, touch on).
 
