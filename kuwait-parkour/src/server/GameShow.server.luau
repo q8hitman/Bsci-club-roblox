@@ -328,7 +328,7 @@ end
 
 local function runShow(starter)
 	local present = playersInside()
-	show = { score = {}, team = {}, teamScore = { Red = 0, Blue = 0 }, teams = #present >= 2 }
+	show = { score = {}, team = {}, played = {}, teamScore = { Red = 0, Blue = 0 }, teams = #present >= 2 }
 	table.sort(present, function(a, b)
 		return a.UserId < b.UserId
 	end)
@@ -376,8 +376,9 @@ local function runShow(starter)
 		end
 		setText(mainScreen, ("🎉 خلصت الحلقة! نقاطك %d"):format(p and show.score[p] or 0))
 	end
+	-- only players who answered at least once are rewarded (someone who walked out at the start gets nothing)
 	local now = os.clock()
-	for p in pairs(show.score) do
+	for p in pairs(show.played) do
 		local s = p.Parent and Profiles.state[p]
 		if s and (not rewardedAt[p] or now - rewardedAt[p] > REWARD_COOLDOWN) then
 			rewardedAt[p] = now
@@ -413,6 +414,7 @@ for i, pod in ipairs(pods) do
 			end
 			addPlayer(p) -- late joiners join the show
 			show.answers[p] = { choice = i, at = show.revealed or 0 }
+			show.played[p] = true
 			notify(p, "اخترت " .. LETTERS[i], "info")
 		end)
 	end

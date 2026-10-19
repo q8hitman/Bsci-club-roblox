@@ -46,6 +46,26 @@
   - 0 errors from our scripts.
 - **Test-harness note:** in the Device Simulator, `user_mouse_input` x lands 47 px left. Add 47 to x.
 
+**Multiplayer test (Studio Server & Clients, 1 server + 2 clients, scripted bots on each client):**
+- **Game Show:**
+  - 2 players were split Red and Blue, and a full 6-round show completed.
+  - Team scores were correct: 10 for an early picture answer, 8 for difficulty 2, 10 for difficulty 3. Red won 20–18.
+  - Rewards: the loser got +3; the winner got +13 coins and +2 research.
+  - A player left mid-show: the show continued and finished with the remaining player.
+  - A third show inside the cooldown paid nothing.
+- **Bug fixed** (`GameShow.server`): a player who walked out before answering still got the +3 participation reward.
+  - Now only players who answered at least once (`show.played`) are rewarded.
+  - Re-tested: the leaver got 0, and the winner got +13 coins and +2 research.
+- **Last Cell Standing:** P2 was eliminated, so P1 was the last survivor and the round ended at once.
+  - P1 got +22 coins and +4 research. P2 got the participation reward (+2 coins, +1 research) and respawned in the arcade.
+- **Lab Rush:** with 2 players the goal shows 0/7, matching the rule 4 + 2 per extra player + tier 1.
+- **Puzzle room:** a hint asked for by P1 reached P2 too. A tile turned by P2 matched on the server and on P1.
+
+**Not tested in multiplayer:**
+- A full co-op Lab Rush finish, and the 2.5 s reactor window.
+- A full two-player puzzle solve with a reward for both players.
+- Real disconnects. Leaving was simulated by travelling out.
+
 **Not tested:**
 - A real phone.
 - Portrait orientation.

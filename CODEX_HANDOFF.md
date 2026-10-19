@@ -40,7 +40,9 @@ Read `BSC_RESUME.md`, `BSC_ARCHITECTURE.md` and `BSC_MASTER_VISION.md` first. Th
 Done in v42: the phone pass and Gemini's science review of the microscope.
 
 Next:
-1. **Real multiplayer:** in Studio, Test → Clients and Servers → Start, with 2–3 clients.
+1. **Real multiplayer:** mostly done in v42 (see BSC_PROGRESS.md). Still open: a full co-op Lab Rush, a full two-player
+   puzzle solve, and real disconnects. To run it in Studio: Test → Start Test Session → Server and Clients, then in
+   the server window Test → Add Clients, once per client.
    - Check the Arcade games, puzzles, Game Show and microscope.
    - Check joining and leaving mid-round, sync, rewards with no doubles, and round reset.
    - This needs the Studio UI. It was blocked this session because a Windows TextInputHost popup was in front.
