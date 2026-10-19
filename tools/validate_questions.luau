@@ -14,9 +14,23 @@ end
 -- if a question matches the pattern, none of these words may appear among its WRONG answers
 -- (each is biologically correct for that kind of question)
 local TRAPS = {
-	{ q = "DNA", also = { "الميتوكوندريا", "البلاستيدات", "النواة", "الدم", "اللعاب", "الجلد", "العظم" } },
+	{
+		q = "DNA",
+		also = {
+			"الميتوكوندريا",
+			"البلاستيدات",
+			"النواة",
+			"الدم",
+			"اللعاب",
+			"الجلد",
+			"العظم",
+		},
+	},
 	{ q = "صغير الضفدع", also = { "اليرقة" } },
-	{ q = "تلقّح الأزهار", also = { "البعوض", "الفراشات", "الخنافس", "الذباب" } },
+	{
+		q = "تلقّح الأزهار",
+		also = { "البعوض", "الفراشات", "الخنافس", "الذباب" },
+	},
 	{ q = "تصنيع البروتين", also = { "الشبكة الإندوبلازمية الخشنة" } },
 	{ q = "تمتصه النباتات في البناء الضوئي", also = { "الماء" } },
 }
@@ -155,6 +169,24 @@ if #Practical.session(fakeRng) ~= 5 then
 	fail("practical", "session must have 5 items")
 end
 
+-- ------------------------------------------------------------ v49: GameShowBank validation (questions, pictures, memory)
+local GameShowBank = require("../kuwait-parkour/src/server/GameShowBank")
+for qi, item in ipairs(GameShowBank.questions or {}) do
+	local w = "GameShowBank.questions q" .. qi
+	checkItem(w, { item.q, item.right, item.wrong[1], item.wrong[2], item.wrong[3] }, false)
+end
+for pi, item in ipairs(GameShowBank.pictures or {}) do
+	local w = "GameShowBank.pictures p" .. pi
+	checkItem(w, { item.pic .. "؟", item.right, item.wrong[1], item.wrong[2], item.wrong[3] }, false)
+end
+for mi, item in ipairs(GameShowBank.memory or {}) do
+	local w = "GameShowBank.memory m" .. mi
+	if type(item.seq) ~= "string" or norm(item.seq) == "" then
+		fail(w, "missing seq")
+	end
+	checkItem(w, { item.q, item.right, item.wrong[1], item.wrong[2], item.wrong[3] }, false)
+end
+
 if #errors > 0 then
 	print(("FAILED: %d problem(s) in %d questions"):format(#errors, count))
 	for _, e in ipairs(errors) do
@@ -164,3 +196,10 @@ if #errors > 0 then
 end
 print(("OK: %d questions in %d banks, all with 1 correct + 3 distinct wrong answers"):format(count, #Questions))
 print(("OK: challenge center %d questions (levels 2-3) + 5 practical generators x 400 draws"):format(bankCount))
+print(
+	("OK: GameShowBank %d questions + %d pictures + %d memory sequences"):format(
+		#(GameShowBank.questions or {}),
+		#(GameShowBank.pictures or {}),
+		#(GameShowBank.memory or {})
+	)
+)

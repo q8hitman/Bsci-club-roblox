@@ -39,6 +39,9 @@ local function weight(key)
 	if key == "escape:laser48" then
 		return D.EscapeXP
 	end
+	if key == "exam:pass" then
+		return D.ExamXP
+	end
 	local n = key:match("^stage:(%d+)$")
 	if n and int(tonumber(n), 1, 100) then
 		return D.StageXP
@@ -46,8 +49,16 @@ local function weight(key)
 	local id = key:match("^collect:(.+)$")
 	local exhibit = key:match("^museum:(.+)$")
 	local race = key:match("^race:(.+)$")
+	local train = key:match("^train:(.+)$")
+	local puzzle = key:match("^puzzle:(.+)$")
 	if race and D.Races[race] then
 		return D.RaceXP
+	end
+	if train and D.Trains and D.Trains[train] then
+		return D.TrainXP
+	end
+	if puzzle and D.Puzzles and D.Puzzles[puzzle] then
+		return D.PuzzleXP
 	end
 	if exhibit and D.Museum[exhibit] then
 		return D.MuseumXP
@@ -136,6 +147,12 @@ function S.record(s, kind, id, now)
 		p.stamps["escape:laser48"] = true
 	elseif kind == "race" and type(id) == "string" and D.Races[id] then
 		p.stamps["race:" .. id] = true
+	elseif kind == "train" and type(id) == "string" and D.Trains and D.Trains[id] then
+		p.stamps["train:" .. id] = true
+	elseif kind == "puzzle" and type(id) == "string" and D.Puzzles and D.Puzzles[id] then
+		p.stamps["puzzle:" .. id] = true
+	elseif kind == "exam" and id == "pass" then
+		p.stamps["exam:pass"] = true
 	end
 end
 local function count(t)

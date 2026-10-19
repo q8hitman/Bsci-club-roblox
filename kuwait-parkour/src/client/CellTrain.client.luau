@@ -107,6 +107,67 @@ exitBtn.Visible = false
 exitBtn.Parent = gui
 Instance.new("UICorner", exitBtn).CornerRadius = UDim.new(0.25, 0)
 
+-- v50: interactive Camera Toggle (Cinematic vs Free Orbit), Speed Toggle, and Stop Progress indicator
+local camBtn = Instance.new("TextButton")
+camBtn.Name = "CamToggleBtn"
+camBtn.AnchorPoint = Vector2.new(1, 0)
+camBtn.Position = UDim2.fromScale(0.98, 0.325)
+camBtn.Size = UDim2.fromScale(0.14, 0.065)
+camBtn.BackgroundColor3 = Color3.fromRGB(70, 50, 130)
+camBtn.TextColor3 = Color3.new(1, 1, 1)
+camBtn.TextScaled = true
+camBtn.Font = Enum.Font.GothamBold
+camBtn.Text = "🎥 كاميرا: سينمائية"
+camBtn.Visible = false
+camBtn.Parent = gui
+Instance.new("UICorner", camBtn).CornerRadius = UDim.new(0.25, 0)
+
+local speedBtn = Instance.new("TextButton")
+speedBtn.Name = "SpeedToggleBtn"
+speedBtn.AnchorPoint = Vector2.new(1, 0)
+speedBtn.Position = UDim2.fromScale(0.98, 0.405)
+speedBtn.Size = UDim2.fromScale(0.14, 0.065)
+speedBtn.BackgroundColor3 = Color3.fromRGB(45, 110, 145)
+speedBtn.TextColor3 = Color3.new(1, 1, 1)
+speedBtn.TextScaled = true
+speedBtn.Font = Enum.Font.GothamBold
+speedBtn.Text = "⚡ السرعة: عادية"
+speedBtn.Visible = false
+speedBtn.Parent = gui
+Instance.new("UICorner", speedBtn).CornerRadius = UDim.new(0.25, 0)
+
+local stopBadge = Instance.new("TextLabel")
+stopBadge.Name = "StopProgressBadge"
+stopBadge.AnchorPoint = Vector2.new(0.5, 0)
+stopBadge.Position = UDim2.fromScale(0.5, 0.12)
+stopBadge.Size = UDim2.fromScale(0.26, 0.055)
+stopBadge.BackgroundColor3 = Color3.fromRGB(55, 25, 95)
+stopBadge.BackgroundTransparency = 0.15
+stopBadge.TextColor3 = Color3.fromRGB(235, 220, 255)
+stopBadge.TextScaled = true
+stopBadge.Font = Enum.Font.GothamBold
+stopBadge.Text = ("📍 المحطة 0/%d"):format(#stops)
+stopBadge.Visible = false
+stopBadge.Parent = gui
+Instance.new("UICorner", stopBadge).CornerRadius = UDim.new(0.3, 0)
+
+local freeCam = false
+local fastMode = false
+
+camBtn.Activated:Connect(function()
+	freeCam = not freeCam
+	camBtn.Text = freeCam and "🔄 كاميرا: حرة" or "🎥 كاميرا: سينمائية"
+	local cam = workspace.CurrentCamera
+	if cam then
+		cam.CameraType = freeCam and Enum.CameraType.Custom or Enum.CameraType.Scriptable
+	end
+end)
+
+speedBtn.Activated:Connect(function()
+	fastMode = not fastMode
+	speedBtn.Text = fastMode and "⚡ السرعة: سريعة" or "⚡ السرعة: عادية"
+end)
+
 local function fadeTo(alpha)
 	local tw = TweenService:Create(fade, TweenInfo.new(0.6), { BackgroundTransparency = alpha })
 	tw:Play()
@@ -149,10 +210,15 @@ local function ride()
 	local seat = train:FindFirstChild("Seat1")
 	root.Anchored = true
 	local cam = workspace.CurrentCamera
+	freeCam = false
+	fastMode = false
+	camBtn.Text = "🎥 كاميرا: سينمائية"
+	speedBtn.Text = "⚡ السرعة: عادية"
 	cam.CameraType = Enum.CameraType.Scriptable
 	caption.Text =
 		"🚋 أهلاً فيك في قطار الخلية! جولة داخل الخلية الحيوانية"
 	caption.Visible, exitBtn.Visible = true, true
+	camBtn.Visible, speedBtn.Visible, stopBadge.Visible = true, true, true
 
 	local d, shownUntil = 0, os.clock() + 5
 	local function place()
@@ -163,11 +229,20 @@ local function ride()
 			local sp = seat.Position + Vector3.new(0, 2.4, 0)
 			root.CFrame = CFrame.lookAt(sp, sp + dir)
 		end
-		-- organelles sit inside the loop, on the train's right: look slightly right, past the rider
-		cam.CFrame = frame
-			* CFrame.new(-16, 16, 28)
-			* CFrame.Angles(0, math.rad(-36), 0)
-			* CFrame.Angles(math.rad(-14), 0, 0)
+		if not freeCam then
+			-- organelles sit inside the loop, on the train's right: look slightly right, past the rider
+			cam.CFrame = frame
+				* CFrame.new(-16, 16, 28)
+				* CFrame.Angles(0, math.rad(-36), 0)
+				* CFrame.Angles(math.rad(-14), 0, 0)
+		end
+		local passed = 0
+		for _, st in ipairs(stops) do
+			if d >= st.at - 25 then
+				passed += 1
+			end
+		end
+		stopBadge.Text = ("📍 المحطة %d/%d"):format(passed, #stops)
 		local stop = nearStop(d)
 		if stop then
 			caption.Text = stop.text
@@ -187,7 +262,8 @@ local function ride()
 		if finished then
 			return
 		end
-		d += (nearStop(d) and SLOW or CRUISE) * dt
+		local mult = fastMode and 1.8 or 1.0
+		d += (nearStop(d) and SLOW or CRUISE) * mult * dt
 		if d >= total or stopRequested then
 			finished = true
 			if d >= total then
@@ -202,6 +278,7 @@ local function ride()
 				fadeTo(0)
 				train:Destroy()
 				caption.Visible, exitBtn.Visible = false, false
+				camBtn.Visible, speedBtn.Visible, stopBadge.Visible = false, false, false
 				cam.CameraType = Enum.CameraType.Custom
 				root.Anchored = false
 				hum.WalkSpeed, hum.JumpPower = oldSpeed, oldJump

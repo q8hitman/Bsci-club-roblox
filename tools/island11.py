@@ -407,6 +407,14 @@ def research_lab():
         ball("ScopeLamp2", LX - 19, LY + 5.0, LZ + 24.4, 1.2, (255, 240, 200), "Neon", collide=False, shadow=False)
         sign("LightMicroLabel", "🔬 مختبر المجهر الضوئي\nLight Microscopy", at(-19, 13.5, 28.2), (12, 3.4, 0.3), "Back",
              bg=(24, 80, 56))
+        # v50: Gram Staining interactive lab bench (symmetrical on the north side of the wet lab)
+        r("LabStation|gram", -26, -12, 0, 3.6, -33, -27, (238, 238, 232), "Marble")
+        r("GramSink", -25, -21, 3.6, 4.3, -32, -28, (180, 192, 200), "Metal", collide=False)
+        r("GramSlideRack", -20, -13, 3.6, 4.1, -31.5, -28.5, (60, 66, 74), "Metal", collide=False)
+        for q, bcol in enumerate(((130, 60, 200), (190, 130, 40), (180, 220, 250), (230, 70, 120))):
+            vcyl("GramReagent", LX - 19.2 + q * 1.8, LY + 4.1, LY + 6.1, LZ - 30.0, 0.75, bcol, "Glass", transp=0.15, collide=False)
+        sign("GramLabLabel", "🧪 مختبر صبغة جرام\nGram Staining Lab", at(-19, 13.5, -33.2), (12, 3.4, 0.3), "Front",
+             bg=(90, 40, 130))
         # fume hood + safety corner
         r("FumeHood", -71, -61, 0, 16, -46, -36, (226, 228, 230), "SmoothPlastic")
         r("HoodSash", -60.9, -60.6, 4, 12, -45, -37, (190, 220, 235), "Glass", transp=0.45, collide=False)

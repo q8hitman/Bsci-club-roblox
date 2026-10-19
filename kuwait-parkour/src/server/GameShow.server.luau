@@ -32,7 +32,7 @@ end
 
 local LETTERS = { "A", "B", "C", "D" }
 local CATS = { "bio", "general", "games", "consoles" }
-local ROUNDS = { "picture", "category", "picture", "category", "picture", "category" }
+local ROUNDS = { "picture", "category", "memory", "picture", "category", "memory" }
 local SAFETY = 40 -- seconds: only stops an AFK player from stalling everyone
 local REWARD_COOLDOWN = 10 * 60
 
@@ -178,6 +178,7 @@ end
 local function ask(onTick)
 	show.answers, show.asking = {}, true
 	local t0 = os.clock()
+	show.askStart = t0
 	while os.clock() - t0 < SAFETY do
 		local list = participants()
 		if #list == 0 then
@@ -327,6 +328,47 @@ local function categoryRound(n)
 	end)
 end
 
+local function memoryRound(n)
+	local item = pick(Bank.memory, "mem")
+	local opts, correct = shuffledOptions(item)
+	for _, c in ipairs(covers) do
+		c.Transparency = 1
+	end
+	setText(pictureBoard, item.seq)
+	setText(
+		mainScreen,
+		("🧠 تحدي الذاكرة والتسلسل • جولة %d/%d\nاحفظ السلسلة العلمية قبل ما تختفي! 👀\n%s"):format(
+			n,
+			#ROUNDS,
+			item.seq
+		)
+	)
+	task.wait(4.2)
+	for _, c in ipairs(covers) do
+		c.Transparency = 0
+	end
+	show.revealed = nil
+	local lines = {
+		("🧠 تحدي الذاكرة والتسلسل • جولة %d/%d"):format(n, #ROUNDS),
+		clean(item.q),
+	}
+	for i, o in ipairs(opts) do
+		table.insert(lines, LETTERS[i] .. ") " .. clean(o))
+	end
+	setText(mainScreen, table.concat(lines, "\n"))
+	ask()
+	for _, c in ipairs(covers) do
+		c.Transparency = 1
+	end
+	setText(
+		mainScreen,
+		("✅ السلسلة: %s\nالجواب: %s) %s"):format(item.seq, LETTERS[correct], clean(item.right))
+	)
+	settle(correct, function(a)
+		return math.max(5, 10 - math.floor((a.at or 0) / 4))
+	end)
+end
+
 local function runShow(starter)
 	local present = playersInside()
 	show = { score = {}, team = {}, played = {}, teamScore = { Red = 0, Blue = 0 }, teams = #present >= 2 }
@@ -339,7 +381,7 @@ local function runShow(starter)
 	refreshBoards()
 	setText(
 		mainScreen,
-		("🎙️ الحلقة بدأت! %s\nاضغطوا على المنصات A B C D للإجابة"):format(
+		("🎙️ الحلقة بدأت! %s\nاضغطوا أو قفوا على المنصات A B C D للإجابة"):format(
 			starter.DisplayName
 		)
 	)
@@ -350,6 +392,8 @@ local function runShow(starter)
 		end
 		if kind == "picture" then
 			pictureRound(n)
+		elseif kind == "memory" then
+			memoryRound(n)
 		else
 			categoryRound(n)
 		end
@@ -401,7 +445,21 @@ local function runShow(starter)
 	refreshBoards()
 end
 
--- pods: tap to answer (you can change your answer until the question closes)
+-- pods: tap OR step on a pod to answer (you can change your answer until the question closes)
+local function selectPod(p, i)
+	if not (show and show.asking and inside(p)) then
+		return
+	end
+	addPlayer(p) -- late joiners join the show
+	if show.answers[p] and show.answers[p].choice == i then
+		return
+	end
+	local elapsed = show.revealed or math.max(0, os.clock() - (show.askStart or os.clock()))
+	show.answers[p] = { choice = i, at = elapsed }
+	show.played[p] = true
+	notify(p, "اخترت " .. LETTERS[i], "info")
+end
+
 for i, pod in ipairs(pods) do
 	if pod then
 		local pr = Instance.new("ProximityPrompt")
@@ -411,13 +469,13 @@ for i, pod in ipairs(pods) do
 		pr.RequiresLineOfSight = false
 		pr.Parent = pod
 		pr.Triggered:Connect(function(p)
-			if not (show and show.asking and inside(p)) then
-				return
+			selectPod(p, i)
+		end)
+		pod.Touched:Connect(function(hit)
+			local p = Players:GetPlayerFromCharacter(hit.Parent)
+			if p then
+				selectPod(p, i)
 			end
-			addPlayer(p) -- late joiners join the show
-			show.answers[p] = { choice = i, at = show.revealed or 0 }
-			show.played[p] = true
-			notify(p, "اخترت " .. LETTERS[i], "info")
 		end)
 	end
 end

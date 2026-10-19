@@ -94,6 +94,7 @@ def build():
     with G.Group("Museum46"):
         with G.Group("Architecture"):
             G.box("MuseumFloor",(160,1.2,200),(290,-.4,-50),CREAM,"Concrete")
+            G.part("MuseumSpawn",(8,1,8),(290,.8,-142),TEAL,transp=1,collide=False,shadow=False)
             # Wide route around the existing parking, not through it or the train station.
             G.box("MuseumApproach",(151,.5,12),(217.5,-.05,-205),CREAM,"Concrete")
             G.box("MuseumApproach",(12,.5,61),(290,-.05,-177),CREAM,"Concrete")

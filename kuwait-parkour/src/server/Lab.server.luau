@@ -146,6 +146,8 @@ for _, inst in ipairs(mapFolder:GetDescendants()) do
 			addPrompt(inst, "شغّل جهاز PCR 🧬", "pcr")
 		elseif kind == "gel" then
 			addPrompt(inst, "اقرا الجل 🧪", "gel")
+		elseif kind == "gram" then
+			addPrompt(inst, "صبغة جرام 🧪", "gram")
 		elseif inst.Name == "LabComputer" then
 			addPrompt(inst, "المشاريع 💻", "computer")
 		elseif inst.Name == "BatchPicker" then
@@ -202,6 +204,18 @@ labFn.OnServerInvoke = function(player, action, a, b)
 		local token = newToken()
 		pending[player] = { kind = "pcr", token = token, at = os.clock() }
 		return { token = token, research = s.research }
+	elseif action == "gram" then
+		local sample = LabData.GRAM_SAMPLES[rng:NextInteger(1, #LabData.GRAM_SAMPLES)]
+		local token = newToken()
+		pending[player] = { kind = "gram", answer = sample.gram, token = token, at = os.clock() }
+		return {
+			token = token,
+			name = sample.name,
+			shape = sample.shape,
+			finalColor = sample.finalColor,
+			gram = sample.gram,
+			research = s.research,
+		}
 	elseif action == "answer" then
 		local p = pending[player]
 		if not p or a ~= p.token then
@@ -211,6 +225,8 @@ labFn.OnServerInvoke = function(player, action, a, b)
 		local ok
 		if p.kind == "microscope" or p.kind == "gel" then
 			ok = b == p.answer
+		elseif p.kind == "gram" then
+			ok = b == p.answer and os.clock() - p.at >= 1.5
 		elseif p.kind == "pcr" then
 			-- 3 cycles x 3 steps cannot honestly be finished in under ~8 s
 			ok = b == true and os.clock() - p.at > 8

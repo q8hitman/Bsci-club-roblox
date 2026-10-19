@@ -76,9 +76,9 @@ def train_station():
             vcyl("CanopyPost", x, 1.4, 14, zp - 4.5, 1.0, (70, 50, 100), "SmoothPlastic")
         box("Canopy", (64, 0.8, 18), (135, 14.4, zp + 1), PURPLE, "SmoothPlastic", transp=0.1)
         box("CanopyGlow", (64, 0.2, 0.6), (135, 13.9, zp + 9.6), PINK, "Neon", collide=False, shadow=False)
-        sign("StationName", "محطة قطار الخلية  |  Cell Train Station", (135, 17.5, zp - 4.0), (40, 4.6, 0.6), "Back",
+        sign("StationName", "محطة قطار الخلية  |  Cell Train Station", (135, 17.5, zp - 4.0), (40, 4.6, 0.4), "Back",
              bg=(80, 40, 130))
-        sign("StationName2", "محطة قطار الخلية  |  Cell Train Station", (135, 17.5, zp - 4.6), (40, 4.6, 0.6), "Front",
+        sign("StationName2", "محطة قطار الخلية  |  Cell Train Station", (135, 17.5, zp - 4.6), (40, 4.6, 0.4), "Front",
              bg=(80, 40, 130))
         sign("Departures", "الرحلة القادمة: جولة داخل الخلية الحيوانية\nاركب من الباب الوردي ← المدة: دقيقتين",
              (118, 7, zp - 5.6), (18, 5, 0.4), "Back", color=(255, 220, 120), bg=(20, 16, 32))

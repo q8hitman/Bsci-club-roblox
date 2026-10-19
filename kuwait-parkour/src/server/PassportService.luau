@@ -35,6 +35,9 @@ function Service.refresh(player)
 		if data.races == 2 then
 			Profiles.award(player, "racer2")
 		end
+		if s.passport.stamps["puzzle:CellControl"] then
+			Profiles.award(player, "puzzle_master")
+		end
 	end
 	return data
 end

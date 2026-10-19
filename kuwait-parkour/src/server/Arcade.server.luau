@@ -12,6 +12,14 @@ local Teleport = require(script.Parent.Teleport)
 local mapFolder = workspace:WaitForChild("Map")
 local lobby = mapFolder:FindFirstChild("ArcadeLobby", true)
 local lobbySpawn = mapFolder:FindFirstChild("ArcadeSpawn", true)
+local arcadeBoard = mapFolder:FindFirstChild("ArcadeBoard", true)
+local boardLabel = arcadeBoard and arcadeBoard:FindFirstChildWhichIsA("TextLabel", true)
+
+local function setBoard(text)
+	if boardLabel then
+		boardLabel.Text = text
+	end
+end
 
 local announce = Instance.new("RemoteEvent")
 announce.Name = "ArcadeAnnounce"
@@ -93,6 +101,7 @@ local function sendToLobby(player)
 end
 
 local lastGame = nil
+local lastWinnersText = "بانتظار أول جولة"
 -- v30: difficulty tier rises with every round played back to back (1..3) and resets when the arcade empties
 local tier = 1
 local emptySince = nil -- the tier only resets after the arcade has been empty for a while (not during a respawn)
@@ -136,6 +145,14 @@ local function playRound(players)
 	workspace:SetAttribute("ArcadeTitle", game_.ar)
 	workspace:SetAttribute("ArcadeHint", game_.hint)
 	workspace:SetAttribute("ArcadeMutation", mut.ar)
+	setBoard(
+		("🎮 الجولة الحالية: %s\n🧬 الطفرة: %s • المستوى %d\n👑 آخر فوز: %s"):format(
+			game_.ar,
+			mut.ar,
+			tier,
+			lastWinnersText
+		)
+	)
 
 	local spawns = {}
 	for _, s in ipairs(game_.arena:GetChildren()) do
@@ -278,6 +295,14 @@ local function playRound(players)
 			)
 		end
 	end
+	lastWinnersText = #names > 0 and table.concat(names, "، ") or "لا أحد"
+	setBoard(
+		("🏆 نهاية الجولة: %s\n👑 الفائز: %s\n⭐ المستوى القادم: %d"):format(
+			game_.ar,
+			lastWinnersText,
+			math.min(tier + 1, 3)
+		)
+	)
 	setPhase("results", RESULTS)
 	task.wait(RESULTS)
 	for _, p in ipairs(players) do
@@ -326,10 +351,24 @@ task.spawn(function()
 			if os.clock() - emptySince > 30 then
 				tier = 1
 			end
+			setBoard(
+				("🎮 محطة الألعاب (%d ألعاب)\n⭐ المستوى الحالي: %d/3\n👑 آخر فوز: %s"):format(
+					#games,
+					tier,
+					lastWinnersText
+				)
+			)
 			task.wait(1)
 		else
 			emptySince = nil
 			setPhase("intermission", INTERMISSION)
+			setBoard(
+				("⏳ الجولة تبدأ خلال %d ثانية!\n⭐ المستوى الحالي: %d/3\n👑 آخر فوز: %s"):format(
+					INTERMISSION,
+					tier,
+					lastWinnersText
+				)
+			)
 			task.wait(INTERMISSION)
 			here = {}
 			for _, p in ipairs(Players:GetPlayers()) do

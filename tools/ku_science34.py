@@ -49,9 +49,9 @@ NORTH_FRONT = 130.0                                  # existing north building f
 # is no separate ring building and no separate garden pavilion. Walks therefore go AROUND the gym, out of the two back
 # doors of the south building (x -50..-34 and 34..50, genmap5; the east one is half blocked by the PhotoShop kiosk at
 # x 40..64, so the east walk uses x 34..40), and meet at the north entrance. Their exact line: C.
-MAIN = [(37, -30), (40, -4), (60, 28), (76, 56), (66, 80), (40, 96), (16, 110), (4, 122), (0, 131)]       # east side
-WEST = [(-40, -30), (-40, 0), (-42, 18), (-52, 32), (-66, 50), (-72, 66), (-68, 86), (-58, 104), (-36, 114),
-        (-14, 119), (-2, 124)]   # west side, then the curved path round the planted mound (A) to the north entrance
+MAIN = [(42, -30), (44, -4), (60, 28), (76, 56), (66, 80), (48, 94), (34, 103), (24, 109), (20, 113)]      # east side -> east north entrance
+WEST = [(-42, -30), (-42, 0), (-44, 18), (-52, 32), (-66, 50), (-72, 66), (-68, 84), (-60, 100), (-38, 111),
+        (-18, 112), (0, 113)]   # west side -> curved path round the planted mound (A) to west north entrance
 PROMENADE = (-100.0, 104.0, 112.0, 128.0)           # A: wide paved band with potted trees along the north block
 # Gym = the triangle (A: user). Outline vertices follow the rounded triangle TRI (x, z, eave y); ridges (x, z, y). The
 # folds, eave heights and ridge heights are B/C (read off the oblique aerial view, no drawing). Kept below the Red
@@ -138,6 +138,7 @@ def install():
     def glass_x(x0, x1, z, y0, y1, step=8.0, gaps=(), tr=0.55, col=C5.GLASS):
         if C5._off[2] == 0.0 and abs(z - (-160)) < 0.01 and y0 == 0:
             col, tr = GLASS_DARK, 0.45   # A: dark green/blue ground glazing of the south building
+            gaps = [(-20, -14), (-12, 12), (14, 20)]   # open both side swing doors (x = +-17) as well as the revolving door
         return orig_glass_x(x0, x1, z, y0, y1, step, gaps, tr, col)
 
     def recth(name, x0, x1, y0, y1, z0, z1, col, mat="SmoothPlastic", **kw):
@@ -387,8 +388,8 @@ def garden_walk():
             box("Promenade", (4.0, 0.4, z1 - z0), (x0 + 2 + i * 4, 0.22, (z0 + z1) / 2), PAVE[0] if i % 2 else PAVE[3], "Slate",
                 collide=False)
         for x in range(-92, 101, 16):
-            if -54 < x < -26 or abs(x - NORTH_LINK[0]) < 16:
-                continue   # Red Corridor columns / the north entrance
+            if -54 < x < -26 or -14 < x < 34:
+                continue   # Red Corridor columns / both north revolving-door entrances (x=0 and x=20)
             C5.rect("BandPlanter", x - 2.6, x + 2.6, 0, 1.6, 117.4, 122.6, (222, 212, 192), "Limestone")
             K33.varied_tree(x, 120.0, 0.9)
         # A: light paved plaza with a loose grid of small trees east of the gym
@@ -462,24 +463,24 @@ def garden_walk():
                 sx, sz = main[i][0] - nx * s_ * 8.4, main[i][1] - nz * s_ * 8.4
             yaw = math.degrees(math.atan2(fx_, fz_))
             vcyl("NotePost", sx, 0, 6, sz, 0.5, (90, 70, 50), "Wood", collide=False)
-            for face in ("Back", "Front"):
-                G.part("WalkNote", (9, 3.2, 0.3), (sx, 7.4, sz), (250, 246, 236), "SmoothPlastic", rot=(0, yaw, 0),
-                       collide=False, text=dict(face=face, text=campus9.WALK_NOTES[n], color=(50, 40, 30), bg=(250, 246, 236),
-                                                bg_t=0.0))
+            for face, df in (("Back", -0.08), ("Front", 0.08)):
+                G.part("WalkNote", (9, 3.2, 0.14), (sx + fx_ * df, 7.4, sz + fz_ * df), (250, 246, 236), "SmoothPlastic",
+                       rot=(0, yaw, 0), collide=False,
+                       text=dict(face=face, text=campus9.WALK_NOTES[n], color=(50, 40, 30), bg=(250, 246, 236), bg_t=0.0))
         north_link()
 
 
 def north_link():
     """an extendable joint to the north building: small paved forecourt, a direction sign and a named anchor part"""
     x, z = NORTH_LINK
-    box("NorthForecourt", (24, 0.4, 8), (x, 0.24, z - 6), PAVE[1], "Slate", collide=False)
+    box("NorthForecourt", (40, 0.4, 4), (10, 0.24, z - 2), PAVE[1], "Slate", collide=False)
     G.part("Connect|North", (12, 1, 2), (x, 0.5, z - 1), (255, 255, 255), "SmoothPlastic", transp=1.0, collide=False,
            shadow=False)
-    vcyl("WaySignPost", x + 9, 0, 9, z - 8, 0.6, (40, 44, 50), "Metal", collide=False)
+    vcyl("WaySignPost", 10, 0, 9, z - 8, 0.6, (40, 44, 50), "Metal", collide=False)
     # A (V03): dark vertical wayfinding sign with a yellow stripe
-    box("WaySign", (3.2, 7, 0.4), (x + 9, 5, z - 8), (36, 40, 46), "SmoothPlastic", collide=False,
+    box("WaySign", (3.2, 7, 0.4), (10, 5, z - 8), (36, 40, 46), "SmoothPlastic", collide=False,
         text=dict(face="Front", text="↑\nالمبنى الشمالي\nNorth Building", color=(255, 255, 255), bg=(36, 40, 46), bg_t=0.0))
-    box("WaySignStripe", (3.2, 0.5, 0.45), (x + 9, 1.9, z - 8), (240, 196, 40), "SmoothPlastic", collide=False)
+    box("WaySignStripe", (3.2, 0.5, 0.45), (10, 1.9, z - 8), (240, 196, 40), "SmoothPlastic", collide=False)
 
 
 # ---------------------------------------------------------------- names on the south complex
@@ -501,6 +502,7 @@ def facade_details():
     with G.Group("SouthFacadeV34"):
         zw = -160.0
         for x in (-17.0, 17.0):   # side swing doors (glass in a dark metal frame), open so players pass
+            C5.rect("SideDoorTransom", x - 3, x + 3, 10.6, 24.0, zw - 0.25, zw + 0.25, GLASS_DARK, "Glass", transp=0.45)
             C5.rect("SideDoorFrame", x - 3, x + 3, 10, 10.6, zw - 0.3, zw + 0.3, (60, 64, 70), "Metal", collide=False)
             for e in (-3, 3):
                 C5.rect("SideDoorFrame", x + e - 0.3, x + e + 0.3, 0, 10.6, zw - 0.3, zw + 0.3, (60, 64, 70), "Metal",

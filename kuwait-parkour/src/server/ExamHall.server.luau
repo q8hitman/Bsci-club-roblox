@@ -5,6 +5,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Profiles = require(script.Parent.Profiles)
+local Passport = require(script.Parent.PassportService)
 local Teleport = require(script.Parent.Teleport)
 local Questions = require(script.Parent.Questions)
 local notify = ReplicatedStorage:WaitForChild("Notify")
@@ -198,6 +199,8 @@ local function runExam(players)
 				s.coins += 25
 				p:SetAttribute("Coins", s.coins)
 			end
+			Passport.record(p, "exam", "pass")
+			Passport.record(p, "activity", "exam")
 			notify:FireClient(p, "🎓 نجحت بالاختبار! تقدير A+  (+25 💰)", "ach")
 			if Profiles.award then
 				Profiles.award(p, "exam")

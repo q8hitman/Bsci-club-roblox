@@ -13,14 +13,17 @@ local WORLDS = {
 	{ "HQ", "🏠", "مقر النادي", "BSC HQ", Color3.fromRGB(24, 110, 76) },
 	{ "Island", "🏝️", "جزيرة المغامرة", "Adventure Island", Color3.fromRGB(40, 140, 160) },
 	{ "Course", "🏃", "كمّل الباركور", "Continue Parkour", Color3.fromRGB(210, 120, 40) },
+	{ "Museum", "🦕", "متحف الأحياء", "Bio Museum", Color3.fromRGB(45, 145, 135) },
 	{ "Cart", "🚆", "قطار التخصصات", "Specialties Train", Color3.fromRGB(150, 90, 170) },
 	{ "Train", "🦠", "قطار الخلية", "Cell Train", Color3.fromRGB(120, 70, 160) },
-	{ "Arcade", "🎮", "الأركيد", "BSC Arcade", Color3.fromRGB(200, 70, 120) },
 	{ "Lab", "🔬", "المختبرات", "Biology Labs", Color3.fromRGB(40, 130, 110) },
 	{ "Quiz", "🏆", "مركز التحديات", "Challenge Center", Color3.fromRGB(190, 150, 40) },
-	{ "Exam", "📝", "الاختبار الجماعي", "Group Exam", Color3.fromRGB(90, 100, 120) },
-	{ "Puzzle", "🧩", "غرف الألغاز", "Puzzle Rooms", Color3.fromRGB(110, 70, 150) },
 	{ "Show", "🎤", "استوديو المسابقات", "Game Show", Color3.fromRGB(200, 120, 40) },
+	{ "Arcade", "🎮", "الأركيد", "BSC Arcade", Color3.fromRGB(200, 70, 120) },
+	{ "Racers", "🏎️", "سباق الجزيئات", "Micro Racers", Color3.fromRGB(50, 150, 175) },
+	{ "Laser", "🚨", "هروب الليزر", "Laser Escape", Color3.fromRGB(45, 95, 140) },
+	{ "Puzzle", "🧩", "غرف الألغاز", "Puzzle Rooms", Color3.fromRGB(110, 70, 150) },
+	{ "Exam", "📝", "الاختبار الجماعي", "Group Exam", Color3.fromRGB(90, 100, 120) },
 }
 
 -- Short activity descriptions stay inside the existing cards; travel keys are unchanged.
@@ -29,14 +32,17 @@ local DESCRIPTIONS = {
 	HQ = "استرح واستكشف\nمقر النادي",
 	Island = "استكشف الجزيرة\nوبوابات العوالم",
 	Course = "اقفز وتقدّم\nعبر المراحل",
+	Museum = "معارض تفاعلية\nللتخصصات الثمانية",
 	Cart = "جولة بين\nتخصصات الأحياء",
 	Train = "جولة داخل\nالخلية",
 	Arcade = "تنافس وتعاون\nمقترح للبداية",
+	Racers = "سباق مركبات\nفي العالم المجهري",
+	Laser = "تجاوز أشعة الليزر\nعبر 5 غرف",
 	Lab = "جرّب المجهر\nوالتجارب",
 	Quiz = "اختبر معلوماتك\nفي الأحياء",
 	Exam = "جاوب الأسئلة\nمع المجموعة",
 	Puzzle = "حلّ الألغاز\nمع فريقك",
-	Show = "خمّن الصور\nوتحدّ الأسئلة",
+	Show = "خمّن الصور\nوتحدّ الذاكرة",
 }
 
 local gui = Instance.new("ScreenGui")
@@ -86,23 +92,23 @@ stroke.Parent = open
 local panel = Instance.new("Frame")
 panel.Name = "Panel"
 panel.AnchorPoint = Vector2.new(0.5, 0.5)
-panel.Position = UDim2.fromScale(0.5, 0.52)
-panel.Size = UDim2.fromScale(0.9, 0.8)
+panel.Position = UDim2.fromScale(0.5, 0.51)
+panel.Size = UDim2.fromScale(0.94, 0.86)
 panel.BackgroundColor3 = Color3.fromRGB(18, 30, 26)
 panel.BackgroundTransparency = 0.08
 panel.Visible = false
 panel.Parent = gui
 corner(panel, 0.04)
 local aspect = Instance.new("UIAspectRatioConstraint")
-aspect.AspectRatio = 1.6
+aspect.AspectRatio = 1.72
 aspect.Parent = panel
 
-label(panel, "🌍 اختر عالمك", UDim2.fromScale(0.05, 0.03), UDim2.fromScale(0.9, 0.09))
+label(panel, "🌍 اختر عالمك", UDim2.fromScale(0.05, 0.02), UDim2.fromScale(0.9, 0.085))
 label(
 	panel,
 	"Choose a world",
-	UDim2.fromScale(0.05, 0.115),
-	UDim2.fromScale(0.9, 0.05),
+	UDim2.fromScale(0.05, 0.105),
+	UDim2.fromScale(0.9, 0.045),
 	Color3.fromRGB(170, 220, 200),
 	Enum.Font.Gotham
 )
@@ -110,7 +116,7 @@ label(
 local close = Instance.new("TextButton")
 close.AnchorPoint = Vector2.new(1, 0)
 close.Position = UDim2.fromScale(0.985, 0.025)
-close.Size = UDim2.fromScale(0.07, 0.1)
+close.Size = UDim2.fromScale(0.065, 0.095)
 close.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
 close.Text = "X"
 close.TextScaled = true
@@ -121,12 +127,12 @@ corner(close, 0.3)
 
 local grid = Instance.new("Frame")
 grid.BackgroundTransparency = 1
-grid.Position = UDim2.fromScale(0.03, 0.2)
-grid.Size = UDim2.fromScale(0.94, 0.77)
+grid.Position = UDim2.fromScale(0.025, 0.165)
+grid.Size = UDim2.fromScale(0.95, 0.805)
 grid.Parent = panel
 local layout = Instance.new("UIGridLayout")
-layout.CellSize = UDim2.fromScale(0.155, 0.46)
-layout.CellPadding = UDim2.fromScale(0.014, 0.04)
+layout.CellSize = UDim2.fromScale(0.188, 0.312)
+layout.CellPadding = UDim2.fromScale(0.014, 0.024)
 layout.SortOrder = Enum.SortOrder.LayoutOrder
 layout.Parent = grid
 
@@ -134,8 +140,8 @@ local busy = false
 local function setOpen(v)
 	panel.Visible = v
 	if v then
-		panel.Size = UDim2.fromScale(0.8, 0.7)
-		TweenService:Create(panel, TweenInfo.new(0.25, Enum.EasingStyle.Back), { Size = UDim2.fromScale(0.9, 0.8) })
+		panel.Size = UDim2.fromScale(0.84, 0.76)
+		TweenService:Create(panel, TweenInfo.new(0.25, Enum.EasingStyle.Back), { Size = UDim2.fromScale(0.94, 0.86) })
 			:Play()
 	end
 end
@@ -149,29 +155,29 @@ for i, w in ipairs(WORLDS) do
 	card.BackgroundColor3 = w[5]
 	card.Parent = grid
 	corner(card, 0.1)
-	label(card, w[2], UDim2.fromScale(0.1, 0.04), UDim2.fromScale(0.8, 0.24))
-	local title = label(card, w[3], UDim2.fromScale(0.05, 0.3), UDim2.fromScale(0.9, 0.23))
+	label(card, w[2], UDim2.fromScale(0.1, 0.02), UDim2.fromScale(0.8, 0.22))
+	local title = label(card, w[3], UDim2.fromScale(0.04, 0.25), UDim2.fromScale(0.92, 0.23))
 	title.TextWrapped = true
 	label(
 		card,
 		w[4],
-		UDim2.fromScale(0.05, 0.55),
-		UDim2.fromScale(0.9, 0.11),
+		UDim2.fromScale(0.04, 0.49),
+		UDim2.fromScale(0.92, 0.13),
 		Color3.fromRGB(235, 240, 238),
 		Enum.Font.Gotham
 	)
 	local description = label(
 		card,
 		DESCRIPTIONS[w[1]],
-		UDim2.fromScale(0.04, 0.7),
-		UDim2.fromScale(0.92, 0.26),
+		UDim2.fromScale(0.03, 0.63),
+		UDim2.fromScale(0.94, 0.34),
 		if w[1] == "Arcade" then Color3.fromRGB(255, 245, 180) else Color3.new(1, 1, 1),
 		Enum.Font.Gotham
 	)
 	description.Name = "Description"
 	description.TextWrapped = true
 	local textSize = Instance.new("UITextSizeConstraint")
-	textSize.MinTextSize = 10
+	textSize.MinTextSize = 8
 	textSize.MaxTextSize = 18
 	textSize.Parent = description
 	card.Activated:Connect(function()

@@ -1,3 +1,31 @@
+# v49 — Campus Architectural Polish, WorldMenu 15-World Integration, Game Show Memory Mode & Media Photo Mode — 2026-10-19
+
+Branch `dev/v49`; full pre-edit backup at `Desktop\KuwaitParkour\backup_before_v49_20261019`.
+Completed comprehensive architectural/geometry audit and feature polish across the KU College of Science Campus and all BSC Island worlds:
+
+1. **Red Corridor (`الممر الأحمر`, `x = -50..-30, y = 24..36, z = -30..130`) Unblocked & Polished**:
+   - **North Building Junction (`tools/north_campus44.py`)**: Split `UpperCurtainWall` around `x = -50..-30, y = 24..36`, shortened `FacadeFin` at `x in (-50, -40, -30)` so no metal fin slices through the bridge doorway, split `FacadeBand` at `y = 24`, moved the 30-stud `Games` plaque off the bridge opening to the west curtain wall bay (`x = -64`), and raised `BridgeDirection` above head height (`y = 34.4`).
+   - **South Building Junction (`tools/genmap5.py`)**: Raised `BridgeSign` (`الممر الأحمر | Red Corridor`) above head height (`y = 34.6`).
+2. **South Building Entrances & Wing Doorways Unblocked**:
+   - **Front Side Swing Doors (`tools/ku_science34.py`)**: Added `gaps = [(-20, -14), (-12, 12), (14, 20)]` to the ground-floor front curtain wall (`z = -160`) and added `SideDoorTransom` glass above `y = 10.6`, making both side swing doors (`x = -17` and `x = 17`) genuinely walkable alongside the central revolving door.
+   - **Rear Garden Doors (`tools/genmap5.py`)**: Shifted `PhotoShop` (`x = 51..69`) so the entire East Rear Door (`x = 34..50, z = -30`) is wide open, and shifted `Old Friends`, `Burger King`, `Second Cup`, and cafeteria tables to open a 14-stud straight corridor (`x = -49..-35`) from the lobby to the West Rear Door (`x = -50..-34, z = -30`) while preserving exact RNG call counts.
+   - **West & East Wing Doorways (`tools/ku_science33.py`)**: Adjusted wing bench positions so no bench protrudes across the `x = ±90, z = -158..-148` ground-floor doorways between the South Building lobby and the wings.
+3. **North Building Forecourt, Garden Paths & Z-Fighting Fixes**:
+   - **Legacy Overlap Removed (`tools/ku_science.py`)**: Disabled legacy v32 `north_details()` terracotta brick strips and duplicate `ScienceWall` that sliced through the v44 North Building ground-floor glass and revolving doors.
+   - **East Revolving Door Cleared (`tools/ku_science34.py`, `tools/north_campus44.py`)**: Excluded `x = -14..34` from `BandPlanter` placement so no planter/tree blocks the East North Revolving Door (`x = 20, z = 130`), widened `NorthForecourt` (`x = -10..30`) across both entrances, and moved `StoneSign` (`113 كلية العلوم`) to `z = 108` just south of the Promenade.
+   - **Garden Paths (`tools/ku_science34.py`, `tools/campus9.py`)**: Aligned `MAIN` (`x = 42, z = -30` -> `x = 20, z = 113`) and `WEST` (`x = -42, z = -30` -> `x = 0, z = 113`) cleanly from the two South rear doors around the Gym to the two North entrances without overlapping or Z-fighting the North Promenade (`z = 112..128`). Connected the West Lawn Desert Plants Garden walk (`GardenWalk`) to both the South Plaza and the North Promenade (`GardenWalkLink`).
+   - **Z-Fighting Eliminated (`tools/ku_science34.py`, `tools/campus9.py`, `tools/celltrain.py`)**: Separated front/back faces of `WalkNote`, South Atrium specialty `Banner`s, and Cell Train `StationName`/`StationName2`.
+4. **Unified 15-World `WorldMenu` & `PassportDefs` (`Main.server.luau`, `WorldMenu.client.luau`, `PassportDefs.luau`, `museum46.py`, `laser48.py`)**:
+   - Added `Museum` (`🏛️ متحف الأحياء`), `Racers` (`🏎️ سباق الجزيئات`), and `Laser` (`🚨 هروب الليزر`) to `WorldMenu` (5×3 grid of all 15 worlds), `Main.server.luau` (`destinations` + `TRAVEL`), and `PassportDefs.Worlds`, with `MuseumSpawn` and `LaserSpawn` pads.
+5. **Game Show 3rd Round Mode ("🧠 تحدي الذاكرة والتسلسل العلمي") (`GameShow.server.luau`, `GameShowBank.luau`)**:
+   - Added `memoryRound` (`Bank.memory`, 10 biological sequence & memory challenges validated by `validate_questions.luau`) to `ROUNDS = { "picture", "category", "memory", "picture", "category", "memory" }`, and enabled answering by either stepping onto `AnswerPod|1..4` (`Touched`) or triggering its `ProximityPrompt`.
+6. **Media Committee & Player Photo Mode (`kuwait-parkour/src/client/PhotoMode.client.luau`)**:
+   - Added `📸 تصوير` button (and `P` shortcut) that hides all HUD GUIs, cycles 4 frames (`بدون`, `نادي العلوم`, `بطاقة الكلية`, `سينمائي`), 3 lighting filters (`طبيعي`, `ذهبي دافئ`, `إعلامي واضح`), celebration shutter/confetti (`📸 لقطة + احتفال`), and full control-bar hiding (`👁️ إخفاء الأزرار` / `H`) for clean media capture.
+
+Build: `BSC_project_full\KuwaitParkour_v49.rbxlx` & `Desktop\KuwaitParkour\KuwaitParkour_v49.rbxlx`. Verified in Roblox Studio (11/11 3D doorway/corridor boxcast audits passed with 0 blockers, `genmap9.py` 0 violations / 0 cart clashes, StyLua check passed, Selene 0 errors / 0 parse errors, Lune validator passed 48 + 80 + 2000 practicals + GameShowBank 24Q/18P/10M). Not published, not merged into `main`.
+
+---
+
 # v48 — Laser Escape — 2026-10-19 (finished by Claude after Codex's limit ran out)
 
 Branch `dev/v48`; before-edit backup `backup_before_v48_20261019` (Codex). Five fictional timing rooms at (-6000,300,-8000..-8400),

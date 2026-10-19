@@ -29,6 +29,7 @@ def build():
    G.box("EntryLintel",(11,1,1),(-6027,308,-5981),WHITE,"Metal")
    G.sign("EntranceLabel","LASER ESCAPE\nهروب الليزر",(-6027,310,-5981),(17,4,.4),"Back",bg=NAVY)
    G.part("LaserEntrance",(7,8,2),(-6027,304,-5981),CYAN,"Neon",transp=.65,collide=False,shadow=False)
+   G.part("LaserSpawn",(8,1,8),(-6027,300.5,-5986),CYAN,transp=1,collide=False,shadow=False)
   for d in ROOMS:
    i=d['id'];x,y,z=ORIGIN[0],ORIGIN[1],ORIGIN[2]-(i-1)*100;c=COLORS[i-1]
    with G.Group("Room_"+str(i)):

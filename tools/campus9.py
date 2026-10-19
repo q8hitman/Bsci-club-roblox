@@ -171,8 +171,8 @@ def lobby_light_and_banners():
         # the atrium is open from G up to the L2 slab (y 38.8): banners hang just under it
         box("BannerRod", (7, 0.4, 0.4), (x, 37.6, z), (70, 70, 76), "Metal", collide=False)
         vcyl("BannerCable", x, 37.6, 38.8, z, 0.15, (60, 60, 64), "Metal", collide=False)
-        for face, dz in (("Front", 0.0), ("Back", 0.05)):
-            box("Banner", (6, 11, 0.2), (x, 31.9, z + dz), col, "Fabric", collide=False,
+        for face, dz in (("Front", -0.11), ("Back", 0.11)):
+            box("Banner", (6, 11, 0.16), (x, 31.9, z + dz), col, "Fabric", collide=False,
                 text=dict(face=face, text=txt, color=(255, 255, 255), bg=col, bg_t=0.0))
 
 
@@ -322,7 +322,8 @@ DESERT_PLANTS = [("العرفج", "Rhanterium", "نبتة الكويت الوط�
 
 def desert_garden():
     """west lawn: a walk through Kuwait's desert plants, each bed labelled"""
-    rect("GardenWalk", -146, -134, 0.15, 0.4, -160, 250, (214, 200, 170), "Pebble", collide=False)
+    rect("GardenWalk", -146, -134, 0.15, 0.4, -182, 250, (214, 200, 170), "Pebble", collide=False)
+    rect("GardenWalkLink", -134, -100, 0.15, 0.4, 114, 126, (214, 200, 170), "Pebble", collide=False)
     sign("DesertGardenSign", "🌵 حديقة نباتات الكويت الصحراوية | Desert Plants Garden", (-140, 6, -166), (26, 3.4, 0.4), "Front",
          bg=(120, 90, 40))
     for i, (ar, sci, note) in enumerate(DESERT_PLANTS):

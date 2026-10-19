@@ -86,10 +86,16 @@ def envelope():
         C5.glass_x(-80, 100, 20, 0, 24, 9, gaps=[(-8, 8), (12, 28)])
         C5.revolving_door(0, 20)
         C5.revolving_door(20, 20)
-        rect('UpperCurtainWall', -80, 100, 24.5, 63, 19.75, 20.25, GLASS, 'Glass', transp=.42, collide=False)
+        for xa, xb, ya, yb in ((-80, -50, 24.5, 63), (-30, 100, 24.5, 63), (-50, -30, 36.5, 63)):
+            rect('UpperCurtainWall', xa, xb, ya, yb, 19.75, 20.25, GLASS, 'Glass', transp=.42, collide=False)
         for x in range(-80, 101, 10):
-            box('FacadeFin', (.65, 38, 3.6), (x, 44, 18.5), METAL, 'Metal', collide=False)
-        for y in (24, 40, 56, 64):
+            if -50 <= x <= -30:
+                box('FacadeFin', (.65, 26, 3.6), (x, 50, 18.5), METAL, 'Metal', collide=False)
+            else:
+                box('FacadeFin', (.65, 38, 3.6), (x, 44, 18.5), METAL, 'Metal', collide=False)
+        for xa, xb in ((-80, -50), (-30, 100)):
+            rect('FacadeBand', xa, xb, 23.5, 24.3, 19, 21, STONE, 'Limestone', collide=False)
+        for y in (40, 56, 64):
             rect('FacadeBand', -80, 100, y-.5, y+.3, 19, 21, STONE, 'Limestone', collide=False)
         for x in (-80, 100):
             C5.glass_z(20, 150, x, 0, 24, 10)
@@ -186,7 +192,7 @@ def circulation():
                 plaque('LevelSign', ('الأرضي' if y == 0 else 'الطابق '+str(LEVELS.index(y))),
                        (x, y+5, 119), (9, 2.4, .3))
         # Keep the bridge route open at x=-50..-30, z=20, floor24.
-        plaque('BridgeDirection', 'الممر الأحمر\nإلى الجنوبي', (-40, 31, 29), (17, 3.8, .3), 'Back')
+        plaque('BridgeDirection', 'الممر الأحمر\nإلى الجنوبي', (-40, 34.4, 21.2), (16, 2.6, .3), 'Back')
 
 
 def flat_classroom():
@@ -274,12 +280,12 @@ def amenities():
                 box('Desk', (14, .8, 5), (x, 43.4, z), (232, 232, 228))
                 box('Mon', (3.4, 2.2, .3), (x, 45.2, z-2), DARK, collide=False,
                     text=dict(face='Front', text='BSC', color=(110, 220, 255), bg=(10, 28, 52), bg_t=0))
-        plaque('Games', 'جلسات وألعاب\nStudy and Games', (-40, 32, 21), (30, 3.6, .4), 'Back')
+        plaque('Games', 'جلسات وألعاب\nStudy and Games', (-64, 32, 21.2), (22, 3.4, .4), 'Back')
         plaque('Computers', 'منطقة الحاسوب\nComputer Area', (-30, 48, 21), (30, 3.6, .4), 'Back')
         for y in (22.5, 38.5, 54.5):
             for x, z in ((-44, 28), (58, 28), (-44, 112), (58, 112)):
                 C5.light_panel(x, y, z, 8, 2, 1.5, 34)
-        G.box('StoneSign', (12, 6, 2), (-30, 3, 8), (222, 214, 194), 'Concrete',
+        G.box('StoneSign', (12, 6, 2), (-24, 3, -2), (222, 214, 194), 'Concrete',
               text=dict(face='Front', text='113\nكلية العلوم\nCOLLEGE OF SCIENCE',
                         color=(70, 62, 50), bg=(222, 214, 194), bg_t=0))
 

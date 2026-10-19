@@ -149,7 +149,7 @@ end
 local function microscope()
 	clear()
 	local my = session
-	header.Text = "🔬 المجهر: وش نوع هالخلية؟"
+	header.Text = "🔬 تحديد الخلايا | Cell Identification (محاكاة)"
 	local data = labFn:InvokeServer("slide")
 	if my ~= session or not data then
 		return
@@ -198,7 +198,7 @@ end
 local function gel()
 	clear()
 	local my = session
-	header.Text = "🧪 الجل: أي قطعة DNA توصل أبعد؟"
+	header.Text = "🧪 الفصل الكهربائي | Gel Electrophoresis (محاكاة)"
 	local data = labFn:InvokeServer("gel")
 	if my ~= session or not data then
 		return
@@ -273,7 +273,7 @@ end
 local function pcr()
 	clear()
 	local my = session
-	header.Text = "🧬 جهاز PCR: اضغط لما توصل الحرارة للمدى الصح"
+	header.Text = "🧬 تفاعل البوليميراز | PCR Thermocycler (محاكاة)"
 	local data = labFn:InvokeServer("pcr")
 	if my ~= session or not data then
 		return
@@ -452,7 +452,112 @@ local function batch()
 	)
 end
 
-local MODES = { microscope = microscope, gel = gel, pcr = pcr, computer = computer, batch = batch }
+-- ------------------------------------------------------------------ v50: Gram Staining interactive protocol
+local function gram()
+	clear()
+	local my = session
+	header.Text = "🧪 صبغة جرام | Gram Staining (محاكاة مبسطة)"
+	local data = labFn:InvokeServer("gram")
+	if my ~= session or not data then
+		return
+	end
+	setRP(data.research)
+	text(
+		body,
+		("العيّنة: %s\n%s"):format(data.name, data.shape),
+		UDim2.fromScale(0, 0),
+		UDim2.fromScale(1, 0.2),
+		INK,
+		true
+	)
+	local slidePreview = Instance.new("Frame")
+	slidePreview.Position = UDim2.fromScale(0.05, 0.22)
+	slidePreview.Size = UDim2.fromScale(0.9, 0.22)
+	slidePreview.BackgroundColor3 = Color3.fromRGB(228, 232, 236)
+	slidePreview.Parent = body
+	corner(slidePreview, 0.15)
+	local slideStatus = text(
+		slidePreview,
+		"🔬 الشريحة شفافة قبل الصبغ — نفّذ الخطوات الأربع بالترتيب:",
+		UDim2.fromScale(0.03, 0.08),
+		UDim2.fromScale(0.94, 0.84),
+		INK,
+		true
+	)
+	local stepIdx = 1
+	local result = text(body, "", UDim2.fromScale(0, 0.86), UDim2.fromScale(1, 0.14), GREEN, true)
+	local stepBtn
+	local choiceFrame = Instance.new("Frame")
+	choiceFrame.Position = UDim2.fromScale(0, 0.48)
+	choiceFrame.Size = UDim2.fromScale(1, 0.36)
+	choiceFrame.BackgroundTransparency = 1
+	choiceFrame.Visible = false
+	choiceFrame.Parent = body
+
+	local STEP_COLORS = {
+		Color3.fromRGB(130, 60, 200),
+		Color3.fromRGB(110, 50, 180),
+		data.gram == "pos" and Color3.fromRGB(115, 55, 185) or Color3.fromRGB(220, 226, 232),
+		data.gram == "pos" and Color3.fromRGB(115, 55, 185) or Color3.fromRGB(225, 85, 135),
+	}
+
+	stepBtn = button(
+		body,
+		LabData.GRAM_STEPS[1].ar,
+		UDim2.fromScale(0.08, 0.50),
+		UDim2.fromScale(0.84, 0.28),
+		Color3.fromRGB(110, 60, 175),
+		function()
+			if my ~= session or stepIdx > #LabData.GRAM_STEPS then
+				return
+			end
+			local st = LabData.GRAM_STEPS[stepIdx]
+			TweenService:Create(slidePreview, TweenInfo.new(0.25), { BackgroundColor3 = STEP_COLORS[stepIdx] }):Play()
+			slideStatus.TextColor3 = (stepIdx == 3 and data.gram == "neg") and INK or Color3.new(1, 1, 1)
+			slideStatus.Text = st.note
+			stepIdx += 1
+			if stepIdx <= #LabData.GRAM_STEPS then
+				stepBtn.Text = LabData.GRAM_STEPS[stepIdx].ar
+			else
+				stepBtn.Visible = false
+				slideStatus.Text = ("🎨 النتيجة تحت المجهر: %s — حدّد نوع الجدار الخلوي:"):format(
+					data.finalColor
+				)
+				choiceFrame.Visible = true
+			end
+		end
+	)
+
+	local answered = false
+	for i, k in ipairs({ "pos", "neg" }) do
+		button(
+			choiceFrame,
+			LabData.GRAM_ANSWERS[k],
+			UDim2.fromScale((i - 1) * 0.52, 0.1),
+			UDim2.fromScale(0.48, 0.8),
+			k == "pos" and Color3.fromRGB(115, 55, 185) or Color3.fromRGB(210, 75, 125),
+			function()
+				if answered or my ~= session then
+					return
+				end
+				answered = true
+				local r = labFn:InvokeServer("answer", data.token, k)
+				if my ~= session then
+					return
+				end
+				result.Text = feedback(r, r and r.answer and LabData.GRAM_ANSWERS[r.answer])
+				setRP(r and r.research)
+				task.delay(2.0, function()
+					if my == session then
+						gram()
+					end
+				end)
+			end
+		)
+	end
+end
+
+local MODES = { microscope = microscope, gel = gel, pcr = pcr, gram = gram, computer = computer, batch = batch }
 openEvent.OnClientEvent:Connect(function(kind)
 	local fn = MODES[kind]
 	if fn then

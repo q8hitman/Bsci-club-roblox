@@ -233,13 +233,8 @@ def auditorium_details():
 
 
 def north_details():
-    """north building: the low limestone 'College of Science' wall seen at the north entrance (TikTok frame)"""
-    oz = C5.NB_SHIFT
-    with G.Group("NorthEntrance"):
-        box("ScienceWall", (26, 3.4, 2.2), (44, 1.7, 20 + oz - 16), (226, 214, 190), "Limestone",
-            text=dict(face="Front", text="كلية العلوم\nCOLLEGE OF SCIENCE", color=(90, 76, 56), bg=(226, 214, 190), bg_t=0.0))
-        for x in range(-76, 100, 12):
-            C5.rect("Terracotta", x - 5.5, x + 5.5, 0.2, 3, 20 + oz - 0.6, 20 + oz - 0.2, TERRACOTTA, "Brick", collide=False)
+    """v44 north_campus44 replaces the north facade and entrance sign; do not place legacy terracotta strips across the revolving doors."""
+    return
 
 
 # ---------------------------------------------------------------- hooks into the old south building

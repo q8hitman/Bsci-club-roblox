@@ -359,16 +359,16 @@ def south_building():
     sign("Lobby", "كلية العلوم  |  College of Science", (0, 20, -158.4), (36, 6, 0.5), "Back", color=(255, 255, 255), bg=(24, 80, 56))
     # ---- G rear: cafeteria wing (west), photo centre (east)
     wall_x(-90, -56, -92, 0, 24, WHITE, "Concrete", gaps=[(-84, -62)])  # back-of-lobby partition with big opening
-    counter(-76, -46, 0, 22, 4, (40, 40, 44), "Old Friends  |  أولد فريندز", "Back")
-    counter(-52, -46, 0, 18, 4, (200, 60, 50), "برجر كينق", "Back")
-    counter(-34, -46, 0, 14, 4, (96, 58, 40), "سكند كب", "Back")
+    counter(-77, -46, 0, 20, 4, (40, 40, 44), "Old Friends  |  أولد فريندز", "Back")
+    counter(-57, -46, 0, 16, 4, (200, 60, 50), "برجر كينق", "Back")
+    counter(-26, -46, 0, 16, 4, (96, 58, 40), "سكند كب", "Back")
     rect("DropWall", -90.5, -89.5, 0, 22, -86, -62, (112, 62, 164), "SmoothPlastic",
          text=dict(face="Right", text="العلوم", color=(255, 255, 255), bg=(112, 62, 164), bg_t=0.0))
-    for q in range(4):
+    for tx in (-80, -64, -26, -12):
         for r in range(2):
-            table_set(-78 + q * 15, -64 - r * 12, 0)
-    sign("PhotoCentre", "مركز التصوير | Photo Centre", (52, 10, -34.5), (24, 4, 0.4), "Front", bg=(60, 70, 90))
-    rect("PhotoShop", 40, 64, 0, 14, -44, -34, (230, 230, 226), "SmoothPlastic", transp=0.0)
+            table_set(tx, -64 - r * 12, 0)
+    sign("PhotoCentre", "مركز التصوير | Photo Centre", (60, 10, -34.5), (18, 4, 0.4), "Front", bg=(60, 70, 90))
+    rect("PhotoShop", 51, 69, 0, 14, -44, -34, (230, 230, 226), "SmoothPlastic", transp=0.0)
     # lobby ground lighting + a few warm point lights in the rear hall
     for x in range(-70, 71, 35):
         for z in (-80, -50):
@@ -689,7 +689,7 @@ def outdoors():
             vcyl("BridgeCol", x, 0, 23, z, 2.4, CREAM, "Concrete")
     for z in range(-20, int(z1), 16):
         box("BridgeLamp", (6, 0.3, 1.5), (-40, 35.2, z), WARM, "Neon", collide=False, shadow=False)
-    sign("BridgeSign", "الممر الأحمر | Red Corridor", (-40, 33, -29.4), (16, 2.4, 0.4), "Back", bg=(120, 54, 40))
+    sign("BridgeSign", "الممر الأحمر | Red Corridor", (-40, 34.6, -29.4), (16, 2.2, 0.4), "Back", bg=(120, 54, 40))
     # cafes
     def kiosk(x, z, w, d, col, name):
         rect("Base", x - w / 2, x + w / 2, 0, 12, z - d / 2, z + d / 2, col, "SmoothPlastic")

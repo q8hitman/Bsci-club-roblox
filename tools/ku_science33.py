@@ -203,8 +203,8 @@ def wings():
             K.mansard(lo, hi, K.SCREEN_Z, C5.Y_4)
             # inside: benches, notice board, lights, classroom fronts upstairs (no room numbers: none are sourced)
             for k in range(3):
-                bx = lo + 8 + k * 10 if s_ < 0 else lo + 6 + k * 10
-                if cx0 - 3 < bx < cx1 + 3:
+                bx = lo + 8 + k * 10 if s_ < 0 else lo + 16 + k * 14
+                if (cx0 - 3 < bx < cx1 + 3) or bx - 4.5 < lo or bx + 4.5 > hi:
                     continue
                 C3.bench(bx, 0, WING_ZB - 4, along="x")
             C5.rect("NoticeBoard", mid - 6, mid + 6, 5, 11, WING_ZB - 0.2, WING_ZB, (196, 160, 110), "Wood", collide=False,

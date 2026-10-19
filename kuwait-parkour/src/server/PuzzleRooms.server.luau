@@ -7,6 +7,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Profiles = require(script.Parent.Profiles)
+local Passport = require(script.Parent.PassportService)
 local mapFolder = workspace:WaitForChild("Map")
 local typesFolder = script.Parent:WaitForChild("PuzzleTypes")
 local defsFolder = script.Parent:WaitForChild("PuzzleRoomDefs")
@@ -98,6 +99,8 @@ local function startRoom(def)
 		local now = os.clock()
 		for _, p in ipairs(room.playersInside()) do
 			local s = Profiles.state[p]
+			Passport.record(p, "puzzle", def.id)
+			Passport.record(p, "activity", "puzzle")
 			if s and (not room.rewardedAt[p] or now - room.rewardedAt[p] > REWARD_COOLDOWN) then
 				room.rewardedAt[p] = now
 				s.coins += 15

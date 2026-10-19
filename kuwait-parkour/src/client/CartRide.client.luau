@@ -86,9 +86,9 @@ local function label(pos, size, color)
 end
 local caption = label(UDim2.fromScale(0.5, 0.2), UDim2.fromScale(0.56, 0.07), Color3.fromRGB(30, 50, 90))
 caption.Visible = false
-local status = label(UDim2.fromScale(0.5, 0.92), UDim2.fromScale(0.3, 0.055), Color3.fromRGB(24, 28, 38))
+local status = label(UDim2.fromScale(0.5, 0.92), UDim2.fromScale(0.38, 0.055), Color3.fromRGB(24, 28, 38))
 local statusMin = Instance.new("UISizeConstraint", status)
-statusMin.MinSize = Vector2.new(200, 30)
+statusMin.MinSize = Vector2.new(230, 30)
 
 local function button(name, text, pos, color)
 	local b = Instance.new("TextButton")
@@ -105,13 +105,14 @@ local function button(name, text, pos, color)
 	Instance.new("UICorner", b).CornerRadius = UDim.new(0.3, 0)
 	Instance.new("UIAspectRatioConstraint", b)
 	local m = Instance.new("UISizeConstraint", b)
-	m.MinSize = Vector2.new(48, 48)
+	m.MinSize = Vector2.new(44, 44)
 	return b
 end
-local exitBtn = button("ExitBtn", "خروج", UDim2.fromScale(0.91, 0.36), Color3.fromRGB(150, 50, 60))
-local fasterBtn = button("FasterBtn", "＋", UDim2.fromScale(0.91, 0.5), Color3.fromRGB(60, 140, 200))
+local exitBtn = button("ExitBtn", "خروج", UDim2.fromScale(0.91, 0.25), Color3.fromRGB(150, 50, 60))
+local hornBtn = button("HornBtn", "🔔", UDim2.fromScale(0.91, 0.38), Color3.fromRGB(195, 140, 40))
+local fasterBtn = button("FasterBtn", "＋", UDim2.fromScale(0.91, 0.51), Color3.fromRGB(60, 140, 200))
 local slowerBtn = button("SlowerBtn", "－", UDim2.fromScale(0.91, 0.64), Color3.fromRGB(90, 100, 130))
-local goBtn = button("GoBtn", "▶", UDim2.fromScale(0.91, 0.8), Color3.fromRGB(50, 170, 90))
+local goBtn = button("GoBtn", "▶", UDim2.fromScale(0.91, 0.78), Color3.fromRGB(50, 170, 90))
 
 -- end-of-line card
 local endCard = Instance.new("Frame")
@@ -300,6 +301,10 @@ local function changeSpeed(step)
 end
 
 goBtn.Activated:Connect(toggleGo)
+hornBtn.Activated:Connect(function()
+	play("sting")
+	say("🚂 توت توت! قطار التخصصات البيولوجية ينطلق", 2.5)
+end)
 fasterBtn.Activated:Connect(function()
 	changeSpeed(1)
 end)
@@ -390,7 +395,8 @@ RunService.RenderStepped:Connect(function(dt)
 	r.seat.AssemblyAngularVelocity = Vector3.zero
 	placeCars(r)
 	local stateText = STATE_TEXT[r.state] or ""
-	status.Text = r.state == "running" and ("%s • السرعة %d/%d"):format(stateText, r.level, #SPEEDS)
+	status.Text = r.state == "running"
+			and ("%s • التخصص %d/8 • السرعة %d/%d"):format(stateText, r.section or 0, r.level, #SPEEDS)
 		or stateText
 end)
 

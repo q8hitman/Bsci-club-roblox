@@ -7,7 +7,12 @@ return {
 	MuseumXP = 10,
 	RaceXP = 20,
 	EscapeXP = 40,
+	TrainXP = 20,
+	PuzzleXP = 30,
+	ExamXP = 30,
 	Races = { cell = true, helix = true },
+	Trains = { cart = true, cell = true },
+	Puzzles = { CellControl = true },
 	Museum = {
 		micro = true,
 		enzyme = true,
@@ -31,8 +36,11 @@ return {
 		Exam = true,
 		Puzzle = true,
 		Show = true,
+		Museum = true,
+		Racers = true,
+		Laser = true,
 	},
-	Activities = { arcade = true, lab = true, show = true },
+	Activities = { arcade = true, lab = true, show = true, puzzle = true, exam = true },
 	Weekly = {
 		{
 			id = "explore",

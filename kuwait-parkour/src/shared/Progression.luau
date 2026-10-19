@@ -231,6 +231,14 @@ table.insert(P.Achievements, {
 	title = "خبير التوقيت ✨",
 })
 
+table.insert(P.Achievements, {
+	id = "puzzle_master",
+	ar = "حلّال الألغاز",
+	desc = "حلّ غرفة التحكم بالخلية في غرف الألغاز",
+	coins = 0,
+	title = "خبير الألغاز 🧩",
+})
+
 P.Trails = {
 	{
 		id = "leaf",

@@ -400,12 +400,14 @@ event.OnServerEvent:Connect(function(player, what)
 		local r = rideStart[player]
 		if r and r.what == "cartStart" and os.clock() - r.t > 60 then
 			award(player, "cart")
+			Passport.record(player, "train", "cart")
 		end
 		rideStart[player] = nil
 	elseif what == "trainFinish" then
 		local r = rideStart[player]
 		if r and r.what == "trainStart" and os.clock() - r.t > 45 then
 			award(player, "train")
+			Passport.record(player, "train", "cell")
 		end
 		rideStart[player] = nil
 	elseif what == "summit" then

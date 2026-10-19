@@ -35,8 +35,66 @@ LabData.PCR_STEPS = {
 }
 LabData.PCR_CYCLES = 3
 
+-- v50 Gram Staining (صبغة جرام): 4-step differential staining protocol + Gram+/Gram- identification
+LabData.GRAM_STEPS = {
+	{
+		id = "cv",
+		ar = "1️⃣ كريستال بنفسجي (Crystal Violet)",
+		note = "الصبغة الأساسية: تلون جميع الخلايا بالبنفسجي",
+	},
+	{
+		id = "iodine",
+		ar = "2️⃣ محلول اليود (Gram's Iodine)",
+		note = "المثبّت (Mordant): يكوّن معقد CV-I داخل الجدار الخلوي",
+	},
+	{
+		id = "alcohol",
+		ar = "3️⃣ الكحول المزيل للون (Alcohol Decolorizer)",
+		note = "يزيل اللون من الجدار الرقيق (Gram-) ويبقى البنفسجي في الجدار السميك (Gram+)",
+	},
+	{
+		id = "safranin",
+		ar = "4️⃣ صبغة الصفرانين (Safranin Counterstain)",
+		note = "صبغة مقابلة: تلون البكتيريا سالبة الجرام باللون الوردي/الأحمر",
+	},
+}
+LabData.GRAM_SAMPLES = {
+	{
+		id = "staph",
+		name = "مكورات عنقودية (Staphylococcus aureus)",
+		shape = "كرويات في عناقيد • جدار ببتيدوغليكان سميك",
+		gram = "pos",
+		finalColor = "بنفسجي غامق (Violet) 🟣",
+	},
+	{
+		id = "ecoli",
+		name = "إشريكية قولونية (Escherichia coli)",
+		shape = "عصيات قصيرة • طبقة ببتيدوغليكان رقيقة وغشاء خارجي",
+		gram = "neg",
+		finalColor = "وردي محمر (Pink/Red) 🌸",
+	},
+	{
+		id = "bacillus",
+		name = "عصوية رقيقة (Bacillus subtilis)",
+		shape = "عصيات متسلسلة • جدار ببتيدوغليكان سميك يحتفظ بمعقد الصبغة",
+		gram = "pos",
+		finalColor = "بنفسجي غامق (Violet) 🟣",
+	},
+	{
+		id = "pseudo",
+		name = "زائفة زنجارية (Pseudomonas aeruginosa)",
+		shape = "عصيات متحركة • غشاء خارجي دهني يفقد الكريستال بالكحول",
+		gram = "neg",
+		finalColor = "وردي محمر (Pink/Red) 🌸",
+	},
+}
+LabData.GRAM_ANSWERS = {
+	pos = "موجبة الجرام (Gram-Positive) 🟣",
+	neg = "سالبة الجرام (Gram-Negative) 🌸",
+}
+
 -- research points per success, and per-experiment cooldown (seconds)
-LabData.REWARD = { microscope = 4, gel = 4, pcr = 8 }
+LabData.REWARD = { microscope = 4, gel = 4, pcr = 8, gram = 6 }
 LabData.COOLDOWN = 6
 
 -- projects bought on the lab computer with research points; every one has a real effect in the game
