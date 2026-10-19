@@ -75,6 +75,7 @@ function Teleport.to(player, target, offset)
 	local pos = Vector3.new(cf.Position.X, standY, cf.Position.Z)
 	local final = flat.Magnitude > 0.01 and CFrame.lookAt(pos, pos + flat) or CFrame.new(pos)
 	-- 3. no leftover velocity, move, and let the owning client do the same
+	player:SetAttribute("TeleportRevision", (player:GetAttribute("TeleportRevision") or 0) + 1)
 	for _, part in ipairs(char:GetDescendants()) do
 		if part:IsA("BasePart") then
 			part.AssemblyLinearVelocity = Vector3.zero

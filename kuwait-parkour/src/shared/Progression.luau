@@ -207,6 +207,14 @@ for _, a in ipairs({
 	table.insert(P.Achievements, a)
 end
 
+table.insert(P.Achievements, {
+	id = "museum8",
+	ar = "دليل متحف الأحياء",
+	desc = "أكمل المعروضات الثماني في المتحف",
+	coins = 0,
+	title = "دليل الاكتشاف 🔬",
+})
+
 P.Trails = {
 	{
 		id = "leaf",

@@ -4,6 +4,17 @@ return {
 	CollectXP = 25,
 	ActivityXP = 40,
 	LevelXP = 100,
+	MuseumXP = 10,
+	Museum = {
+		micro = true,
+		enzyme = true,
+		animal = true,
+		plant = true,
+		dna = true,
+		evidence = true,
+		farm = true,
+		biotech = true,
+	},
 	Worlds = {
 		Campus = true,
 		HQ = true,

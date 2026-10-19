@@ -235,6 +235,14 @@ render = function()
 			"اختيار داخل اللعبة، بدون معلومات شخصية\nتقدر تغيّرها أو تلغيها من صفحة الدفعة",
 			Color3.fromRGB(64, 54, 38)
 		)
+		card(
+			7,
+			"متحف الأحياء",
+			("أكملت %d من 8 معروضات\n10 XP لكل معروضة مرة واحدة؛ لقب عند إكمال الجميع"):format(
+				p.museum or 0
+			),
+			Color3.fromRGB(32, 76, 78)
+		)
 	elseif currentTab == 2 then
 		for _, a in ipairs(P.Achievements) do
 			n += 1

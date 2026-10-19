@@ -26,6 +26,9 @@ function Service.refresh(player)
 		if data.level >= 5 then
 			Profiles.award(player, "passport5")
 		end
+		if data.museum == 8 then
+			Profiles.award(player, "museum8")
+		end
 	end
 	return data
 end

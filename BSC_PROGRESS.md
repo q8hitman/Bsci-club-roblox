@@ -1,5 +1,26 @@
 # Progress log
 
+## v46 (2026-10-19), branch `dev/v46`, NOT published or merged
+
+Supervisor accepted v45 and selected the Biology Discovery Museum. Backup `backup_before_v46_20261019` includes v45.
+Full report/photos: [museum_v46_report](docs/museum_v46_report.md); scientific review: [museum_v46_science](docs/museum_v46_science.md).
+
+- Added fictional independent pavilion east of Campus and lit approach around parking;216parts/261descendants,58collidable.
+- Eight playable model assemblies: microbes, enzyme, adaptation, photosynthesis, DNA, fictional patterns, agriculture, biotechnology.
+- Balanced one-time10XP per exhibit and all-eight cosmetic title integrated into existing Passport; no currency/weekly changes.
+- Server-bound life/proximity/character/token/step/expiry/teleport revision; old sessions rejected after actual death+respawn and HQ travel.
+- Eight actual Solo UI completions, wrong/retry and replay;80XP/title. iPhoneXR all eight/TextFits, status, auto result scroll and close passed.
+- Two real clients without accelerated rules: eight completions80XP vs one10XP, independent achievement/progress, token replay denied.
+- Ground-level walk through entry/aisles and back to campus plaza succeeded;3D camera/visual checks and three architectural angles verified.
+- Old Studio's3D went black; new v46 session rendered normally. Original left open; no login or restart required.
+- Review defects fixed/re-reviewed: specific assembly visuals and server session invalidation. Viewport pivot orientation bug fixed after visual QA.
+- Gemini request delivered but review empty; supervisor accepted alternative text review. Primary educational sources recorded; wording corrections applied.
+- All12 destinations, pure Museum/Passport rules, question banks, StyLua, Rojo pass; selene0errors/26known warnings/0parse errors.
+- Full original Workspace equals v45 after excluding Museum46;71script sources. StreamingEnabled remains false. No new game errors.
+- Build `KuwaitParkour_v46.rbxlx`,37,774,929bytes; SHA256 a023a406a47b7a7db462fa736488282bbd1c8da6e741d111ea6376ff459397d1.
+- Both Studio sessions left Edit; the new v46 viewport is default and fixtures are removed. Published persistence, real phone and long human session untested.
+- Next: send report directly for supervisor review, then next authorized feature. No publish/merge permission.
+
 ## v45 (2026-10-19), branch `dev/v45`, NOT published or merged
 
 Supervisor accepted v44 development and selected BSC Passport after the owner's explicit instruction to continue.

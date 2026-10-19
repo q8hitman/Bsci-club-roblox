@@ -1,6 +1,24 @@
 # Handoff to Codex (from Claude Code)
 
-## Current handoff: v45 (2026-10-19)
+## Current handoff: v46 (2026-10-19)
+- Supervisor accepted v45 (07a3cb4) and selected the eight-exhibit Biology Discovery Museum.
+- Branch `dev/v46`; full backup `backup_before_v46_20261019` includes v45 build. No publishing or merging.
+- Fictional pavilion east of Campus, x210..370/z-150..50, lit approach via the front plaza around parking.
+  Label explicitly says fictional club addition. Original Workspace equals v45 with Museum46 excluded.
+- Eight playable, per-player model assemblies; server sessions validate distance/life/token/step/character/teleport revision.
+  One-time10XP each and museum8 cosmetic title use existing Passport evidence/save merge; currencies unchanged.
+- All eight Solo wrong/correct/replay, phone, actual two-client isolation80XP/10XP, explicit death/respawn and HQ travel token
+  rejection passed. Ground-level walking entry/aisles/exit/plaza, all12 Travel, static checks and question banks passed.
+- Independent review defects fixed/re-reviewed. Real visual QA found sideways viewport reactor; preserve pivot rotation when centering.
+- Old v43 Studio session renders 3D black; a NEW v46 Studio session renders normally. Both left open in Edit; the new v46 viewport is restored to default.
+  Prefer `KuwaitParkour_v46.rbxlx` for further tests. No login, close, publish or merge occurred. Remove no existing Studio sessions.
+- Gemini received the scientific request but returned no usable review; supervisor approved alternative text review and corrections.
+  Details `docs/museum_v46_science.md`. Full evidence/photos `docs/museum_v46_report.md` and `docs/v46/`.
+- Local build `Desktop/KuwaitParkour/KuwaitParkour_v46.rbxlx`,37,774,929bytes,71sources. Museum216parts/261descendants.
+- QA scripts removed; default viewport restored; StreamingEnabled=false. Live persistence/real phone/human long session untested.
+- Next: direct supervisor report and review before selecting v47; ordinary authorized dev continues. Owner's rules remain supreme.
+
+## Historical handoff: v45 (2026-10-19)
 - Owner authorized direct supervisor reporting and continued development; do not revert to the historical wait state.
 - Supervisor accepted v44 development and selected BSC Passport as the only v45 feature.
 - Branch `dev/v45`; backup `Desktop\KuwaitParkour\backup_before_v45_20261019`; local build `KuwaitParkour_v45.rbxlx`.

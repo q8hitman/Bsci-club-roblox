@@ -15,7 +15,7 @@ Status values: `idea`, `planned`, `in progress`, `review` (ready for review), `r
 | 9 | BSC Game Show | 2 | review | v40: studio + Guess the picture + Category challenge (Gemini question bank); sound and memory modes still planned |
 | 10 | Micro Racers / Laser Escape / Tower Defense / Rhythm / Bosses | 5 | idea | |
 | 11 | Light Microscopy lab (first full lab) | 3 | review | v41: full simulation + notebook + practice/assessment; needs expert review and a phone check |
-| 12 | Biology Discovery Museum | 3 | planned | |
+| 12 | Biology Discovery Museum | 3 | review | v46: eight playable assemblies, fictional campus pavilion, server evidence XP/title; Solo/two clients/phone/visual checks passed; no live persistence or real phone |
 | 13 | BSC Passport (XP, titles, badges, weekly) | 4 | review | v45: evidence XP/levels, cosmetic titles, existing batch chooser, Monday UTC weekly tasks; solo/two clients/phone passed; live persistence and real phone untested |
 | 14 | Event codes | 4 | partly exists | `server/Codes.luau` |
 | 15 | Photo Mode, secrets, rare collectibles | 4 | idea | 12 cats already exist |

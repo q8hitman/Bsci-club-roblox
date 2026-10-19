@@ -26,6 +26,7 @@ import ku_science  # noqa: E402  (v32: real-world College of Science likeness)
 import ku_science33  # noqa: E402  (v33: satellite corrections)
 import ku_science34  # noqa: E402  (v34: south complex + garden walk from the aerial view)
 import north_campus44  # noqa: E402  (v44: modular north prototype; photo16/17 room types)
+import museum46  # noqa: E402  (v46: fictional additive museum pavilion)
 
 box, vcyl, disc, ball, sign = G.box, G.vcyl, G.disc, G.ball, G.sign
 rect = C5.rect
@@ -84,6 +85,7 @@ def build_campus():
         C5._off[2] = C5.NB_SHIFT
         north_campus44.build()
         C5._off[2] = 0.0
+        museum46.build()
 
 
 def at(offset, fn):

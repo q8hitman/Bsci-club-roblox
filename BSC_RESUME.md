@@ -1,6 +1,20 @@
 # Resume here
 
-## Current state (2026-10-19, v45)
+## Current state (2026-10-19, v46)
+- Work only in `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full`, branch `dev/v46`.
+- v45 was accepted developmentally; supervisor selected Museum46. Owner authorized continued development and direct reports.
+- Backup `backup_before_v46_20261019`; local build `Desktop\KuwaitParkour\KuwaitParkour_v46.rbxlx`.
+- Eight fictional museum exhibits connected east of Campus, server-verified one-time10XP each and all-eight cosmetic title.
+- Evidence/science/photos/limits: `docs/museum_v46_report.md`, `docs/museum_v46_science.md`, `docs/v46/`.
+- Solo/UI/phone, two actual clients80XP vs10XP, death+travel session rejection, ground-level route and all12 destinations passed.
+- NEW v46 Studio session renders normally; old v43 session has black3D. Both remain open in Edit; v46 uses the default viewport.
+  Prefer v46 by title, obtain current IDs from list_roblox_studios. Do not close either session.
+- Original Workspace unchanged excluding added Museum46;216newparts,71script sources. No QA scripts left. Streaming false.
+- Source fixtures tools/studio_tests/museum46.*.luau use ExecuteMultiplayerTestAsync(2,"Museum46").
+- Gemini received request but returned no usable review; supervisor approved alternative scientific text review.
+- Send direct supervisor report and choose next authorized feature. No publishing/merging/real secrets/horror.
+
+## Historical state (2026-10-19, v45)
 - Owner explicitly said to send the report to the supervisor and continue; this supersedes the previous wait state.
 - Work only in `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full`, branch `dev/v45`.
 - BSC Passport implemented in the existing Profile menu: cosmetic XP/levels, five new achievements/titles, optional
