@@ -37,8 +37,12 @@ Read `BSC_RESUME.md`, `BSC_ARCHITECTURE.md` and `BSC_MASTER_VISION.md` first. Th
   Tested with real clicks (see BSC_PROGRESS.md).
 
 - **v42:** phone pass. Readable hint toasts, Game Show HUD, bigger microscope controls and drag-to-pan.
-- **Codex check (2026-10-19):** Codex can read the GitHub repo. It cannot run local commands or edit local files from
-  the chat, and Studio control was not verified.
+- **Codex check (2026-10-19, ChatGPT desktop app → Codex → "This computer", Full access):**
+  - Codex runs local commands: `git log`, `rojo --version`, `selene --version`.
+  - It read `CODEX_HANDOFF.md` from `BSC_project_full`.
+  - It reached Roblox Studio through MCP: it listed `KuwaitParkour_v37.rbxlx` and ran read-only Luau in Edit mode
+    (Map descendants = 27366).
+  - So Codex can fully take over the coding and Studio work.
 
 ## Next steps after v42 (supervisor's order, 2026-10-19)
 Done in v42: the phone pass and Gemini's science review of the microscope.
