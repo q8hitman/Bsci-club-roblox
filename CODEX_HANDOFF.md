@@ -20,11 +20,33 @@ Read `BSC_RESUME.md`, `BSC_ARCHITECTURE.md` and `BSC_MASTER_VISION.md` first. Th
   - Each room is defined in `PuzzleRoomDefs/`, and puzzle types live in `PuzzleTypes/`.
   - **To add a room:** create a `PuzzleRoom_<id>` map folder (see `chaos_gen.cell_control_room`) and a def module.
 
-## Next task
-The BSC Game Show (directive section 6). The round formats must really differ from each other, and only licensed
-media may be used.
+## Next task: BSC Game Show (directive section 6)
+**Supervisor's direction (ChatGPT, 2026-10-19).** Do not build every mode at once.
+1. **The studio itself:**
+   - a host stage;
+   - two team screens;
+   - a big scoreboard;
+   - lighting and effects;
+   - a team and category system.
+2. **Two complete modes:**
+   - *Guess the picture:* a blurred poster or a licensed cartoon/science image that is revealed gradually.
+   - *Category challenge:* mixed questions on games, consoles, science and general culture.
+3. **Later:** guess the sound (licensed clips only), then memory.
+
+**Rules:**
+- Solo or team play.
+- No forced timer.
+- Arabic and English.
+- The question/content bank stays separate from the code.
+- Clear points and results.
+- No protected images or music without a licence.
 
 After that: the Light Microscopy lab.
+
+## Open checks (supervisor)
+- Two players solving the same puzzle at the same time, and a player leaving mid-puzzle.
+- Hint text and prompt buttons on a phone screen.
+- v39 is a stable checkpoint, but it is NOT release-ready until the phone and group tests pass.
 
 ## How to test (the owner can't watch)
 - **Arcade:** the Studio-only workspace attribute `ArcadeForce = "<id>"` forces a game. Clear it afterwards.
