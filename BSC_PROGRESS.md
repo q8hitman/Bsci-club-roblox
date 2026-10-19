@@ -1,5 +1,36 @@
 # Progress log
 
+## v42 (2026-10-19), branch `dev/v42`, NOT published
+**Done: phone pass** (Studio Device Simulator, iPhone XR landscape, viewport 801×413, touch on).
+
+**Checked on the phone screen:**
+- **World menu:** all 12 cards fit and are readable. No change needed.
+- **Puzzle room:** the room and the prompts were fine. Hint messages were not:
+  - **Problem:** hints are long sentences, but the toast stayed one scaled line, so the text came out about 8 px.
+    It also closed after 2.6 s.
+  - **Fix** (`Feedback.client`): the toast now wraps, is taller, and keeps its text between 11 and 30 px. It stays
+    up about 1 s per 14 characters, capped at 9 s.
+- **Game Show:** the main screen is 70 studs from the spawn, which is unreadable on a phone.
+  - **Fix:** new `GameShowHUD.client`, used only inside StudioBounds. It copies the main-screen and scoreboard text
+    into a panel on the right, so the picture and the pods in the middle stay visible. It is read-only; the server
+    still owns the show.
+- **Microscope:** the controls were about 20 px tall, too small for a finger.
+  - **Fix:** every control is now 12% of the column height (about 35 px).
+  - The stage buttons are in one row.
+  - New: drag the picture to move the slide, for touch and mouse.
+
+**Tested (Studio, solo, Device Simulator):**
+- Screenshots of every screen above, before and after each fix.
+- Drag with real mouse input moved the sample both ways, and it follows the finger.
+- A Game Show round shows on the HUD: the picture round with A–D and the score.
+- selene: 0 errors.
+
+**Not tested:**
+- A real phone.
+- Portrait orientation.
+- Other device sizes (tablet, small Android).
+- Real multiplayer.
+
 ## v41 (2026-10-19), branch `dev/v41`, NOT published
 **Done: the Light Microscopy lab** (the first complete lab, built to the supervisor's requirements).
 

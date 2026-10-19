@@ -6,6 +6,7 @@
 -- Drawings are representative (not photos); proportions between cells are kept, sizes are enlarged for readability.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 local Micro = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("MicroscopyData"))
@@ -474,13 +475,13 @@ local function setObjective(k)
 	render()
 end
 
-label(ctrl, "العدسة الشيئية", UDim2.fromScale(0, 0), UDim2.fromScale(1, 0.06))
+label(ctrl, "العدسة الشيئية", UDim2.fromScale(0, 0), UDim2.fromScale(1, 0.045))
 for k, o in ipairs(OBJ) do
 	objBtns[k] = button(
 		ctrl,
 		o.oil and "100× زيت" or (o.mag .. "×"),
-		UDim2.fromScale((k - 1) * 0.25, 0.065),
-		UDim2.fromScale(0.235, 0.08),
+		UDim2.fromScale((k - 1) * 0.25, 0.045),
+		UDim2.fromScale(0.235, 0.12),
 		Color3.fromRGB(60, 70, 90),
 		function()
 			setObjective(k)
@@ -498,27 +499,27 @@ local function focus(delta, coarse)
 	st.z += delta
 	render()
 end
-label(ctrl, "الضابط الكبير", UDim2.fromScale(0, 0.17), UDim2.fromScale(0.48, 0.05))
-button(ctrl, "▲", UDim2.fromScale(0, 0.225), UDim2.fromScale(0.23, 0.075), Color3.fromRGB(70, 90, 110), function()
+label(ctrl, "الضابط الكبير", UDim2.fromScale(0, 0.175), UDim2.fromScale(0.48, 0.045))
+button(ctrl, "▲", UDim2.fromScale(0, 0.22), UDim2.fromScale(0.23, 0.12), Color3.fromRGB(70, 90, 110), function()
 	focus(4, true)
 end)
-button(ctrl, "▼", UDim2.fromScale(0.25, 0.225), UDim2.fromScale(0.23, 0.075), Color3.fromRGB(70, 90, 110), function()
+button(ctrl, "▼", UDim2.fromScale(0.25, 0.22), UDim2.fromScale(0.23, 0.12), Color3.fromRGB(70, 90, 110), function()
 	focus(-4, true)
 end)
-label(ctrl, "الضابط الدقيق", UDim2.fromScale(0.52, 0.17), UDim2.fromScale(0.48, 0.05))
-button(ctrl, "▲", UDim2.fromScale(0.52, 0.225), UDim2.fromScale(0.23, 0.075), Color3.fromRGB(70, 110, 100), function()
+label(ctrl, "الضابط الدقيق", UDim2.fromScale(0.52, 0.175), UDim2.fromScale(0.48, 0.045))
+button(ctrl, "▲", UDim2.fromScale(0.52, 0.22), UDim2.fromScale(0.23, 0.12), Color3.fromRGB(70, 110, 100), function()
 	focus(0.4, false)
 end)
-button(ctrl, "▼", UDim2.fromScale(0.77, 0.225), UDim2.fromScale(0.23, 0.075), Color3.fromRGB(70, 110, 100), function()
+button(ctrl, "▼", UDim2.fromScale(0.77, 0.22), UDim2.fromScale(0.23, 0.12), Color3.fromRGB(70, 110, 100), function()
 	focus(-0.4, false)
 end)
 
-local lightLabel = label(ctrl, "", UDim2.fromScale(0, 0.32), UDim2.fromScale(1, 0.05))
+local lightLabel = label(ctrl, "", UDim2.fromScale(0, 0.35), UDim2.fromScale(1, 0.045))
 button(
 	ctrl,
 	"− ضوء",
-	UDim2.fromScale(0, 0.375),
-	UDim2.fromScale(0.48, 0.075),
+	UDim2.fromScale(0, 0.395),
+	UDim2.fromScale(0.48, 0.12),
 	Color3.fromRGB(90, 80, 50),
 	function()
 		st.light = math.max(0, st.light - 1)
@@ -528,8 +529,8 @@ button(
 button(
 	ctrl,
 	"+ ضوء",
-	UDim2.fromScale(0.52, 0.375),
-	UDim2.fromScale(0.48, 0.075),
+	UDim2.fromScale(0.52, 0.395),
+	UDim2.fromScale(0.48, 0.12),
 	Color3.fromRGB(130, 110, 50),
 	function()
 		st.light = math.min(10, st.light + 1)
@@ -537,30 +538,70 @@ button(
 	end
 )
 
-label(ctrl, "حرّك الشريحة", UDim2.fromScale(0, 0.47), UDim2.fromScale(1, 0.05))
+label(
+	ctrl,
+	"حرّك الشريحة (أو اسحب الصورة)",
+	UDim2.fromScale(0, 0.525),
+	UDim2.fromScale(1, 0.045)
+)
 local function move(dx, dy)
 	local step = OBJ[st.obj].fov * 0.18
 	st.cx, st.cy = st.cx + dx * step, st.cy + dy * step
 	render()
 end
-button(ctrl, "▲", UDim2.fromScale(0.375, 0.525), UDim2.fromScale(0.25, 0.07), Color3.fromRGB(60, 70, 90), function()
+button(ctrl, "▲", UDim2.fromScale(0.25, 0.57), UDim2.fromScale(0.235, 0.12), Color3.fromRGB(60, 70, 90), function()
 	move(0, -1)
 end)
-button(ctrl, "◀", UDim2.fromScale(0.1, 0.6), UDim2.fromScale(0.25, 0.07), Color3.fromRGB(60, 70, 90), function()
+button(ctrl, "◀", UDim2.fromScale(0, 0.57), UDim2.fromScale(0.235, 0.12), Color3.fromRGB(60, 70, 90), function()
 	move(-1, 0)
 end)
-button(ctrl, "▶", UDim2.fromScale(0.65, 0.6), UDim2.fromScale(0.25, 0.07), Color3.fromRGB(60, 70, 90), function()
+button(ctrl, "▶", UDim2.fromScale(0.75, 0.57), UDim2.fromScale(0.235, 0.12), Color3.fromRGB(60, 70, 90), function()
 	move(1, 0)
 end)
-button(ctrl, "▼", UDim2.fromScale(0.375, 0.675), UDim2.fromScale(0.25, 0.07), Color3.fromRGB(60, 70, 90), function()
+button(ctrl, "▼", UDim2.fromScale(0.5, 0.57), UDim2.fromScale(0.235, 0.12), Color3.fromRGB(60, 70, 90), function()
 	move(0, 1)
+end)
+
+-- drag the picture to move the slide (touch or mouse): easier than the arrows on a phone
+local dragFrom = nil
+local dragPad = Instance.new("TextButton")
+dragPad.BackgroundTransparency = 1
+dragPad.Text = ""
+dragPad.Size = UDim2.fromScale(1, 1)
+dragPad.ZIndex = 10
+dragPad.Parent = viewHolder
+local function isPress(input)
+	return input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1
+end
+dragPad.InputBegan:Connect(function(input)
+	if isPress(input) then
+		dragFrom = Vector2.new(input.Position.X, input.Position.Y)
+	end
+end)
+UserInputService.InputChanged:Connect(function(input)
+	local kind = input.UserInputType
+	if dragFrom and (kind == Enum.UserInputType.Touch or kind == Enum.UserInputType.MouseMovement) then
+		local at = Vector2.new(input.Position.X, input.Position.Y)
+		local d = (at - dragFrom) / math.max(view.AbsoluteSize.X, 1)
+		if d.Magnitude > 0.02 then
+			dragFrom = at
+			local fov = OBJ[st.obj].fov
+			st.cx, st.cy = st.cx - d.X * fov, st.cy - d.Y * fov
+			render()
+		end
+	end
+end)
+UserInputService.InputEnded:Connect(function(input)
+	if isPress(input) then
+		dragFrom = nil
+	end
 end)
 
 button(
 	ctrl,
 	"💧 نقطة زيت غمر",
-	UDim2.fromScale(0, 0.78),
-	UDim2.fromScale(0.6, 0.08),
+	UDim2.fromScale(0, 0.71),
+	UDim2.fromScale(0.6, 0.12),
 	Color3.fromRGB(150, 120, 40),
 	function()
 		if st.obj < 4 then
@@ -575,8 +616,8 @@ button(
 button(
 	ctrl,
 	"🧻 نظّف",
-	UDim2.fromScale(0.64, 0.78),
-	UDim2.fromScale(0.36, 0.08),
+	UDim2.fromScale(0.64, 0.71),
+	UDim2.fromScale(0.36, 0.12),
 	Color3.fromRGB(90, 90, 100),
 	function()
 		if st.obj == 4 then

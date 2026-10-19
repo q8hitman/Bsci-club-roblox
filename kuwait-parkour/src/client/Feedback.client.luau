@@ -38,11 +38,12 @@ gui.Parent = player:WaitForChild("PlayerGui")
 local toast = Instance.new("TextLabel")
 toast.AnchorPoint = Vector2.new(0.5, 0)
 toast.Position = UDim2.fromScale(0.5, 0.68) -- low, so it never covers menus or the stage counter
-toast.Size = UDim2.fromScale(0.56, 0.1)
+toast.Size = UDim2.fromScale(0.6, 0.13)
 toast.BackgroundColor3 = Color3.fromRGB(30, 34, 44)
 toast.BackgroundTransparency = 0.1
 toast.TextColor3 = Color3.new(1, 1, 1)
 toast.TextScaled = true
+toast.TextWrapped = true -- long hints wrap instead of shrinking to an unreadable line on phones
 toast.Font = Enum.Font.GothamBold
 toast.Visible = false
 toast.Parent = gui
@@ -51,6 +52,8 @@ local stroke = Instance.new("UIStroke", toast)
 stroke.Thickness = 2
 local pad = Instance.new("UIPadding", toast)
 pad.PaddingLeft, pad.PaddingRight = UDim.new(0.03, 0), UDim.new(0.03, 0)
+local tsc = Instance.new("UITextSizeConstraint", toast)
+tsc.MinTextSize, tsc.MaxTextSize = 11, 30
 
 local KIND = {
 	info = { Color3.fromRGB(30, 34, 44), Color3.fromRGB(120, 140, 170), "click" },
@@ -76,7 +79,9 @@ local function pump()
 	TweenService:Create(toast, TweenInfo.new(0.25, Enum.EasingStyle.Back), { Position = UDim2.fromScale(0.5, 0.68) })
 		:Play()
 	play(k[3])
-	task.delay(item.kind == "info" and 2.6 or 4.2, function()
+	-- longer messages (hints) stay long enough to read: ~14 characters per second
+	local t = math.max(item.kind == "info" and 2.6 or 4.2, (utf8.len(item.text) or #item.text) / 14)
+	task.delay(math.min(t, 9), function()
 		toast.Visible = false
 		showing = false
 		pump()

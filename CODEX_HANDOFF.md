@@ -7,9 +7,9 @@ Read `BSC_RESUME.md`, `BSC_ARCHITECTURE.md` and `BSC_MASTER_VISION.md` first. Th
 - no horror world.
 
 ## Where things are
-- **Branch:** `dev/v41`. Branches are stacked: v37 → v38 → v39 → v40 → v41.
-- **Last stable build:** `Desktop\KuwaitParkour\KuwaitParkour_v41.rbxlx`.
-- **Backups:** `Desktop\KuwaitParkour\backup_v41_20261019`. Make a new backup before you change anything.
+- **Branch:** `dev/v42`. Branches are stacked: v37 → v38 → v39 → v40 → v41 → v42.
+- **Last stable build:** `Desktop\KuwaitParkour\KuwaitParkour_v42.rbxlx`.
+- **Backups:** `Desktop\KuwaitParkour\backup_v42_20261019`. Make a new backup before you change anything.
 - **Not in Git:** the tool binaries (Rojo 7.7.1, Lune 0.11.0, StyLua 2.5.2, selene 0.32.0), the generated
   `Map.rbxmx` and `Island.rbxm`, and the packs. Regenerate them with the commands in BSC_ARCHITECTURE.md.
 
@@ -31,6 +31,10 @@ Read `BSC_RESUME.md`, `BSC_ARCHITECTURE.md` and `BSC_MASTER_VISION.md` first. Th
 
 - **v41:** the Light Microscopy lab: `LightMicroscope.client`, `shared/MicroscopyData` and `Lab.server` lm* actions.
   Tested with real clicks (see BSC_PROGRESS.md).
+
+- **v42:** phone pass. Readable hint toasts, Game Show HUD, bigger microscope controls and drag-to-pan.
+- **Codex check (2026-10-19):** Codex can read the GitHub repo. It cannot run local commands or edit local files from
+  the chat, and Studio control was not verified.
 
 ## Next task (supervisor, 2026-10-19)
 Test v39–v41 on a phone and with real teams, fix what breaks, and improve the whole experience. Do not open new
