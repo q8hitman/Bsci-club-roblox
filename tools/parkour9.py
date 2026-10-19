@@ -115,9 +115,9 @@ BTN_COLS = [(230, 90, 80), (80, 150, 240), (90, 200, 110), (240, 200, 70), (180,
             (60, 200, 200), (230, 110, 170), (150, 150, 160), (120, 200, 90)]
 
 
-def _button_board(c, th, sid, labels, letters, title, key, extra_sign=None, depth=22.0):
+def _button_board(c, th, sid, labels, letters, title, key, extra_sign=None, depth=26.0):
     z0 = M2.cursor_gap(c, depth, 2)
-    M2.slab(th, c["x"], c["y"], z0, 42, depth)
+    M2.slab(th, c["x"], c["y"], z0, 46, depth)
     G.part("SeqKey|%s|%s" % (sid, key), (1, 1, 1), (c["x"], c["y"] - 3, z0), (0, 0, 0), "SmoothPlastic", transp=1,
            collide=False)
     n = len(labels)
@@ -126,16 +126,16 @@ def _button_board(c, th, sid, labels, letters, title, key, extra_sign=None, dept
     for i, (lab, let) in enumerate(zip(labels, letters)):
         r, q = divmod(i, per_row)
         cnt = min(per_row, n - r * per_row)
-        x = c["x"] + (q - (cnt - 1) / 2) * 7.8
-        z = z0 - depth / 2 + 5 + r * 8
+        x = c["x"] + (q - (cnt - 1) / 2) * 8.4
+        z = z0 - depth / 2 + 5.5 + r * 9.0
         col = BTN_COLS[i % len(BTN_COLS)]
         G.part("SeqBtn|%s|%s" % (sid, let), (4.6, 0.6, 4.6), (x, c["y"] + 0.3, z), col, "Neon")
-        sign("BtnLabel", lab, (x, c["y"] + 3.2, z + 2.2), (5.6, 2.2, 0.3), "Front", bg=tuple(max(0, v - 90) for v in col))
-    sign("PuzzleSign", "🧩 %s\nخطأ واحد يرجّعك من البداية" % title, (c["x"], c["y"] + 10, z0 + depth / 2 - 0.5), (30, 5.5, 0.5),
-         "Front", bg=(30, 40, 70))
+        sign("BtnLabel", lab, (x, c["y"] + 1.8, z + 2.8), (5.6, 1.8, 0.25), "Front", bg=tuple(max(0, v - 90) for v in col), collide=False)
+    sign("PuzzleSign", "🧩 %s\nاضغط الخطوات بالترتيب الصحيح لفتح الجسر" % title, (c["x"], c["y"] + 13.5, z0 + depth / 2 - 0.5), (32, 5.5, 0.5),
+         "Front", bg=(30, 40, 70), collide=False)
     if extra_sign:
         text, size = extra_sign
-        sign("PuzzleHelp", text, (c["x"] + 20.6, c["y"] + 7, z0), (0.5, size[1], size[0]), "Left", bg=(24, 30, 44))
+        sign("PuzzleHelp", text, (c["x"] + 22.6, c["y"] + 8.5, z0), (0.5, size[1], size[0]), "Left", bg=(24, 30, 44), collide=False)
     M2.set_c(c, c["x"], c["y"], z0, depth)
     M2.walk.append(("brk",))
 
@@ -166,7 +166,7 @@ def k_codon(c, th, t, k):
     rng.shuffle(idx)
     table = "جدول الشفرات\n" + "\n".join("%s = %s" % (CODONS[i][0], CODONS[i][1].split()[-1]) for i in range(len(CODONS)))
     _button_board(c, th, sid, [CODONS[i][1] for i in idx], [LETTERS[i] for i in idx],
-                  "ترجم الـ mRNA:  %s\nاضغط الأحماض الأمينية بالترتيب" % strand, key, (table, (14, 16)), depth=24)
+                  "ترجم الـ mRNA:  %s\nاضغط الأحماض الأمينية بالترتيب" % strand, key, (table, (14, 16)), depth=26)
     _ghost_bridge(c, th, sid, 5, 6.0, 3.6)
 
 
@@ -184,15 +184,15 @@ def k_simon(c, th, t, k):
     M2.slab(th, c["x"], c["y"], z0, 34, depth)
     G.part("SeqKey|%s|%s" % (sid, key), (1, 1, 1), (c["x"], c["y"] - 3, z0), (0, 0, 0), "SmoothPlastic", transp=1,
            collide=False)
-    yb = c["y"] + 9
-    box("SimonBoard", (31, 9, 1), (c["x"], yb, z0 + depth / 2), (24, 26, 34), "SmoothPlastic")
+    yb = c["y"] + 11.5
+    box("SimonBoard", (31, 9, 1), (c["x"], yb, z0 + depth / 2), (24, 26, 34), "SmoothPlastic", collide=False)
     for i, (let, col) in enumerate(SIMON):
         x = c["x"] + (i - 1.5) * 7.4
         G.part("SimonLamp|%s|%s" % (sid, let), (4.6, 4.6, 0.6), (x, yb, z0 + depth / 2 - 0.7), tuple(v // 4 for v in col),
                "Neon", collide=False, shadow=False)
         G.part("SeqBtn|%s|%s" % (sid, let), (4.4, 0.6, 4.4), (x, c["y"] + 0.3, z0 - 2), col, "Neon")
     sign("SimonSign", "🧠 لعبة الذاكرة: شوف ترتيب الأضواء وكرّره على الأزرار (%d)" % n, (c["x"], yb + 6.2, z0 + depth / 2 - 0.6),
-         (28, 3, 0.4), "Front", bg=(30, 40, 70))
+         (28, 3, 0.4), "Front", bg=(30, 40, 70), collide=False)
     M2.set_c(c, c["x"], c["y"], z0, depth)
     M2.walk.append(("brk",))
     _ghost_bridge(c, th, sid, 5, 6.0, 3.6)
@@ -290,8 +290,8 @@ def k_footprints(c, th, t, k):
     x = c["x"]
     zc = c["z"] + c["sz"] / 2
     rect("DarkZone", c["x"] - 22, c["x"] + 22, c["y"] + 16, c["y"] + 16.5, zc, zc + n * 9 + 8, (16, 16, 22), "SmoothPlastic")
-    sign("FootSign", "👣 الأرض مخفية! امشِ على آثار الأقدام بس… وانتبه من الآثار المزيفة", (c["x"], c["y"] + 9, zc + 0.5),
-         (26, 3, 0.4), "Back", bg=(60, 50, 20))
+    sign("FootSign", "👣 الأرض مخفية! امشِ على آثار الأقدام بس… وانتبه من الآثار المزيفة", (c["x"], c["y"] + 12.5, zc + 0.5),
+         (26, 3, 0.4), "Back", bg=(60, 50, 20), collide=False)
     prev = (x, zc)
     for i in range(n):
         z = zc + 2.8 + 6.4 / 2 + i * 9.0
@@ -411,8 +411,8 @@ def k_timed(c, th, t, k):
     sid = "t%d" % k
     secs = 7.5 - 2.0 * t
     box("Button|%s|%.1f" % (sid, secs), (4, 0.6, 4), (c["x"], c["y"] + 0.3, c["z"]), (255, 220, 60), "Neon")
-    sign("TimedSign", "⏱️ دوس الزر… الجسر يطلع %d ثواني بس! اركض" % int(secs), (c["x"], c["y"] + 8, c["z"] + c["sz"] / 2),
-         (20, 3, 0.4), "Front", bg=(90, 60, 10))
+    sign("TimedSign", "⏱️ دوس الزر… الجسر يطلع %d ثواني بس! اركض" % int(secs), (c["x"], c["y"] + 12.5, c["z"] + c["sz"] / 2),
+         (20, 3, 0.4), "Front", bg=(90, 60, 10), collide=False)
     M2.walk.append(("brk",))
     z = c["z"] + c["sz"] / 2 + 1.5
     x = c["x"]

@@ -26,71 +26,108 @@ _section = [0, []]
 
 # ====================================================================== the cart
 def cart_model(x, y, z, name="CartTemplate", yaw=0):
-    """open cart, front toward local -Z (the seat's look direction). yaw only rotates the display copy."""
+    """v52: Aerodynamic BSC Science Express Bio-Pod Locomotive, front toward local -Z (the seat's look direction).
+    Features sculpted nose cone, panoramic glass canopy, rear ATP thruster nozzles, and a 3D interactive cockpit console."""
     r = math.radians(yaw)
 
     def P(dx, dz):
         return (x + dx * math.cos(r) + dz * math.sin(r), z - dx * math.sin(r) + dz * math.cos(r))
     with G.Group(name, "Model"):
-        sx, sz = P(0, 0)
-        G.part("Seat", (3.4, 1, 3.4), (sx, y + 2.0, sz), (40, 40, 48), "SmoothPlastic", cls="Seat", rot=(0, yaw, 0))
-        bx, bz = P(0, 0.4)
-        G.part("CartFloor", (5.6, 0.6, 8.4), (bx, y + 1.3, bz), (250, 250, 248), "SmoothPlastic", rot=(0, yaw, 0))
+        sx, sz = P(0, 0.2)
+        G.part("Seat", (3.6, 1.0, 3.6), (sx, y + 2.0, sz), (32, 36, 46), "SmoothPlastic", cls="Seat", rot=(0, yaw, 0))
+        # High-back ergonomic captain seat backrest & headrest
+        bsx, bsz = P(0, 1.85)
+        G.part("SeatBack", (3.4, 3.2, 0.5), (bsx, y + 3.6, bsz), (24, 80, 56), "Fabric", rot=(0, yaw, 0), collide=False)
+        G.part("SeatHeadrest", (2.2, 1.1, 0.6), (bsx, y + 5.4, bsz), (255, 214, 90), "SmoothPlastic", rot=(0, yaw, 0), collide=False)
+        # Heavy chassis & lower undercarriage skirt
+        bx, bz = P(0, 0.2)
+        G.part("CartFloor", (6.2, 0.7, 9.6), (bx, y + 1.3, bz), (242, 244, 248), "Metal", rot=(0, yaw, 0))
+        G.part("ChassisUnder", (5.0, 0.6, 8.8), (bx, y + 0.75, bz), (36, 40, 50), "Metal", rot=(0, yaw, 0), collide=False)
         for s_ in (-1, 1):
-            px, pz = P(s_ * 2.9, 0.4)
-            G.part("CartSide", (0.5, 2.6, 8.4), (px, y + 2.6, pz), (240, 110, 200), "SmoothPlastic", rot=(0, yaw, 0))
-            px, pz = P(s_ * 3.0, 0.4)
-            G.part("CartStripe", (0.3, 0.5, 8.6), (px, y + 3.0, pz), (60, 220, 255), "Neon", rot=(0, yaw, 0))
-        fx, fz = P(0, -3.9)
-        G.part("CartFront", (5.8, 3.4, 0.6), (fx, y + 3.0, fz), (120, 64, 176), "SmoothPlastic", rot=(0, yaw, 0))
-        ex, ez = P(0, 4.4)
-        G.part("CartBack", (5.8, 3.0, 0.5), (ex, y + 2.8, ez), (120, 64, 176), "SmoothPlastic", rot=(0, yaw, 0))
-        lx, lz = P(0, -4.25)
-        G.part("CartBadge", (2.6, 2.6, 0.2), (lx, y + 3.2, lz), (255, 255, 255), "SmoothPlastic", rot=(0, yaw, 0),
-               text=dict(face="Front", text="🧬", color=(20, 20, 20), bg=(250, 222, 170), bg_t=0.0))
-        for wx in (-2.6, 2.6):
-            for wz in (-2.8, 3.4):
+            px, pz = P(s_ * 3.05, 0.2)
+            G.part("CartSide", (0.55, 2.8, 9.4), (px, y + 2.7, pz), (24, 80, 56), "SmoothPlastic", rot=(0, yaw, 0))
+            px2, pz2 = P(s_ * 3.22, 0.2)
+            G.part("CartStripe", (0.25, 0.45, 9.6), (px2, y + 3.1, pz2), (120, 255, 200), "Neon", rot=(0, yaw, 0), collide=False)
+            G.part("CartGoldTrim", (0.25, 0.25, 9.6), (px2, y + 2.1, pz2), (255, 214, 90), "Neon", rot=(0, yaw, 0), collide=False)
+        # Front aerodynamic bulkhead & panoramic windshield
+        fx, fz = P(0, -4.3)
+        G.part("CartFront", (6.2, 3.4, 0.7), (fx, y + 3.0, fz), (28, 34, 46), "Metal", rot=(0, yaw, 0))
+        wx_g, wz_g = P(0, -4.1)
+        G.part("CartWindshield", (5.6, 2.6, 0.35), (wx_g, y + 5.7, wz_g), (185, 230, 255), "Glass", transp=0.45, rot=(18, yaw, 0),
+               collide=False)
+        # Physical 3D cockpit dashboard with live telemetry screen & 4 illuminated control buttons
+        cx_con, cz_con = P(0, -3.65)
+        G.part("CartConsole", (5.4, 0.65, 1.0), (cx_con, y + 3.65, cz_con), (22, 26, 36), "Metal", rot=(0, yaw, 0))
+        scx, scz = P(0, -3.88)
+        G.part("CartScreen", (4.6, 1.1, 0.2), (scx, y + 4.35, scz), (16, 28, 42), "SmoothPlastic", rot=(-15, yaw, 0), collide=False,
+               text=dict(face="Back", text="🚆 BSC SCIENCE EXPRESS • جاهز للانطلاق", color=(120, 255, 200), bg=(14, 24, 38), bg_t=0.0))
+        for bname, bdx, bcol, btxt in (
+            ("CartBtn_Slower", -1.65, (90, 110, 150), "－ إبطاء"),
+            ("CartBtn_Go",     -0.55, (46, 195, 105), "▶ تشغيل"),
+            ("CartBtn_Faster",  0.55, (55, 165, 235), "＋ تسريع"),
+            ("CartBtn_Horn",    1.65, (230, 165, 45), "🔔 بوق"),
+        ):
+            bx_b, bz_b = P(bdx, -3.55)
+            G.part(bname, (0.95, 0.38, 0.65), (bx_b, y + 4.02, bz_b), bcol, "Neon", rot=(0, yaw, 0),
+                   text=dict(face="Top", text=btxt, color=(255, 255, 255), bg=bcol, bg_t=0.0))
+        # Rear bulkhead + twin ATP Bio-Thruster Nozzles
+        ex, ez = P(0, 4.8)
+        G.part("CartBack", (6.2, 3.2, 0.6), (ex, y + 2.9, ez), (28, 34, 46), "Metal", rot=(0, yaw, 0))
+        for s_ in (-1, 1):
+            tx_, tz_ = P(s_ * 1.6, 5.25)
+            G.part("ThrusterRing", (0.7, 1.8, 1.8), (tx_, y + 2.6, tz_), (50, 56, 68), "Metal", shape="Cylinder",
+                   rot=(0, yaw + 90, 0), collide=False)
+            G.part("ThrusterGlow", (0.4, 1.3, 1.3), (tx_, y + 2.6, tz_ + 0.15 * math.cos(r)), (90, 220, 255), "Neon",
+                   shape="Cylinder", rot=(0, yaw + 90, 0), collide=False, shadow=False)
+        lx, lz = P(0, -4.7)
+        G.part("CartBadge", (2.6, 2.2, 0.2), (lx, y + 3.2, lz), (255, 255, 255), "SmoothPlastic", rot=(0, yaw, 0),
+               text=dict(face="Front", text="🧬 BSC", color=(24, 80, 56), bg=(250, 222, 170), bg_t=0.0))
+        for wx in (-2.9, 2.9):
+            for wz in (-3.2, 3.4):
                 cx_, cz_ = P(wx, wz)
-                G.part("CartWheel", (0.8, 2.0, 2.0), (cx_, y + 1.0, cz_), (40, 40, 46), "SmoothPlastic", shape="Cylinder",
+                G.part("CartWheel", (0.9, 2.2, 2.2), (cx_, y + 1.0, cz_), (34, 38, 46), "Metal", shape="Cylinder",
                        rot=(0, yaw, 0))
-        hx, hz = P(0, -4.3)
-        G.part("CartLight", (1.0, 0.6, 0.3), (hx, y + 1.8, hz), (255, 250, 220), "Neon", rot=(0, yaw, 0))
-        # v30: locomotive dress (nose, cab roof on posts, twin headlights, club livery); all welded to the seat by the server
-        nx_, nz_ = P(0, -6.0)
-        G.part("LocoNose", (5.4, 2.8, 3.0), (nx_, y + 2.6, nz_), (24, 80, 56), "SmoothPlastic", rot=(0, yaw, 0))
+        hx, hz = P(0, -4.75)
+        G.part("CartLight", (1.4, 0.6, 0.3), (hx, y + 1.8, hz), (255, 250, 220), "Neon", rot=(0, yaw, 0))
+        # Sculpted aerodynamic nose cone + panoramic roof canopy
+        nx_, nz_ = P(0, -6.4)
+        G.part("LocoNose", (5.8, 2.6, 3.4), (nx_, y + 2.5, nz_), (24, 80, 56), "SmoothPlastic", rot=(0, yaw, 0))
+        nx_tip, nz_tip = P(0, -8.2)
+        G.part("LocoNoseTip", (4.6, 1.8, 1.4), (nx_tip, y + 2.1, nz_tip), (36, 118, 86), "SmoothPlastic", rot=(0, yaw, 0), collide=False)
         for s_ in (-1, 1):
-            hx2, hz2 = P(s_ * 1.8, -7.55)
-            G.part("LocoHeadlight", (1.0, 1.0, 0.3), (hx2, y + 3.0, hz2), (255, 246, 210), "Neon", rot=(0, yaw, 0))
-            px2, pz2 = P(s_ * 2.6, 2.2)
-            G.part("CabPost", (0.4, 4.6, 0.4), (px2, y + 5.4, pz2), (30, 34, 40), "Metal", rot=(0, yaw, 0))
-            px3, pz3 = P(s_ * 2.6, -2.6)
-            G.part("CabPost", (0.4, 4.6, 0.4), (px3, y + 5.4, pz3), (30, 34, 40), "Metal", rot=(0, yaw, 0))
-        rx2, rz2 = P(0, -0.2)
-        G.part("CabRoof", (6.4, 0.5, 6.4), (rx2, y + 7.9, rz2), (24, 80, 56), "SmoothPlastic", rot=(0, yaw, 0))
-        G.part("CabRoofStripe", (6.5, 0.2, 6.5), (rx2, y + 8.2, rz2), (255, 214, 90), "Neon", rot=(0, yaw, 0))
+            hx2, hz2 = P(s_ * 1.9, -8.15)
+            G.part("LocoHeadlight", (1.1, 0.9, 0.35), (hx2, y + 2.8, hz2), (255, 248, 215), "Neon", rot=(0, yaw, 0))
+            px2, pz2 = P(s_ * 2.8, 3.2)
+            G.part("CabPost", (0.4, 4.8, 0.4), (px2, y + 5.5, pz2), (40, 46, 56), "Metal", rot=(0, yaw, 0), collide=False)
+            px3, pz3 = P(s_ * 2.8, -2.8)
+            G.part("CabPost", (0.4, 4.8, 0.4), (px3, y + 5.5, pz3), (40, 46, 56), "Metal", rot=(0, yaw, 0), collide=False)
+        rx2, rz2 = P(0, 0.2)
+        G.part("CabRoof", (6.6, 0.45, 7.6), (rx2, y + 8.0, rz2), (24, 80, 56), "SmoothPlastic", rot=(0, yaw, 0), collide=False)
+        G.part("CabRoofGlass", (4.6, 0.5, 5.6), (rx2, y + 8.05, rz2), (180, 235, 255), "Glass", transp=0.45, rot=(0, yaw, 0), collide=False)
+        G.part("CabRoofStripe", (6.7, 0.22, 7.7), (rx2, y + 8.3, rz2), (255, 214, 90), "Neon", rot=(0, yaw, 0), collide=False)
 
 
 def cart_car_model(x, y, z, name="CartCarTemplate", yaw=0):
-    """v30: passenger car the rider's client hooks behind the locomotive (local decoration, follows the rail)"""
+    """v52: Sleek trailing observation coach with glass roof dome and glowing bio-stripes"""
     r = math.radians(yaw)
 
     def P(dx, dz):
         return (x + dx * math.cos(r) + dz * math.sin(r), z - dx * math.sin(r) + dz * math.cos(r))
     with G.Group(name, "Model"):
         bx, bz = P(0, 0)
-        G.part("CarBody", (5.6, 0.6, 9.6), (bx, y + 1.3, bz), (250, 250, 248), "SmoothPlastic", rot=(0, yaw, 0), collide=False)
+        G.part("CarBody", (6.0, 0.65, 10.0), (bx, y + 1.3, bz), (242, 244, 248), "Metal", rot=(0, yaw, 0), collide=False)
         for s_ in (-1, 1):
-            px, pz = P(s_ * 2.9, 0)
-            G.part("CarSide", (0.5, 2.4, 9.6), (px, y + 2.6, pz), (24, 80, 56), "SmoothPlastic", rot=(0, yaw, 0), collide=False)
-            px, pz = P(s_ * 3.0, 0)
-            G.part("CarStripe", (0.3, 0.4, 9.8), (px, y + 3.1, pz), (255, 214, 90), "Neon", rot=(0, yaw, 0), collide=False)
-        for dz_ in (-2.2, 2.2):
+            px, pz = P(s_ * 2.95, 0)
+            G.part("CarSide", (0.5, 2.6, 10.0), (px, y + 2.6, pz), (24, 80, 56), "SmoothPlastic", rot=(0, yaw, 0), collide=False)
+            px2, pz2 = P(s_ * 3.1, 0)
+            G.part("CarStripe", (0.25, 0.4, 10.2), (px2, y + 3.1, pz2), (120, 255, 200), "Neon", rot=(0, yaw, 0), collide=False)
+        for dz_ in (-2.4, 2.4):
             sx_, sz_ = P(0, dz_)
-            G.part("CarBench", (4.6, 1.0, 2.0), (sx_, y + 2.1, sz_), (120, 64, 176), "Fabric", rot=(0, yaw, 0), collide=False)
-        for wx in (-2.6, 2.6):
-            for wz in (-3.4, 3.4):
+            G.part("CarBench", (4.8, 1.1, 2.2), (sx_, y + 2.15, sz_), (60, 120, 95), "Fabric", rot=(0, yaw, 0), collide=False)
+        for wx in (-2.8, 2.8):
+            for wz in (-3.5, 3.5):
                 cx_, cz_ = P(wx, wz)
-                G.part("CarWheel", (0.8, 2.0, 2.0), (cx_, y + 1.0, cz_), (40, 40, 46), "SmoothPlastic", shape="Cylinder",
+                G.part("CarWheel", (0.85, 2.1, 2.1), (cx_, y + 1.0, cz_), (34, 38, 46), "Metal", shape="Cylinder",
                        rot=(0, yaw, 0), collide=False)
 
 
@@ -167,8 +204,7 @@ class Turtle:
 
 
 # ====================================================================== sections
-# v31: a classic sightseeing train, not a coaster. The eight official specialties in their official order, one room each;
-# smooth S-bends and gentle hills only (no loops, jumps or crash curves). The cell world has its own train elsewhere.
+# v52: Grand 8-Specialty Science Express Coaster-Tour with dynamic booster stretches, banked turns, and over-track portals.
 SECTIONS = [
     ("المحطة", "Station"),
     ("مايكروبيولوجي 🦠", "Microbiology"),
@@ -181,23 +217,31 @@ SECTIONS = [
     ("البايوتكنولوجي 🧪", "Biotechnology"),
 ]
 SECTION_KEYS = ["micro", "biochem", "animal", "plant", "molecular", "forensic", "agri", "biotech"]
-# index of each section in the parkour zone list (Shared/Zones) -> AreaAtmosphere reuses those looks
 SECTION_ZONE = {"plant": 1, "animal": 2, "micro": 3, "biochem": 4, "molecular": 5, "agri": 6, "forensic": 7, "biotech": 8}
+SPEC_TRACK_COL = [
+    (90, 230, 200),   # micro
+    (210, 130, 255),  # biochem
+    (255, 190, 95),   # animal
+    (95, 225, 115),   # plant
+    (90, 185, 255),   # molecular
+    (255, 210, 75),   # forensic
+    (155, 225, 90),   # agri
+    (80, 245, 215),   # biotech
+]
 
 
 def build_track():
-    """a snake of rows: every specialty runs along its own row, rows are joined by wide U-turns.
-    Each row is a gentle S-bend with one soft hill, so the train glides past the landmarks."""
+    """Each specialty runs along its own grand biodome row, joined by sweeping banked U-turns with booster segments."""
     t = Turtle()
     t.yaw = 90.0                               # rows run along +X / -X
     t.marks = {}
     t.emit(["s0"], "المحطة")
     t.straight(50)
-    t.straight(60, dy=-12)
+    t.straight(60, dy=-12, flags=["b"])
     side = [1]
 
     def uturn():
-        t.straight(30)
+        t.straight(30, flags=["b"])
         t.turn(180 * side[0], 70)
         side[0] = -side[0]
         t.straight(30)
@@ -206,27 +250,27 @@ def build_track():
         t.straight(50)
         t.turn(20, 140)
         t.turn(-20, 140)
-        t.straight(70, dy=hill)
+        t.straight(70, dy=hill, flags=["b"])
         t.turn(-20, 140)
         t.turn(20, 140)
-        t.straight(70, dy=-hill)
+        t.straight(70, dy=-hill, flags=["b"])
         t.straight(40)
 
     for k, key in enumerate(SECTION_KEYS, start=1):
         name = SECTIONS[k][0] + " " + SECTIONS[k][1]
         t.section(name)
         if key == "molecular":
-            # a slow climb around the giant DNA helix and back down the other side
-            t.straight(40)
+            # a dramatic climb around the giant DNA helix and back down the other side
+            t.straight(40, flags=["b"])
             t.turn(360 * side[0], 30, dy=30)
             t.marks["dna"] = t.last_center
-            t.straight(80)
+            t.straight(80, flags=["b"])
             t.turn(-360 * side[0], 30, dy=-30)
             t.straight(40)
         else:
-            tour_row({"micro": 8, "biochem": -6, "animal": 10, "plant": -8, "forensic": 0, "agri": 6, "biotech": -6}[key])
+            tour_row({"micro": 10, "biochem": -8, "animal": 12, "plant": -10, "forensic": 6, "agri": 8, "biotech": -8}[key])
         if key == "biotech":
-            t.straight(50, dy=10)
+            t.straight(50, dy=10, flags=["b"])
             t.emit(["end"], "🎉 خلصت الرحلة! نادي العلوم البيولوجية يشكرك")
         else:
             uturn()
@@ -257,6 +301,7 @@ def check(t, min_d=11.0):
 # ====================================================================== rendering
 def draw_track(t):
     pts = t.pts
+    sec_starts = [idx for idx, _ in t.sections]
     with G.Group("CartTrack"):
         for i, (x, y, z, yaw, flags, label) in enumerate(pts):
             G.part("CW|%d|%s|%s" % (i + 1, ",".join(flags), label), (1, 1, 1), (x, y, z), (0, 0, 0), "SmoothPlastic", transp=1,
@@ -264,7 +309,13 @@ def draw_track(t):
         for i in range(len(pts) - 1):
             a, b = pts[i], pts[i + 1]
             if "g" in a[4] or "g" in b[4]:
-                continue    # in the air over a jump: no rails
+                continue
+            # Determine which specialty color theme applies to this track point
+            sec_idx = 0
+            for s_i, st in enumerate(sec_starts):
+                if i >= st:
+                    sec_idx = s_i
+            rail_glow = SPEC_TRACK_COL[min(sec_idx, len(SPEC_TRACK_COL) - 1)]
             dx, dy, dz = b[0] - a[0], b[1] - a[1], b[2] - a[2]
             yaw = a[3]
             ry = math.radians(yaw)
@@ -272,25 +323,57 @@ def draw_track(t):
             L = math.sqrt(dx * dx + dy * dy + dz * dz)
             pitch = -math.degrees(math.atan2(dy, h))
             rx, rz = math.cos(ry), -math.sin(ry)
-            # loops twist the rails: their "down" follows the loop, so offset along the track normal
             mx, my, mz = (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2
             nlen = L or 1
             tx, ty, tz = dx / nlen, dy / nlen, dz / nlen
-            ux, uy, uz = ty * rz, tz * rx - tx * rz, -ty * rx      # up = tangent x right (right is horizontal)
+            ux, uy, uz = ty * rz, tz * rx - tx * rz, -ty * rx
             ul = math.sqrt(ux * ux + uy * uy + uz * uz) or 1
             ux, uy, uz = ux / ul, uy / ul, uz / ul
+            # Dual tubular steel running rails + outer neon guide curb
             for s_ in (-1, 1):
-                box("Rail", (0.5, 0.5, L + 0.3), (mx + rx * s_ * 2.4 - ux * 0.3, my - uy * 0.3, mz + rz * s_ * 2.4 - uz * 0.3),
-                    (210, 214, 222), "Metal", rot=(pitch, yaw, 0), collide=False, shadow=False)
+                box("Rail", (0.6, 0.6, L + 0.35), (mx + rx * s_ * 2.5 - ux * 0.3, my - uy * 0.3, mz + rz * s_ * 2.5 - uz * 0.3),
+                    (215, 220, 228), "Metal", rot=(pitch, yaw, 0), collide=False, shadow=False)
+                if i % 2 == 0:
+                    box("GuideNeon", (0.22, 0.28, L * 2 + 0.2),
+                        (mx + rx * s_ * 3.35 - ux * 0.55, my - uy * 0.55, mz + rz * s_ * 3.35 - uz * 0.55),
+                        rail_glow, "Neon", rot=(pitch, yaw, 0), collide=False, shadow=False)
+            # Continuous heavy structural coaster box-spine & cross-ties
             if i % 2 == 0:
-                box("Tie", (6.4, 0.4, 1.0), (mx - ux * 0.9, my - uy * 0.9, mz - uz * 0.9),
-                    (120, 64, 176) if "b" not in a[4] else (255, 200, 60), "SmoothPlastic" if "b" not in a[4] else "Neon",
+                box("TrackSpine", (1.8, 1.4, L * 2 + 0.4), (mx - ux * 1.6, my - uy * 1.6, mz - uz * 1.6),
+                    (52, 58, 70), "Metal", rot=(pitch, yaw, 0), collide=False, shadow=False)
+                box("Tie", (6.8, 0.45, 1.1), (mx - ux * 0.85, my - uy * 0.85, mz - uz * 0.85),
+                    (85, 92, 108) if "b" not in a[4] else (255, 205, 65), "Metal" if "b" not in a[4] else "Neon",
                     rot=(pitch, yaw, 0), collide=False, shadow=False)
             if i % 8 == 0 and uy > 0.9 and y_above(a) > 6:
-                vcyl("Support", a[0], ISLAND_Y, a[1] - 1.2, a[2], 1.0, (200, 200, 210), "Metal", collide=False, shadow=False)
+                vcyl("Support", a[0], ISLAND_Y, a[1] - 1.8, a[2], 1.6, (70, 76, 88), "Metal", collide=False, shadow=False)
+                box("SupportCap", (4.2, 1.0, 2.6), (a[0], a[1] - 2.0, a[2]), (90, 96, 110), "Metal", rot=(0, yaw, 0),
+                    collide=False, shadow=False)
             if "b" in a[4] and i % 2 == 0:
-                box("Boost", (4, 0.2, 2.2), (a[0], a[1] - 0.3, a[2]), (255, 210, 60), "Neon", rot=(0, yaw, 0), collide=False,
+                box("Boost", (4.2, 0.24, 2.6), (a[0], a[1] - 0.3, a[2]), (255, 215, 60), "Neon", rot=(0, yaw, 0), collide=False,
                     shadow=False)
+            # Over-track biological set-piece arches & booster rings so the cart rides THROUGH massive themed structures!
+            if "b" in a[4] and i % 10 == 0:
+                for s_ in (-1, 1):
+                    box("BoostArchPillar", (1.2, 14.0, 1.4), (a[0] + rx * s_ * 6.5, a[1] + 5.5, a[2] + rz * s_ * 6.5),
+                        (44, 50, 62), "Metal", rot=(0, yaw, 0), collide=False, shadow=False)
+                box("BoostArchTop", (14.4, 1.4, 1.8), (a[0], a[1] + 13.0, a[2]), rail_glow, "Neon", rot=(0, yaw, 0),
+                    collide=False, shadow=False)
+        # Specialty Section Entrance Portals right over the track at the start of each of the 8 specialty rows
+        for k, (st_idx, sec_title) in enumerate(t.sections):
+            sx, sy, sz, syaw = pts[min(st_idx + 4, len(pts) - 1)][:4]
+            srx, srz = math.cos(math.radians(syaw)), -math.sin(math.radians(syaw))
+            scol = SPEC_TRACK_COL[min(k, len(SPEC_TRACK_COL) - 1)]
+            for s_ in (-1, 1):
+                vcyl("SpecGateColumn", sx + srx * s_ * 8.5, sy - 2.0, sy + 16.5, sz + srz * s_ * 8.5, 2.0, (44, 50, 64),
+                     "Metal", collide=False)
+                ball("SpecGateOrb", sx + srx * s_ * 8.5, sy + 17.5, sz + srz * s_ * 8.5, 2.8, scol, "Neon",
+                     collide=False, shadow=False)
+            G.part("SpecGateBanner", (19.0, 3.8, 0.8), (sx, sy + 15.2, sz), (24, 30, 44), "SmoothPlastic",
+                   rot=(0, syaw, 0), collide=False,
+                   text=dict(face="Front", text="✨ " + sec_title, color=(255, 255, 255), bg=(24, 30, 44), bg_t=0.0))
+            G.part("SpecGateBannerBack", (19.0, 3.8, 0.8), (sx, sy + 15.2, sz), (24, 30, 44), "SmoothPlastic",
+                   rot=(0, syaw + 180, 0), collide=False,
+                   text=dict(face="Front", text="✨ " + sec_title, color=(255, 255, 255), bg=(24, 30, 44), bg_t=0.0))
 
 
 def y_above(p):

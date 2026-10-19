@@ -183,26 +183,15 @@ def club_office_portal():
     A.logo_board(62.6, y + 22, -150, R=0.8, nx=-1.0, nz=0.0)
 
 
-# ---------------------------------------------------------------- north building: Starbucks next to the salad + Larich
+# ---------------------------------------------------------------- north building: BSC student lounge counter
 def north_extra():
     C5._off[2] = C5.NB_SHIFT
-    C5.counter(-5, 142, 0, 22, 4, (0, 112, 74), "Starbucks | ستاربكس", "Front")
+    C5.counter(-5, 142, 0, 22, 4, (24, 80, 56), "نادي العلوم البيولوجية | BSC Lounge", "Front")
     C5._off[2] = 0.0
 
 
-# ---------------------------------------------------------------- the garden walk: cats + memory signs + pergolas
-WALK_NOTES = [
-    "🐱 قطاوة العلوم: سلّم عليهم، هم أقدم طلاب بالكلية",
-    "تذكر أول محاضرة الساعة ٨ الصبح؟ ☕",
-    "هالممر أطول من ما تتوقع… خذ نفس 😅",
-    "هنا كنّا نراجع قبل الميد ترم 📚",
-    "لا تنسى اللاب كوت قبل المختبر 🥼",
-    "قهوة من كاريبو وكمّل يومك ☕",
-    "هل تعرف؟ جسمك فيه تقريباً ٣٧ تريليون خلية 🧬",
-    "تخرّجت؟ ترى الكلية تشتاق لك 💚",
-    "لا تأكّل القطاوة أكل بشر 🙏 لهم صحون خاصة",
-    "صورة جماعية عند الشراع؟ 📸",
-]
+# ---------------------------------------------------------------- the garden walk: cats + pergolas
+WALK_NOTES = []
 
 
 def garden_life():
@@ -224,22 +213,6 @@ def garden_life():
         if n % 2 == 0:
             A.cat(cx + dx / L * 3, 0.2, cz + dz / L * 3, face + 40, "loaf")
         A.cat_bowl(cx - dx / L * 2.6, 0.2, cz - dz / L * 2.6)
-    # memory signs on posts
-    for n, i in enumerate(range(3, len(path) - 2, max(1, (len(path) - 5) // len(WALK_NOTES)))):
-        if n >= len(WALK_NOTES):
-            break
-        px, pz = path[i]
-        dx, dz = path[i + 1][0] - px, path[i + 1][1] - pz
-        L = math.hypot(dx, dz) or 1
-        nx, nz = dz / L, -dx / L
-        s_ = -1 if n % 2 else 1
-        sx, sz = px + nx * s_ * 8.6, pz + nz * s_ * 8.6
-        yaw = math.degrees(math.atan2(dx, dz))
-        vcyl("NotePost", sx, 0, 6, sz, 0.5, (90, 70, 50), "Wood", collide=False)
-        G.part("WalkNote", (9, 3.2, 0.3), (sx, 7.4, sz), (250, 246, 236), "SmoothPlastic", rot=(0, yaw, 0), collide=False,
-               text=dict(face="Back", text=WALK_NOTES[n], color=(50, 40, 30), bg=(250, 246, 236), bg_t=0.0))
-        G.part("WalkNote2", (9, 3.2, 0.3), (sx, 7.4, sz), (250, 246, 236), "SmoothPlastic", rot=(0, yaw, 0), collide=False,
-               text=dict(face="Front", text=WALK_NOTES[n], color=(50, 40, 30), bg=(250, 246, 236), bg_t=0.0))
     # flowering pergolas over the walk
     for i in (20, 52, 84):
         if i >= len(path) - 1:

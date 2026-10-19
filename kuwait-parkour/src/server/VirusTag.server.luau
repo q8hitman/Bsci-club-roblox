@@ -143,23 +143,120 @@ local function broadcast(list, text, kind)
 	end
 end
 
+local virusRng = Random.new()
+local lastZero = {} -- [Player] = true if picked as Patient Zero in the immediately preceding round
+
+local function runSoloDroneRound(player)
+	workspace:SetAttribute("VirusPhase", "running")
+	local soloTime = 40
+	workspace:SetAttribute("VirusEnds", workspace:GetServerTimeNow() + soloTime)
+	player:SetAttribute("Virus", "healthy")
+	setLook(player, false)
+	notify:FireClient(
+		player,
+		"🤖 جولة تدريب فردية! اهرب من كبسولة الفيروس الذكية وجمّع اللقاحات 💉",
+		"info"
+	)
+	local drone = Instance.new("Part")
+	drone.Name = "BioVirusDrone"
+	drone.Shape = Enum.PartType.Ball
+	drone.Size = Vector3.new(4.2, 4.2, 4.2)
+	drone.Material = Enum.Material.Neon
+	drone.Color = Color3.fromRGB(110, 255, 80)
+	drone.Anchored = true
+	drone.CanCollide = false
+	drone.CFrame = center.CFrame + Vector3.new(0, 3.5, -28)
+	drone.Parent = workspace
+	spawnVaccine()
+	local endsAt = os.clock() + soloTime
+	local survived = true
+	while os.clock() < endsAt do
+		task.wait(0.1)
+		if not (player.Parent and inArena(player)) then
+			survived = false
+			break
+		end
+		local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+		if not root then
+			survived = false
+			break
+		end
+		local toPlayer = Vector3.new(root.Position.X - drone.Position.X, 0, root.Position.Z - drone.Position.Z)
+		if toPlayer.Magnitude > 0.5 then
+			local step = toPlayer.Unit * (14.5 * 0.1)
+			drone.CFrame = CFrame.new(
+				drone.Position.X + step.X,
+				center.Position.Y + 3.2 + math.sin(os.clock() * 4) * 0.6,
+				drone.Position.Z + step.Z
+			)
+		end
+		if
+			(root.Position - drone.Position).Magnitude < TOUCH_DIST
+			and not (shieldUntil[player] and os.clock() < shieldUntil[player])
+		then
+			survived = false
+			notify:FireClient(
+				player,
+				"🤢 لمستك كبسولة الفيروس! حاول مرة ثانية",
+				"wrong"
+			)
+			break
+		end
+	end
+	drone:Destroy()
+	cleanupVaccines()
+	table.clear(shieldUntil)
+	if survived and player.Parent and inArena(player) then
+		local s = Profiles.state[player]
+		if s then
+			s.coins += 15
+			player:SetAttribute("Coins", s.coins)
+		end
+		notify:FireClient(player, "💪 نجيت في تدريب المناعة! +15 💰", "ach")
+		if Profiles.award then
+			Profiles.award(player, "virus_survive")
+		end
+	end
+	clearPlayer(player)
+end
+
 local function runRound(players)
 	workspace:SetAttribute("VirusPhase", "running")
 	workspace:SetAttribute("VirusEnds", workspace:GetServerTimeNow() + ROUND_TIME)
-	local fact = FACTS[math.random(1, #FACTS)]
+	local fact = FACTS[virusRng:NextInteger(1, #FACTS)]
 	local zeroCount = #players >= 6 and 2 or 1
-	local shuffled = table.clone(players)
-	for i = #shuffled, 2, -1 do
-		local j = math.random(1, i)
-		shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
+	local fresh, repeaters = {}, {}
+	for _, p in ipairs(players) do
+		if lastZero[p] then
+			table.insert(repeaters, p)
+		else
+			table.insert(fresh, p)
+		end
+	end
+	for i = #fresh, 2, -1 do
+		local j = virusRng:NextInteger(1, i)
+		fresh[i], fresh[j] = fresh[j], fresh[i]
+	end
+	for i = #repeaters, 2, -1 do
+		local j = virusRng:NextInteger(1, i)
+		repeaters[i], repeaters[j] = repeaters[j], repeaters[i]
+	end
+	local shuffled = {}
+	for _, p in ipairs(fresh) do
+		table.insert(shuffled, p)
+	end
+	for _, p in ipairs(repeaters) do
+		table.insert(shuffled, p)
 	end
 	local zero = {}
+	table.clear(lastZero)
 	for i, p in ipairs(shuffled) do
 		local infected = i <= zeroCount
 		p:SetAttribute("Virus", infected and "infected" or "healthy")
 		setLook(p, infected)
 		if infected then
 			zero[p] = true
+			lastZero[p] = true
 			notify:FireClient(
 				p,
 				"🦠 أنت الفيروس! المس الكل قبل لا يخلص الوقت",
@@ -171,6 +268,7 @@ local function runRound(players)
 	end
 	local endsAt = os.clock() + ROUND_TIME
 	local nextVaccine = os.clock() + 8
+	local nextSurge = os.clock() + 18
 	while os.clock() < endsAt do
 		task.wait(0.1)
 		local live, sick, healthy = {}, {}, {}
@@ -188,6 +286,25 @@ local function runRound(players)
 		end
 		if #healthy == 0 or #sick == 0 then
 			break
+		end
+		if os.clock() > nextSurge then
+			nextSurge = os.clock() + 20
+			for _, p in ipairs(healthy) do
+				local hum = p.Character and p.Character:FindFirstChildOfClass("Humanoid")
+				if hum then
+					hum.WalkSpeed = HEALTHY_SPEED + 4
+					notify:FireClient(
+						p,
+						"⚡ دفعة أدرينالين! سرعة إضافية 4 ثواني",
+						"collect"
+					)
+					task.delay(4, function()
+						if hum.Parent and p:GetAttribute("Virus") == "healthy" then
+							hum.WalkSpeed = HEALTHY_SPEED
+						end
+					end)
+				end
+			end
 		end
 		for _, v in ipairs(sick) do
 			local vr = v.Character and v.Character:FindFirstChild("HumanoidRootPart")
@@ -264,9 +381,9 @@ task.spawn(function()
 	while true do
 		task.wait(1)
 		local list = arenaPlayers()
-		if #list < 2 then
+		if #list == 0 then
 			workspace:SetAttribute("VirusPhase", "waiting")
-			workspace:SetAttribute("VirusCount", #list)
+			workspace:SetAttribute("VirusCount", 0)
 		else
 			workspace:SetAttribute("VirusPhase", "countdown")
 			workspace:SetAttribute("VirusEnds", workspace:GetServerTimeNow() + COUNTDOWN)
@@ -275,6 +392,9 @@ task.spawn(function()
 			if #list >= 2 then
 				runRound(list)
 				task.wait(5)
+			elseif #list == 1 then
+				runSoloDroneRound(list[1])
+				task.wait(5)
 			end
 		end
 	end
@@ -282,4 +402,5 @@ end)
 
 Players.PlayerRemoving:Connect(function(player)
 	shieldUntil[player] = nil
+	lastZero[player] = nil
 end)

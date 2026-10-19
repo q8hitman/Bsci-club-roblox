@@ -257,6 +257,7 @@ seqEvent.Parent = ReplicatedStorage
 -- so we poll which button each player stands on instead of trusting repeated Touched events.
 local seqButtons = {} -- { part, id, letter }
 local litFor = {} -- [player][id] = { parts lit for that player }
+local solvedUntil = {} -- [player][id] = os.clock() + 20
 
 local function pressSeq(btn, player)
 	local id, letter, part = btn.id, btn.letter, btn.part
@@ -264,16 +265,23 @@ local function pressSeq(btn, player)
 	if not key then
 		return
 	end
+	solvedUntil[player] = solvedUntil[player] or {}
+	if solvedUntil[player][id] and os.clock() < solvedUntil[player][id] then
+		return
+	end
 	seqProgress[id] = seqProgress[id] or {}
 	litFor[player] = litFor[player] or {}
 	local idx = (seqProgress[id][player] or 0) + 1
 	if key:sub(idx, idx) == letter then
 		local lit = litFor[player][id] or {}
-		table.insert(lit, part)
+		if not table.find(lit, part) then
+			table.insert(lit, part)
+		end
 		litFor[player][id] = lit
 		if idx == #key then
 			seqProgress[id][player] = 0
 			litFor[player][id] = nil
+			solvedUntil[player][id] = os.clock() + 20
 			-- v31: the bridge opens for the solver only (their client makes the ghost tiles solid for their own
 			-- character, whose physics it owns), so nobody crosses a puzzle they did not solve
 			sfx:FireClient(player, "sting")
@@ -285,6 +293,10 @@ local function pressSeq(btn, player)
 			seqEvent:FireClient(player, "lit", id, lit)
 		end
 	else
+		local existing = litFor[player][id]
+		if existing and table.find(existing, part) then
+			return
+		end
 		seqProgress[id][player] = 0
 		litFor[player][id] = nil
 		sfx:FireClient(player, "wrong")
@@ -297,6 +309,7 @@ local function resetPlayerSeq(player)
 		seqEvent:FireClient(player, "wrong", id, {})
 	end
 	litFor[player] = nil
+	solvedUntil[player] = nil
 	for _, prog in pairs(seqProgress) do
 		prog[player] = nil
 	end

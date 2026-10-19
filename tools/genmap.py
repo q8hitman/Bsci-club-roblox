@@ -160,8 +160,8 @@ def ball(name, cx, cy, cz, d, color, mat="Plastic", **kw):
     part(name, (d, d, d), (cx, cy, cz), color, mat, shape="Ball", **kw)
 
 
-def sign(name, text, pos, size, face, color=WHITE, bg=(30, 40, 50), mat="SmoothPlastic", frame=None):
-    box(name, size, pos, bg, mat, text=dict(face=face, text=text, color=color, bg=bg, bg_t=0.0))
+def sign(name, text, pos, size, face, color=WHITE, bg=(30, 40, 50), mat="SmoothPlastic", frame=None, collide=False):
+    box(name, size, pos, bg, mat, collide=collide, text=dict(face=face, text=text, color=color, bg=bg, bg_t=0.0))
 
 
 def tree(x, y, z, s=1.0):

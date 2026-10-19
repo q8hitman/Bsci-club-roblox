@@ -152,10 +152,39 @@ local function runExam(players)
 			workspace:SetAttribute("ExamOpt_" .. L, answers[i])
 		end
 		setBoards(answers)
-		setScreen(
-			("❓ %s\nA) %s   B) %s\nC) %s   D) %s"):format(item.q, answers[1], answers[2], answers[3], answers[4])
+		local qPrompt = ("❓ %s\nA) %s   B) %s\nC) %s   D) %s"):format(
+			item.q,
+			answers[1],
+			answers[2],
+			answers[3],
+			answers[4]
 		)
-		task.wait(ANSWER_TIME)
+		setScreen(qPrompt)
+		local committed = {} -- [Player] = locked answer letter 2s before floor drops
+		for rem = ANSWER_TIME, 1, -1 do
+			if rem == 2 then
+				for p in pairs(alive) do
+					if p.Parent and inHall(p) then
+						committed[p] = zoneOf(p)
+						if committed[p] then
+							notify:FireClient(
+								p,
+								("🔒 تم قفل إجابتك على (%s)!"):format(committed[p]),
+								"info"
+							)
+						else
+							notify:FireClient(
+								p,
+								"⚠️ لم تقف داخل منطقة إجابة واضحة قبل القفل!",
+								"wrong"
+							)
+						end
+					end
+				end
+				setScreen(qPrompt .. "\n🔒 تم قفل الإجابات!")
+			end
+			task.wait(1)
+		end
 		-- open the wrong floors
 		for L, t in pairs(traps) do
 			if L ~= rightLetter then
@@ -170,7 +199,9 @@ local function runExam(players)
 		setScreen(("✅ الجواب الصح: %s) %s"):format(rightLetter, item.right))
 		workspace:SetAttribute("ExamRight", rightLetter) -- revealed only after the answer time is over
 		for p in pairs(alive) do
-			if not p.Parent or not inHall(p) or zoneOf(p) ~= rightLetter then
+			local finalZone = zoneOf(p)
+			local lockedZone = committed[p] or finalZone
+			if not p.Parent or not inHall(p) or lockedZone ~= rightLetter or finalZone ~= rightLetter then
 				alive[p] = nil
 				if p.Parent then
 					notify:FireClient(p, "📉 إجابة غلط… انتظر الاختبار الجاي", "wrong")

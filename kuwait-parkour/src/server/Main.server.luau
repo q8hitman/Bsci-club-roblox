@@ -41,13 +41,13 @@ for _, inst in ipairs(mapFolder:GetDescendants()) do
 end
 assert(checkpoints[0] and checkpoints[Config.Total], "map is missing checkpoints")
 
--- portal destinations: the club HQ is the lobby (players spawn there), everything else is a portal away
+-- portal destinations: the club HQ & KU College of Science Campus are the primary hubs
 local destinations = {
 	HQ = mapFolder:FindFirstChild("HQSpawn", true),
 	Campus = mapFolder:FindFirstChild("CampusSpawn", true),
 	Cart = mapFolder:FindFirstChild("CartSpawnPoint", true),
 	Virus = mapFolder:FindFirstChild("VirusSpawn", true),
-	Island = mapFolder:FindFirstChild("IslandSpawn", true),
+	Island = mapFolder:FindFirstChild("HQSpawn", true) or mapFolder:FindFirstChild("CampusSpawn", true),
 	Exam = mapFolder:FindFirstChild("ExamSpawn", true),
 	Arcade = mapFolder:FindFirstChild("ArcadeSpawn", true),
 	Lab = mapFolder:FindFirstChild("LabSpawn", true),
@@ -164,13 +164,13 @@ local function onPortal(player, args)
 	end
 end
 
--- "back to the island" button (client shows it while InCourse): progress is kept, only the position changes
+-- "back to the campus / club hub" button (client shows it while InCourse): progress is kept, only the position changes
 local leaveEvent = Instance.new("RemoteEvent")
 leaveEvent.Name = "LeaveCourse"
 leaveEvent.Parent = ReplicatedStorage
 leaveEvent.OnServerEvent:Connect(function(player)
 	if player:GetAttribute("InCourse") and canUsePortal(player) then
-		leaveCourse(player, "Island")
+		leaveCourse(player, destinations.Campus and "Campus" or "HQ")
 	end
 end)
 

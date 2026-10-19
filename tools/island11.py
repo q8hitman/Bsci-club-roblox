@@ -20,81 +20,107 @@ PASTEL = [c for (_, c, _) in A.HEXES]
 GREEN = (24, 80, 56)
 
 
-def gateway(name, x, z, face, title, sub, col, width=12.0, h=14.0):
-    """a free-standing glowing gateway (portal sheet inside a framed arch) facing `face` = (nx, nz)"""
+def gateway_at(name, X, Y, Z, face, title, sub, col, width=10.0, h=12.5):
+    """a free-standing glowing gateway (portal sheet inside a framed arch) at absolute (X, Y, Z) facing `face` = (nx, nz)"""
     nx, nz = face
     along_x = abs(nz) > 0.5
-    X, Z = OX + x, OZ + z
-    # v29: slim, consistent gateway (dark metal posts + a small plaque). The old white frames and two-line boards
-    # covered the building fronts (the HQ portico was half hidden). `sub` is kept in the signature for callers.
     METAL = (44, 50, 56)
     for s_ in (-1, 1):
         px, pz = (X + s_ * (width / 2 + 0.6), Z) if along_x else (X, Z + s_ * (width / 2 + 0.6))
-        vcyl("GatePost", px, 0, h + 0.8, pz, 1.1, METAL, "Metal")
-        ball("GateCap", px, h + 1.2, pz, 1.4, col, "Neon", collide=False, shadow=False)
-    box("GateBeam", (width + 1.2, 0.7, 0.7) if along_x else (0.7, 0.7, width + 1.2), (X, h + 0.45, Z), METAL, "Metal")
-    G.part(name, (width, h, 0.4) if along_x else (0.4, h, width), (X, h / 2 + 0.1, Z), col, "Neon", transp=0.55, collide=False,
+        vcyl("GatePost", px, Y, Y + h + 0.8, pz, 1.0, METAL, "Metal")
+        ball("GateCap", px, Y + h + 1.2, pz, 1.3, col, "Neon", collide=False, shadow=False)
+    box("GateBeam", (width + 1.2, 0.7, 0.7) if along_x else (0.7, 0.7, width + 1.2), (X, Y + h + 0.45, Z), METAL, "Metal")
+    G.part(name, (width, h, 0.4) if along_x else (0.4, h, width), (X, Y + h / 2 + 0.1, Z), col, "Neon", transp=0.5, collide=False,
            shadow=False)
     faceName = {(0, 1): "Back", (0, -1): "Front", (1, 0): "Right", (-1, 0): "Left"}[(int(round(nx)), int(round(nz)))]
-    size = (min(width + 1, 12), 2.2, 0.3) if along_x else (0.3, 2.2, min(width + 1, 12))
-    sign("GateTitle", title, (X + nx * 0.5, h + 2.1, Z + nz * 0.5), size, faceName, color=(255, 246, 225), bg=(30, 36, 42))
+    size = (min(width + 1, 11.5), 2.2, 0.3) if along_x else (0.3, 2.2, min(width + 1, 11.5))
+    sign("GateTitle", title, (X + nx * 0.5, Y + h + 2.1, Z + nz * 0.5), size, faceName, color=(255, 246, 225), bg=(30, 36, 42))
+
+
+def gateway(name, x, z, face, title, sub, col, width=12.0, h=14.0):
+    """Compatibility wrapper placing gateway on Campus / HQ instead of retired Island"""
+    gateway_at(name, x, 0.0, z, face, title, sub, col, width=width, h=h)
 
 
 def island_layer():
-    with G.Group("IslandGameplay"):
-        G.part("IslandSpawn", (14, 1, 14), (OX, 0.5, OZ + 22), (64, 140, 108), "SmoothPlastic", cls="SpawnLocation",
-               extra='<bool name="Neutral">true</bool><int name="Duration">0</int><bool name="Enabled">false</bool>', transp=0.0,
-               text=dict(face="Top", text="BSC", color=(255, 255, 255), bg=(36, 96, 74), bg_t=0.0))
-        # plaza monument: the club logo on a stone pedestal ringed by glowing hexes
-        disc("MonumentBase", OX, 1.2, OZ - 8, 18, 2.4, (236, 230, 216), "Marble")
-        disc("MonumentStep", OX, 2.8, OZ - 8, 12, 1.2, (220, 212, 196), "Marble")
-        disc("MonumentGlow", OX, 2.45, OZ - 8, 18.4, 0.3, (120, 255, 200), "Neon", collide=False, shadow=False)
-        for i in range(6):
-            a = i * math.pi / 3
-            A.floor_hex(OX + 13 * math.cos(a), 0.12, OZ - 8 + 13 * math.sin(a), 2.6, PASTEL[i % 5])
-        A.logo(OX - 4, 14, OZ - 8.2, R=2.4, nx=0.0, nz=1.0, name=False)
-        A.logo(OX + 4, 14, OZ - 7.8, R=2.4, nx=0.0, nz=-1.0, name=False)
-        sign("IslandName", "جزيرة BSC 🧬 BSC Island", (OX, 27, OZ - 8), (22, 3.6, 0.4), "Back", bg=GREEN)
-        # gateways in front of the attractions
-        gateway("Portal|HQ", 0, -64, (0, 1), "🏠 مقر النادي", "الأسئلة • بوابات الباركور", (120, 255, 200))
-        gateway("Portal|Exam", 70, -20, (-1, 0), "📝 قاعة الاختبارات", "اختبار جماعي: الغلط يطيّحك!", (255, 210, 80))
-        gateway("Portal|Arcade", -84, -20, (1, 0), "🎮 محطة الألعاب", "ميني قيمز + طفرات عشوائية", (240, 110, 200))
-        gateway("Portal|Course", 0, -184, (0, 1), "🏃 برج الباركور", "كمّل 100 مرحلة", (110, 200, 255), width=14, h=16)
-        gateway("Portal|Cart", -78, 150, (1, 0), "🚆 قطار التخصصات", "", (250, 160, 90))
-        train_station_dressing()
-        gateway("Portal|Virus", -154, 55, (1, 0), "🦠 مختبر العدوى", "لعبة الفيروس مع الربع", (140, 255, 90))
-        gateway("Portal|Campus", 62, 30, (-1, 0), "🚌 باص الجامعة", "كلية العلوم (ذكريات)", (255, 190, 120), width=9, h=11)
-        # the subway stairs take you straight onto the Cell Train
-        G.part("TrainStart", (8, 0.6, 8), (OX + 64, 0.4, OZ + 150), (150, 90, 230), "Neon", transp=0.15, shadow=False)
-        sign("SubwaySign", "🚇 قطار الخلية\nCell Train", (OX + 64, 9, OZ + 144), (12, 4, 0.4), "Back", bg=(90, 50, 150))
-        # direction posts on the plaza
-        posts = [("🏠 المقر ↑", 0, -40), ("📝 الاختبارات →", 34, -14), ("🎮 الألعاب ←", -34, -14), ("🍩 شارع الأكل ↓", 0, 46)]
-        for text, x, z in posts:
-            vcyl("SignPost", OX + x, 0, 7, OZ + z, 0.6, (120, 90, 60), "Wood", collide=False)
-            sign("SignBoard", text, (OX + x, 8, OZ + z), (9, 2.2, 0.4), "Back", bg=(60, 40, 30))
-        # shop name boards on the food street (fun, original names)
-        # centres match the shop row in tools/world/island.luau (street table); boards sit on the shop fronts (|x| 20.5)
-        names = [("كافيه الخلية ☕", -1, 66), ("مخبز الخميرة 🥐", -1, 84.5), ("دونات DNA 🍩", -1, 103),
-                 ("سلطة الكلوروبلاست 🥗", -1, 121), ("ميلك شيك الكلوروفيل 🥤", -1, 139),
-                 ("آيس كريم الميتوكوندريا 🍦", 1, 75.5), ("برجر البروتين 🍔", 1, 102.5), ("بيتزا البكتيريا 🍕", 1, 120.5),
-                 ("عصير الفيتامينات 🍊", 1, 138.5)]
+    """v52: The separate Island (OZ=9000) is decommissioned per owner decision.
+    All essential content (9 Biology Snack Kiosks, 8 NPCs, Activity Gateways, and Club Monument)
+    is consolidated into the BSC Club HQ (0, 600, -9000) and KU College of Science Campus Plaza (0, 0, 44..110)."""
+    import hq
+    HX, HY, HZ = hq.HQ_OFFSET
+    with G.Group("CampusHubMigration"):
+        # Safe invisible fallback part named IslandSpawn at Campus Plaza so legacy references never error
+        G.part("IslandSpawn", (6, 1, 6), (0, 0.5, 70), (64, 140, 108), "SmoothPlastic", transp=1.0, collide=False, shadow=False)
+
+        # ---- 1. BSC Club HQ Activity Portal Gallery (West & East Walls of HQ so HQ is a complete 100% Hub)
+        hq_portals = [
+            ("Portal|Exam",   -73.8, -14.0, (1, 0),  "📝 قاعة الاختبارات", (255, 210, 80)),
+            ("Portal|Lab",    -73.8,   6.0, (1, 0),  "🔬 معهد الأبحاث والمختبر", (140, 220, 255)),
+            ("Portal|Arcade", -73.8,  26.0, (1, 0),  "🎮 صالة الألعاب (Chaos)", (240, 110, 200)),
+            ("Portal|Quiz",    73.8, -14.0, (-1, 0), "🎓 مركز التحديات العلمية", (255, 200, 120)),
+            ("Portal|Museum",  73.8,   6.0, (-1, 0), "🏛️ متحف العلوم التفاعلي", (120, 230, 190)),
+            ("Portal|Show",    73.8,  26.0, (-1, 0), "🎪 مسرح المسابقات", (255, 150, 90)),
+            ("Portal|Racers",  73.8,  45.0, (-1, 0), "🏎️ سباق الميكروبات", (110, 210, 255)),
+            ("Portal|Laser",  -52.0, -54.0, (0, 1),  "⚡ الهروب من الليزر", (255, 95, 120)),
+        ]
+        for pname, dx, dz, face, title, col in hq_portals:
+            gateway_at(pname, HX + dx, HY, HZ + dz, face, title, "", col, width=8.5, h=11.0)
+
+        # ---- 2. Campus Courtyard Biology Snack Promenade (ShopOrder|1..9 migrated from Island to Campus!)
+        # Placed along the shaded East & West Courtyard Promenades south of Building 114 (z = 48..96)
+        names = [
+            ("كافيه الخلية ☕", -1, 50.0),
+            ("مخبز الخميرة 🥐", -1, 61.5),
+            ("دونات DNA 🍩", -1, 73.0),
+            ("سلطة الكلوروبلاست 🥗", -1, 84.5),
+            ("ميلك شيك الكلوروفيل 🥤", -1, 96.0),
+            ("آيس كريم الميتوكوندريا 🍦", 1, 54.0),
+            ("برجر البروتين 🍔", 1, 67.5),
+            ("بيتزا البكتيريا 🍕", 1, 81.0),
+            ("عصير الفيتامينات 🍊", 1, 94.5),
+        ]
+        sign("CampusFoodHeaderW", "🍩 ركن الكافيهات العلمية • Biology Café Row", (-38, 10.8, 43.0), (14, 2.2, 0.4), "Back", bg=GREEN)
+        sign("CampusFoodHeaderE", "🥤 استراحة نادي العلوم • Free Bio Snacks", (38, 10.8, 43.0), (14, 2.2, 0.4), "Back", bg=GREEN)
         for i, (text, side, z) in enumerate(names):
-            G.part("ShopName", (0.4, 2.4, 11), (OX + side * 20.2, 12.4, OZ + z), (30, 30, 36), "SmoothPlastic", collide=False,
+            kx = side * 38.0
+            # Shaded kiosk booth + counter + menu sign + ShopOrder|1..9 marker
+            box("KioskBack", (1.2, 8.6, 8.8), (kx + side * 2.2, 4.3, z), (236, 230, 218), "Marble")
+            box("ShopCounter", (1.8, 3.4, 7.6), (kx, 1.7, z), (242, 236, 224), "Marble")
+            box("ShopCounterTop", (2.4, 0.35, 8.0), (kx - side * 0.2, 3.55, z), (150, 104, 66), "WoodPlanks")
+            box("ShopAwning", (4.2, 0.45, 9.0), (kx, 8.4, z), (200, 70, 60) if i % 2 else (36, 118, 88),
+                "Fabric", rot=(0, 0, side * 10), collide=False)
+            G.part("ShopName", (0.4, 2.2, 8.6), (kx + side * 1.4, 6.4, z), (30, 34, 42), "SmoothPlastic", collide=False,
                    text=dict(face="Right" if side < 0 else "Left", text=text, color=(255, 240, 200), bg=(24, 80, 56), bg_t=0.0))
-            # v31: a walk-up order window on every shop (FoodStreet.server gives a free snack + a fact; no fake prices)
-            fx = OX + side * 19.4
-            box("ShopCounter", (1.6, 3.4, 7), (fx, 1.7, OZ + z), (236, 228, 214), "Marble")
-            box("ShopCounterTop", (2.4, 0.3, 7.6), (fx - side * 0.3, 3.55, OZ + z), (150, 104, 66), "WoodPlanks")
-            box("ShopAwning", (3.4, 0.4, 8.4), (fx - side * 1.0, 8.2, OZ + z), (200, 70, 60) if i % 2 else (40, 120, 90),
-                "Fabric", rot=(0, 0, side * 12), collide=False)
-            G.part("ShopOrder|%d" % (i + 1), (1, 1, 1), (fx - side * 1.4, 3.6, OZ + z), (0, 0, 0), "SmoothPlastic", transp=1,
+            G.part("ShopOrder|%d" % (i + 1), (1.2, 1.2, 1.2), (kx - side * 1.3, 3.6, z), (0, 0, 0), "SmoothPlastic", transp=1,
                    collide=False, shadow=False)
-        # NPCs (spawned by NPCs.server.luau at these markers)
-        npcs = [("NPC|dr_sara", -14, 12, 160), ("NPC|abu_ali", 8, -52, 0), ("NPC|noura", 16, 60, -90),
-                ("NPC|yousef", 60, -12, -90), ("NPC|chef", 9, 166, -90), ("NPC|lifeguard", -40, 228, 0),
-                ("NPC|gamer", -66, -10, 90), ("NPC|cat_lady", 120, -55, 200)]
-        for name, x, z, yaw in npcs:
-            G.part(name, (2, 1, 2), (OX + x, 0.5, OZ + z), (0, 0, 0), "SmoothPlastic", transp=1, collide=False, shadow=False,
+
+        # ---- 3. Campus Outdoor Activity Gateways (West & East of the South Plaza so Campus also links to all worlds)
+        campus_portals = [
+            ("Portal|HQ",     -56.0, 48.0, (1, 0),  "🏠 مقر نادي العلوم (HQ)", (120, 255, 200)),
+            ("Portal|Lab",    -56.0, 64.0, (1, 0),  "🔬 معهد الأبحاث والمختبر", (140, 220, 255)),
+            ("Portal|Exam",   -56.0, 80.0, (1, 0),  "📝 قاعة الاختبارات", (255, 210, 80)),
+            ("Portal|Quiz",   -56.0, 96.0, (1, 0),  "🎓 مركز التحديات", (255, 200, 120)),
+            ("Portal|Cart",    56.0, 48.0, (-1, 0), "🚆 قطار التخصصات الـ8", (250, 160, 90)),
+            ("Portal|Arcade",  56.0, 64.0, (-1, 0), "🎮 محطة الألعاب والألغاز", (240, 110, 200)),
+            ("Portal|Course",  56.0, 80.0, (-1, 0), "🏃 باركور الـ100 مرحلة", (110, 200, 255)),
+            ("Portal|Virus",   56.0, 96.0, (-1, 0), "🦠 مختبر العدوى (Virus Tag)", (140, 255, 90)),
+        ]
+        for pname, cx, cz, face, title, col in campus_portals:
+            gateway_at(pname, cx, 0.0, cz, face, title, "", col, width=9.5, h=11.5)
+
+        # ---- 4. All 8 Interactive NPCs migrated to meaningful Campus & Club HQ spots
+        npcs_abs = [
+            ("NPC|abu_ali",   HX + 20.0, HY + 0.5, HZ + 36.0, -35),   # Welcoming students inside BSC Club HQ
+            ("NPC|gamer",     HX - 58.0, HY + 0.5, HZ + 24.0,  90),   # By the Arcade & Virus portals inside HQ
+            ("NPC|dr_sara",       -16.0,      0.5,      24.0, 180),   # South Campus Atrium entrance (Specialties & Lab guide)
+            ("NPC|noura",          16.0,      0.5,      24.0, 180),   # South Campus Atrium entrance (Campus tour guide)
+            ("NPC|yousef",        -46.0,      0.5,      78.0,  90),   # Near Exam Hall & Quiz portals on Campus
+            ("NPC|chef",           32.0,      0.5,      67.5, -90),   # By the Biology Snack Promenade on Campus
+            ("NPC|lifeguard",      12.0,      0.5,      98.0,   0),   # By the Campus Plaza Fountain
+            ("NPC|cat_lady",       74.0,      0.5,      58.0, -90),   # Along the Campus Garden Walk near the cats
+        ]
+        for name, nx, ny, nz, yaw in npcs_abs:
+            G.part(name, (2, 1, 2), (nx, ny, nz), (0, 0, 0), "SmoothPlastic", transp=1, collide=False, shadow=False,
                    rot=(0, yaw, 0))
 
 
@@ -129,10 +155,6 @@ def exam_hall():
         box("InvigilatorDesk", (16, 4, 5), (EX - 50, EY + 2, EZ - 70), (150, 104, 66), "WoodPlanks")
         G.part("NPC|invigilator", (2, 1, 2), (EX - 50, EY + 0.5, EZ - 76), (0, 0, 0), "SmoothPlastic", transp=1, collide=False,
                shadow=False, rot=(0, 0, 0))
-        # answer zones (v31): the hall floor used to stop at EZ-10 while the zones started at EZ-27, and the zones had open
-        # 4-stud gaps between them -> walking to an answer dropped you into the pit. Now: a solid apron up to the zones,
-        # 28-wide zones on a 29 pitch with solid neon divider strips, solid side floors and a front glass rail. Only the
-        # four trap floors open. Every zone shows its letter on the floor and its answer text on the board in front.
         cols = {"A": (230, 90, 80), "B": (80, 150, 240), "C": (90, 200, 110), "D": (240, 200, 70)}
         rect("ExamApron", EX - 70, EX + 70, EY - 1, EY, EZ - 27, EZ - 10, (226, 220, 206), "WoodPlanks")
         for (a, b) in ((EX - 70, EX - 58), (EX + 58, EX + 70)):
@@ -154,16 +176,22 @@ def exam_hall():
         rect("ExamPitFloor", EX - 60, EX + 60, EY - 60, EY - 58, EZ - 56, EZ - 24, (80, 200, 120), "Neon")   # "retake" slime
         G.part("ExamPitCatch", (130, 4, 40), (EX, EY - 50, EZ - 40), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
         rect("ExamDivider", EX - 60, EX + 60, EY, EY + 0.12, EZ - 27, EZ - 26, (60, 66, 80), "Neon", collide=False)  # start line
-        G.part("ExamSpawn", (10, 1, 10), (EX, EY + 0.5, EZ + 10), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
-        G.part("Portal|Island", (12, 12, 0.6), (EX, EY + 6.2, EZ + 88), (120, 255, 200), "Neon", transp=0.45, collide=False,
+        # v52 Anti-Exploit Spectator Barrier: closes once Q1 locks so eliminated/late players cannot enter active answer zones mid-exam
+        G.part("ExamActiveBarrier", (138, 12, 0.8), (EX, EY + 6, EZ - 26.5), (120, 210, 255), "Glass", transp=1.0, collide=False,
                shadow=False)
-        sign("ExamExit", "↩ الجزيرة", (EX, EY + 14, EZ + 87.6), (10, 2.4, 0.4), "Front", bg=GREEN)
-        sign("ExamRules", "طريقة الاختبار:\n1) اقرا السؤال على الشاشة\n2) قف على الجواب (A B C D)\n3) الغلط ينفتح تحته… والصح يكمل!",
-             (EX + 69.4, EY + 12, EZ + 20), (0.4, 14, 26), "Left", bg=(30, 50, 70))
+        G.part("ExamSpawn", (10, 1, 10), (EX, EY + 0.5, EZ + 10), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
+        G.part("Portal|HQ", (12, 12, 0.6), (EX - 9, EY + 6.2, EZ + 88), (120, 255, 200), "Neon", transp=0.45, collide=False,
+               shadow=False)
+        sign("ExamExitHQ", "↩ مقر النادي", (EX - 9, EY + 14, EZ + 87.6), (11, 2.4, 0.4), "Front", bg=GREEN)
+        G.part("Portal|Campus", (12, 12, 0.6), (EX + 9, EY + 6.2, EZ + 88), (255, 190, 120), "Neon", transp=0.45, collide=False,
+               shadow=False)
+        sign("ExamExitCampus", "↩ كلية العلوم", (EX + 9, EY + 14, EZ + 87.6), (11, 2.4, 0.4), "Front", bg=(150, 95, 35))
+        sign("ExamRules", "طريقة الاختبار:\n1) ادخل منطقة الإجابات قبل قفل الجولة\n2) قف على الجواب (A B C D)\n3) المغادرة أثناء الجولة تستبعدك للجولة القادمة!",
+             (EX + 69.4, EY + 12, EZ + 20), (0.4, 14, 28), "Left", bg=(30, 50, 70))
 
 
 def arcade():
-    """minigames hall: a lobby with the three Chaos Campus arenas around it"""
+    """minigames hall: a lobby with the Chaos Campus arenas around it"""
     import chaos_gen as CG
     with G.Group("Arcade"):
         disc("ArcadeFloor", AX, AY - 1, AZ, 90, 2, (110, 92, 150), "SmoothPlastic")
@@ -179,9 +207,12 @@ def arcade():
              bg=(80, 30, 110))
         G.part("ArcadeBoard", (26, 16, 0.6), (AX - 24, AY + 9, AZ - 22), (20, 24, 34), "SmoothPlastic", rot=(0, 35, 0),
                text=dict(face="Back", text="🏆", color=(255, 236, 160), bg=(20, 28, 44), bg_t=0.0))
-        G.part("Portal|Island", (10, 12, 0.6), (AX, AY + 6.2, AZ + 40), (120, 255, 200), "Neon", transp=0.45, collide=False,
+        G.part("Portal|HQ", (10, 12, 0.6), (AX, AY + 6.2, AZ + 40), (120, 255, 200), "Neon", transp=0.45, collide=False,
                shadow=False)
-        sign("ArcadeExit", "↩ الجزيرة", (AX, AY + 14, AZ + 40.4), (10, 2.2, 0.4), "Front", bg=GREEN)
+        sign("ArcadeExit", "↩ مقر النادي", (AX, AY + 14, AZ + 40.4), (10, 2.2, 0.4), "Front", bg=GREEN)
+        G.part("Portal|Campus", (10, 12, 0.6), (AX + 16, AY + 6.2, AZ + 40), (255, 190, 120), "Neon", transp=0.45, collide=False,
+               shadow=False)
+        sign("ArcadeExitCampus", "↩ كلية العلوم", (AX + 16, AY + 14, AZ + 40.4), (10, 2.2, 0.4), "Front", bg=(150, 95, 35))
         # v39: door to the puzzle rooms, next to the exit
         G.part("Portal|Puzzle", (8, 12, 0.6), (AX - 18, AY + 6.2, AZ + 40), (255, 200, 90), "Neon", transp=0.45, collide=False,
                shadow=False)
@@ -316,17 +347,16 @@ def course_backdrop():
 
 
 def course_finish_exit():
-    """v26: the course used to end on Checkpoint_100 with no way out (the only exit was 9000 studs back at the start).
-    A finish arch with a portal back to the island now stands on the far edge of the final pad."""
+    """v52: finish arch at Checkpoint_100 with portals returning to Club HQ and KU College of Science Campus."""
     X, Y, Z = 11998.5, 234.4, 8922.0   # Checkpoint_100: centre (11998.5, 233.9, 8914.9), 20x1x20
     with G.Group("CourseFinish"):
         for s_ in (-1, 1):
             box("FinishPillar", (2, 16, 2), (X + s_ * 7, Y + 8, Z), (250, 248, 240), "SmoothPlastic")
             ball("FinishLamp", X + s_ * 7, Y + 17, Z, 2.6, (255, 220, 90), "Neon", collide=False, shadow=False)
         box("FinishBeam", (16, 2, 2.4), (X, Y + 16.6, Z), (24, 80, 56), "SmoothPlastic")
-        G.part("Portal|Island", (12, 14, 0.6), (X, Y + 7.2, Z), (120, 255, 200), "Neon", transp=0.4, collide=False,
+        G.part("Portal|HQ", (12, 14, 0.6), (X, Y + 7.2, Z), (120, 255, 200), "Neon", transp=0.4, collide=False,
                shadow=False)
-        sign("FinishSign", "🏁 خلصت الـ100 مرحلة!\n↩ ادخل البوابة للجزيرة", (X, Y + 21, Z), (18, 5, 0.5), "Front",
+        sign("FinishSign", "🏁 خلصت الـ100 مرحلة!\n↩ ادخل البوابة لمقر النادي", (X, Y + 21, Z), (18, 5, 0.5), "Front",
              bg=(24, 80, 56))
 
 
@@ -334,8 +364,8 @@ LX, LY, LZ = 6000.0, 300.0, 6000.0   # research lab world
 
 
 def research_lab():
-    """v29: BSC Research Institute interior. Stations (LabStation|microscope/pcr/gel, LabComputer, BatchPicker) and
-    the BatchBoard are driven by Lab.server/Lab.client. Wet lab west, computer lab east, Batch Hall on the north wall."""
+    """v52: Rebuilt BSC Research Institute interior with realistic wet-lab equipment, safety infrastructure, and
+    multi-step interactive benches (Microscope, PCR, Gel Electrophoresis, Light Microscopy, Gram Staining)."""
     WALL, WHITE, EPOXY = (236, 238, 240), (250, 250, 248), (226, 232, 230)
     GRN, DARK, WOOD = (24, 80, 56), (40, 46, 52), (150, 110, 74)
 
@@ -356,6 +386,9 @@ def research_lab():
         for x0 in (-72, 71.6):
             r("AccentStripe", x0, x0 + 0.4, 9, 10, -52, 52, GRN, collide=False)
         r("AccentStripeN", -72, 72, 9, 10, -51.6, -51.2, GRN, collide=False)
+        # overhead cleanroom ventilation & gas piping along the ceiling
+        for x in (-42, 42):
+            r("CleanroomDuct", x - 2.2, x + 2.2, 23.5, 25.4, -48, 48, (206, 212, 218), "Metal", collide=False)
         # floor guide lines from the entrance to each wing
         r("GuideLine", -1, 1, 0, 0.06, -10, 50, (60, 180, 120), "Neon", collide=False)
         r("GuideLineW", -45, 0, 0, 0.06, 9, 11, (60, 180, 120), "Neon", collide=False)
@@ -363,17 +396,23 @@ def research_lab():
         for x in (-40, 0, 40):
             for z in (-28, 12):
                 C5.light_panel(LX + x, LY + 25.6, LZ + z, 18, 4, 1.0 if x == 0 else 0.0001, 40 if x == 0 else 1)
-        # ---- entrance + portal back
+        # ---- entrance + portals back to HQ and Campus
         G.part("LabSpawn", (10, 1, 10), at(0, 0.5, 38), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
-        G.part("Portal|Island", (12, 13, 0.6), at(0, 6.6, 51.2), (120, 255, 200), "Neon", transp=0.45, collide=False, shadow=False)
-        sign("LabExit", "↩ الجزيرة", at(0, 14.5, 51.4), (10, 2.2, 0.4), "Front", bg=GRN)
-        sign("LabTitle", "🔬 معهد الأبحاث | BSC Research Institute", at(0, 19, 51.4), (40, 4, 0.4), "Front", bg=GRN)
-        # ---- wet lab (west): three benches, one instrument each
+        G.part("Portal|HQ", (11, 13, 0.6), at(-8, 6.6, 51.2), (120, 255, 200), "Neon", transp=0.45, collide=False, shadow=False)
+        sign("LabExitHQ", "↩ مقر النادي", at(-8, 14.5, 51.4), (10, 2.2, 0.4), "Front", bg=GRN)
+        G.part("Portal|Campus", (11, 13, 0.6), at(8, 6.6, 51.2), (255, 190, 120), "Neon", transp=0.45, collide=False, shadow=False)
+        sign("LabExitCampus", "↩ كلية العلوم", at(8, 14.5, 51.4), (10, 2.2, 0.4), "Front", bg=(150, 95, 35))
+        sign("LabTitle", "🔬 معهد الأبحاث | BSC Research Institute", at(0, 19.5, 51.4), (40, 4, 0.4), "Front", bg=GRN)
+        # ---- wet lab (west): three benches + realistic instruments
         sign("WetLab", "🧪 المختبر الرطب | Wet Lab", at(-71.6, 16, -5), (0.4, 3.4, 30), "Right", bg=(30, 70, 60))
         for z in (-30, -5, 20):
             r("Bench", -58, -26, 0, 3.6, z - 3, z + 3, (240, 240, 236), "Marble")
             r("BenchCabinet", -57.6, -26.4, 0, 3.2, z - 3.2, z - 2.8, WOOD, "WoodPlanks", collide=False)
             r("ReagentShelf", -58, -26, 7, 7.4, z + 2.2, z + 3, (220, 222, 224), "Metal", collide=False)
+            # Micropipette stand & sterile tip box on every wet lab bench
+            r("PipetteStand", -55.5, -53.5, 3.6, 5.8, z - 1.2, z - 0.4, (230, 234, 240), "SmoothPlastic", collide=False)
+            r("TipBoxBlue", -52.5, -50.2, 3.6, 4.4, z - 1.6, z - 0.2, (70, 150, 235), "SmoothPlastic", collide=False)
+            r("TipBoxYellow", -49.8, -47.8, 3.6, 4.3, z - 1.6, z - 0.2, (240, 200, 60), "SmoothPlastic", collide=False)
             for q in range(8):
                 vcyl("Reagent", LX - 56 + q * 3.8, LY + 7.4, LY + 9.2, LZ + z + 2.6, 1.0,
                      [(80, 160, 230), (230, 120, 90), (120, 200, 120), (230, 200, 80)][q % 4], "Glass", transp=0.2, collide=False)
@@ -384,19 +423,25 @@ def research_lab():
         vcyl("ScopeObjective", LX - 42, LY + 6.6, LY + 8.4, LZ - 29.8, 0.7, (180, 184, 190), "Metal", collide=False)
         G.part("ScopeEyepiece", (2.6, 0.8, 0.8), at(-42, 9.8, -29.0), (50, 54, 60), "Metal", shape="Cylinder", rot=(0, 90, 60),
                collide=False)
-        sign("ScopeLabel", "🔬 مجهر ضوئي", at(-34, 6, -32.9), (8, 2, 0.3), "Front", bg=(30, 70, 60))
+        r("SlideBox", -37.5, -34.5, 3.6, 4.1, -31.2, -29.2, (245, 245, 240), "SmoothPlastic", collide=False)
+        sign("ScopeLabel", "🔬 فحص وتصنيف الخلايا\nCell Classification", at(-34, 6.2, -32.9), (9.5, 2.4, 0.3), "Front", bg=(30, 70, 60))
         # PCR thermocycler (bench 2)
         r("LabStation|pcr", -46, -38, 3.6, 7.2, -8, -3, (210, 214, 220), "SmoothPlastic")
         r("PCRLid", -46.2, -37.8, 7.2, 7.8, -8.2, -2.8, (180, 186, 194), "SmoothPlastic", collide=False)
         r("PCRScreen", -44, -40, 4.6, 6.4, -8.25, -8.15, (60, 220, 140), "Neon", collide=False)
-        sign("PCRLabel", "🧬 جهاز PCR", at(-34, 6, -7.9), (8, 2, 0.3), "Front", bg=(30, 70, 60))
+        # Ice bucket with Taq Polymerase & Master Mix tubes next to PCR
+        r("IceBucket", -36.5, -33.0, 3.6, 5.2, -7.2, -3.8, (110, 195, 240), "SmoothPlastic", collide=False)
+        r("IceTop", -36.2, -33.3, 5.2, 5.4, -6.9, -4.1, (225, 245, 255), "Neon", transp=0.25, collide=False)
+        sign("PCRLabel", "🧬 تفاعل البوليميراز المتسلسل\nPCR Thermal Cycler", at(-34, 6.2, -7.9), (10, 2.4, 0.3), "Front", bg=(30, 70, 60))
         # gel electrophoresis (bench 3)
         r("LabStation|gel", -48, -38, 3.6, 5.2, 17, 22, (200, 230, 240), "Glass", transp=0.3)
         r("GelSlab", -47, -39, 4.2, 4.6, 17.6, 21.4, (90, 140, 255), "Neon", transp=0.35, collide=False)
         r("PowerSupply", -36, -32, 3.6, 6.2, 18, 21, (50, 54, 60), "SmoothPlastic", collide=False)
         r("LeadRed", -38, -36, 5.4, 5.6, 18.6, 18.9, (220, 50, 50), "SmoothPlastic", collide=False)
         r("LeadBlack", -38, -36, 5.4, 5.6, 20.1, 20.4, (20, 20, 22), "SmoothPlastic", collide=False)
-        sign("GelLabel", "🧪 الفصل الكهربائي للـ DNA", at(-30, 6, 17.1), (10, 2, 0.3), "Front", bg=(30, 70, 60))
+        r("UVTransilluminator", -31.5, -27.0, 3.6, 5.0, 17.5, 21.5, (42, 38, 56), "Metal", collide=False)
+        r("UVWindow", -31.0, -27.5, 5.0, 5.15, 18.0, 21.0, (175, 110, 255), "Neon", transp=0.25, collide=False)
+        sign("GelLabel", "🧪 الفصل الكهربائي للـ DNA\nGel Electrophoresis", at(-30, 6.2, 17.1), (10.5, 2.4, 0.3), "Front", bg=(30, 70, 60))
         # v41: Light Microscopy lab bench (opens the full simulation: LightMicroscope.client)
         r("LabStation|lightmicro", -26, -12, 0, 3.6, 22, 28, (238, 238, 232), "Marble")
         r("ScopeBase2", -21, -17, 3.6, 4.4, 23.5, 26.5, (40, 44, 52), "Metal", collide=False)
@@ -415,12 +460,32 @@ def research_lab():
             vcyl("GramReagent", LX - 19.2 + q * 1.8, LY + 4.1, LY + 6.1, LZ - 30.0, 0.75, bcol, "Glass", transp=0.15, collide=False)
         sign("GramLabLabel", "🧪 مختبر صبغة جرام\nGram Staining Lab", at(-19, 13.5, -33.2), (12, 3.4, 0.3), "Front",
              bg=(90, 40, 130))
-        # fume hood + safety corner
-        r("FumeHood", -71, -61, 0, 16, -46, -36, (226, 228, 230), "SmoothPlastic")
-        r("HoodSash", -60.9, -60.6, 4, 12, -45, -37, (190, 220, 235), "Glass", transp=0.45, collide=False)
-        sign("Safety", "🥽 النظارة والقفازات قبل أي تجربة", at(-71.5, 14, 36), (0.3, 3, 18), "Right", bg=(150, 110, 20))
+        # ---- v52 Realistic Wet-Lab Perimeter Infrastructure (West Wall: Biosafety Cabinet, Incubator, Centrifuge, Autoclave, Safety Shower)
+        # 1. Class II Biosafety Cabinet (Laminar Flow Hood)
+        r("BiosafetyCabinet", -71, -61, 0, 16, -46, -34, (226, 232, 238), "Metal")
+        r("BSCHepaHeader", -71, -60.5, 13.5, 16, -46, -34, (45, 115, 165), "Metal", collide=False)
+        r("BSCSashGlass", -60.9, -60.6, 4.4, 12.6, -45, -35, (190, 225, 245), "Glass", transp=0.45, collide=False)
+        r("BSCUVLight", -68, -63, 12.8, 13.2, -44, -36, (170, 135, 255), "Neon", transp=0.2, collide=False)
+        sign("BSCSign", "🛡️ كابينة السلامة الحيوية (BSC Class II)", at(-60.4, 14.8, -40), (0.3, 1.8, 11), "Right", bg=(25, 75, 115))
+        # 2. High-Speed Refrigerated Centrifuge & Vortex Prep Counter
+        r("CentrifugeCounter", -71, -62, 0, 3.6, -24, -10, (238, 238, 234), "Marble")
+        r("CentrifugeBody", -69.5, -63.5, 3.6, 6.8, -22, -16, (215, 222, 230), "Metal")
+        disc("CentrifugeRotor", LX - 66.5, LY + 7.0, LZ - 19.0, 4.2, 0.4, (50, 60, 75), "Metal", collide=False)
+        sign("CentrifugeSign", "🌀 جهاز الطرد المركزي\n14,000 RPM Centrifuge", at(-61.8, 8.2, -17), (0.3, 2.2, 11), "Right", bg=(40, 65, 95))
+        # 3. CO2 Cell Culture Incubator & Autoclave Sterilizer
+        r("CO2Incubator", -71, -63, 0, 12.5, -4, 6, (230, 234, 240), "Metal")
+        r("IncubatorGlass", -62.9, -62.6, 1.5, 10.5, -2.8, 4.8, (180, 220, 230), "Glass", transp=0.4, collide=False)
+        sign("IncubatorReadout", "🌡️ حاضنة الخلايا CO₂\n37.0°C • 5.0% CO₂", at(-62.5, 11.4, 1), (0.3, 1.6, 8.5), "Right", bg=(20, 85, 65))
+        r("Autoclave", -71, -63, 0, 11.5, 10, 19, (195, 202, 210), "Metal")
+        disc("AutoclaveWheel", LX - 62.6, LY + 6.0, LZ + 14.5, 3.2, 0.6, (40, 44, 50), "Metal", collide=False)
+        sign("AutoclaveSign", "♨️ الأوتوكلاف (تعقيم بالبخار)\n121°C • 15 psi", at(-62.5, 10.5, 14.5), (0.3, 1.6, 8.5), "Right", bg=(140, 65, 30))
+        # 4. Emergency Safety Shower & Eyewash Station
+        vcyl("SafetyShowerPipe", LX - 68, LY, LY + 13.5, LZ + 34, 0.5, (240, 195, 40), "Metal", collide=False)
+        disc("ShowerHead", LX - 68, LY + 12.8, LZ + 34, 3.0, 0.5, (40, 175, 95), "SmoothPlastic", collide=False)
+        vcyl("EyewashBowl", LX - 68, LY + 3.2, LY + 4.0, LZ + 34, 2.4, (40, 175, 95), "Metal", collide=False)
+        sign("Safety", "🚿 دُش الطوارئ وغسيل العيون\n🥽 التزم بالمعطف والقفازات والنظارة الواقية", at(-71.5, 14, 36), (0.3, 3.2, 16), "Right", bg=(30, 125, 70))
         # ---- computer lab (east)
-        sign("CompLab", "💻 مختبر الحاسوب وتحليل البيانات", at(71.6, 16, -5), (0.4, 3.4, 34), "Left", bg=(30, 50, 80))
+        sign("CompLab", "💻 مختبر المعلوماتية الحيوية وتحليل الجينوم", at(71.6, 16, -5), (0.4, 3.4, 34), "Left", bg=(30, 50, 80))
         for row, z in enumerate((-20, -2, 16)):
             r("DeskRow", 22, 58, 0, 3, z - 2.5, z + 2.5, (238, 238, 232), "Marble")
             for k in range(4):
@@ -467,9 +532,8 @@ SPEC_NAMES = ["بيولوجيا نبات", "بيولوجيا حيوان", "ما�
 
 
 def quiz_center():
-    """v30: مركز التحديات العلمية. Eight specialty booths (QuizKiosk|1..8, west + east galleries), the virtual practical
-    bench (QuizKiosk|9, north), the group-challenge portal to the Exam Hall (east) and the way back to the island
-    (south). Kiosks are driven by QuizCenter.server / QuizCenter.client."""
+    """v52: مركز التحديات العلمية. Eight specialty booths (QuizKiosk|1..8, west + east galleries), the virtual practical
+    bench (QuizKiosk|9, north), the group-challenge portal to the Exam Hall (east) and return portals to HQ & Campus (south)."""
     WALL, CREAM, WOOD, DARK = (232, 226, 214), (250, 246, 236), (122, 84, 52), (36, 40, 48)
     NAVY = (28, 44, 78)
 
@@ -498,10 +562,12 @@ def quiz_center():
             for z in (-40, -12, 16, 44):
                 vcyl("QuizColumn", QX + x, QY, QY + 32, QZ + z, 3.2, CREAM, "Marble")
                 r("ColumnBase", x - 2.2, x + 2.2, 0, 1, z - 2.2, z + 2.2, (210, 204, 190), "Marble")
-        # ---- entrance (south): spawn + portal back to the island
+        # ---- entrance (south): spawn + portals back to HQ and Campus
         G.part("QuizSpawn", (10, 1, 10), at(0, 0.5, 46), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
-        G.part("Portal|Island", (12, 13, 0.6), at(0, 6.6, 59.2), (120, 255, 200), "Neon", transp=0.45, collide=False, shadow=False)
-        sign("QuizExit", "↩ الجزيرة", at(0, 14.5, 59.4), (10, 2.2, 0.4), "Front", bg=NAVY)
+        G.part("Portal|HQ", (11, 13, 0.6), at(-8, 6.6, 59.2), (120, 255, 200), "Neon", transp=0.45, collide=False, shadow=False)
+        sign("QuizExitHQ", "↩ مقر النادي", at(-8, 14.5, 59.4), (10, 2.2, 0.4), "Front", bg=NAVY)
+        G.part("Portal|Campus", (11, 13, 0.6), at(8, 6.6, 59.2), (255, 190, 120), "Neon", transp=0.45, collide=False, shadow=False)
+        sign("QuizExitCampus", "↩ كلية العلوم", at(8, 14.5, 59.4), (10, 2.2, 0.4), "Front", bg=(150, 95, 35))
         sign("QuizTitle", "🎓 مركز التحديات العلمية | Science Challenge Center", at(0, 25, -59.4), (60, 4.4, 0.4), "Back", bg=NAVY)
         sign("QuizHowTo", "اختار تخصصك ← حل 5 أسئلة ← 3 صح تفتح المستوى اللي بعده ⭐", at(0, 20, -59.4), (52, 2.6, 0.4),
              "Back", bg=(60, 70, 90))
@@ -551,50 +617,10 @@ def quiz_center():
                     box("ReadingChair", (2.4, 0.6, 2.4), at(x, 2.0, z + dz), (120, 40, 50), "Fabric", collide=False)
 
 
-def train_station_dressing():
-    """v31: the island side of the Specialties Train read as a plain box with a portal. Now it is a station: name board
-    on the building, a paved platform with a canopy, a short stretch of rails and a parked display locomotive in the
-    same colours as the real train (decor only, nothing collides except the platform)."""
-    X, Z = OX - 95, OZ + 150          # Bld_Station_03 centre (tools/world/island.luau), front faces +x at x = X + 10
-    PURPLE, YEL, METAL = (120, 64, 176), (250, 220, 70), (70, 74, 84)
-    with G.Group("TrainStationIsland"):
-        sign("StationName", "🚆 محطة قطار التخصصات", (X + 9, 23.5, Z), (0.4, 3.4, 24), "Right", color=(255, 236, 160),
-             bg=(60, 30, 90))
-        for zz in (Z - 9, Z + 9):
-            vcyl("NamePost", X + 9, 19.5, 22, zz, 0.6, METAL, "Metal", collide=False)
-        rect("StationPlatform", X + 12, X + 42, -1, 1.1, Z - 30, Z + 30, (200, 196, 188), "Concrete")
-        rect("PlatformEdge", X + 41, X + 42, 1.1, 1.2, Z - 30, Z + 30, YEL, "SmoothPlastic", collide=False)
-        for zz in (Z - 24, Z - 8, Z + 8, Z + 24):
-            vcyl("CanopyPost", X + 38, 1.1, 12, zz, 1, METAL, "Metal", collide=False)
-        rect("PlatformCanopy", X + 30, X + 42, 12, 12.6, Z - 28, Z + 28, PURPLE, "SmoothPlastic", collide=False)
-        rect("CanopyGlow", X + 30.4, X + 41.6, 11.8, 12, Z - 27, Z + 27, (255, 220, 255), "Neon", transp=0.3, collide=False,
-             shadow=False)
-        # rails beside the platform
-        for s_ in (-2, 2):
-            rect("Rail", X + 47 + s_ - 0.25, X + 47 + s_ + 0.25, 0.7, 1.2, Z - 50, Z + 50, METAL, "Metal", collide=False)
-        for k in range(-24, 25):
-            rect("Sleeper", X + 44, X + 50, 0.3, 0.7, Z + k * 2 - 0.4, Z + k * 2 + 0.4, (110, 80, 56), "Wood", collide=False)
-        # parked display locomotive + one car
-        lx, lz = X + 47, Z + 10
-        box("DisplayLoco", (5, 5, 14), (lx, 4.3, lz), PURPLE, "SmoothPlastic", collide=False)
-        box("DisplayCab", (5.2, 4, 5), (lx, 8.3, lz + 4), (190, 140, 240), "SmoothPlastic", collide=False)
-        box("DisplayRoof", (6, 0.5, 6), (lx, 10.5, lz + 4), YEL, "Neon", collide=False, shadow=False)
-        vcyl("DisplayChimney", lx, 6.8, 9.7, lz - 4.5, 1.6, (40, 40, 46), "Metal", collide=False)
-        ball("DisplayLamp", lx, 5.1, lz - 7.1, 1.6, (255, 250, 210), "Neon", collide=False, shadow=False)
-        box("DisplayCar", (5, 4.4, 11), (lx, 4.0, lz + 14), (40, 120, 90), "SmoothPlastic", collide=False)
-        box("DisplayCarStripe", (5.1, 0.6, 11.1), (lx, 4.9, lz + 14), YEL, "Neon", collide=False, shadow=False)
-        for dz in (-4.5, 0, 4.5, 10, 18):
-            for s_ in (-1, 1):
-                G.part("DisplayWheel", (0.8, 2.4, 2.4), (lx + s_ * 2.6, 2.0, lz + dz), (30, 30, 34), "SmoothPlastic",
-                       shape="Cylinder", collide=False)
-
-
 def build():
     island_layer()
     research_lab()
-    gateway("Portal|Lab", 136, 45, (-1, 0), "🔬 معهد الأبحاث", "", (140, 220, 255))
     quiz_center()
-    gateway("Portal|Quiz", 146, 108, (-1, 0), "🎓 مركز التحديات", "", (255, 200, 120))
     import gameshow
     gameshow.build()   # v40: BSC Game Show studio at (0, 300, -7000)
     course_backdrop()

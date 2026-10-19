@@ -255,3 +255,13 @@ def cell_world():
             vcyl("TrackPier", mx, 0, my - 0.3, mz, 1.6, (170, 130, 210), "SmoothPlastic", collide=False) if int(mx + mz) % 3 == 0 else None
         for sdeg, text in stops[:-1]:
             label_board(sdeg, 70, text.split(":")[0])
+        # v51: Glowing phospholipid bilayer entry tunnel around the Membrane stop (-98..-74 deg)
+        for deg in range(-98, -72, 4):
+            tx, ty, tz = polar(TRACK_R, deg, 42 + 10 * math.sin(math.radians(deg * 2)))
+            rad = math.radians(deg)
+            rx, rz = math.cos(rad), math.sin(rad)
+            for s_ in (-1, 1):
+                for layer, col in ((11.0, PINK), (14.5, (140, 220, 255))):
+                    ball("BilayerHead", tx + rx * s_ * layer, ty + 6, tz + rz * s_ * layer, 3.2, col, "Neon",
+                         collide=False, shadow=False)
+            ball("MembraneArch", tx, ty + 16, tz, 4.0, (255, 190, 235), "Neon", collide=False, shadow=False)

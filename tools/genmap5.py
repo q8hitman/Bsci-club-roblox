@@ -357,18 +357,18 @@ def south_building():
     for x in (-72, 72):
         C3.planter(x, 0, -168, 12, 4)
     sign("Lobby", "كلية العلوم  |  College of Science", (0, 20, -158.4), (36, 6, 0.5), "Back", color=(255, 255, 255), bg=(24, 80, 56))
-    # ---- G rear: cafeteria wing (west), photo centre (east)
+    # ---- G rear: student study lounge (west), bio science gallery (east)
     wall_x(-90, -56, -92, 0, 24, WHITE, "Concrete", gaps=[(-84, -62)])  # back-of-lobby partition with big opening
-    counter(-77, -46, 0, 20, 4, (40, 40, 44), "Old Friends  |  أولد فريندز", "Back")
-    counter(-57, -46, 0, 16, 4, (200, 60, 50), "برجر كينق", "Back")
-    counter(-26, -46, 0, 16, 4, (96, 58, 40), "سكند كب", "Back")
+    counter(-77, -46, 0, 20, 4, (24, 80, 56), "استراحة طلبة العلوم | Science Lounge", "Back")
+    counter(-57, -46, 0, 16, 4, (40, 110, 90), "ركن القهوة الطلابي | Study Coffee", "Back")
+    counter(-26, -46, 0, 16, 4, (50, 90, 120), "ركن المذكرات العلمية | Bio Notes", "Back")
     rect("DropWall", -90.5, -89.5, 0, 22, -86, -62, (112, 62, 164), "SmoothPlastic",
          text=dict(face="Right", text="العلوم", color=(255, 255, 255), bg=(112, 62, 164), bg_t=0.0))
     for tx in (-80, -64, -26, -12):
         for r in range(2):
             table_set(tx, -64 - r * 12, 0)
-    sign("PhotoCentre", "مركز التصوير | Photo Centre", (60, 10, -34.5), (18, 4, 0.4), "Front", bg=(60, 70, 90))
-    rect("PhotoShop", 51, 69, 0, 14, -44, -34, (230, 230, 226), "SmoothPlastic", transp=0.0)
+    sign("BioGallery", "معرض الصور العلمية | Bio Science Gallery", (60, 10, -34.5), (18, 4, 0.4), "Front", bg=(24, 80, 56))
+    rect("BioGalleryBooth", 51, 69, 0, 14, -44, -34, (230, 230, 226), "SmoothPlastic", transp=0.0)
     # lobby ground lighting + a few warm point lights in the rear hall
     for x in range(-70, 71, 35):
         for z in (-80, -50):
@@ -467,17 +467,19 @@ def library():
 
 def departments():
     y = Y_3
-    names = ["الأحياء | Biological Sciences", "الكيمياء | Chemistry", "الفيزياء | Physics", "الرياضيات | Mathematics",
-             "الجيولوجيا | Earth Sciences", "الإحصاء | Statistics", "الإدارة | Administration", "الاستقبال | Reception"]
+    names = ["بيولوجيا النبات | Plant Biology", "بيولوجيا الحيوان | Animal Biology",
+             "الميكروبيولوجيا | Microbiology", "الكيمياء الحيوية | Biochemistry",
+             "البيولوجيا الجزيئية | Molecular Biology", "العلوم الزراعية | Agricultural Science",
+             "الأدلة الجنائية | Forensic Biology", "التقنية الحيوية | Biotechnology"]
     for i, nm in enumerate(names):
         x = -76 + i * 22
         wall_z(-100, -96, x, y, y + 15, WHITE, "Concrete", gaps=[(-99.5, -96.5)]) if False else None
-        sign("Door", nm, (x, y + 8, -90), (18, 2.6, 0.4), "Back", bg=(50, 70, 90))
+        sign("Door", nm, (x, y + 8, -90), (18, 2.6, 0.4), "Back", bg=(24, 80, 56))
         box("DoorLeaf", (6, 10, 0.4), (x, y + 5, -89.5), (205, 140, 55), "Wood", collide=False)
     for x in range(-70, 71, 35):
         light_panel(x, Y_4 - 1.0, -100, 12, 4, 1.2, 36)
         box("Bench", (8, 1.6, 2.4), (x, y + 0.8, -120), (170, 120, 76), "WoodPlanks", collide=False)
-    sign("Dept", "الأقسام العلمية | Departments", (0, y + 11, -176.6), (30, 4, 0.4), "Back", bg=(60, 70, 90))
+    sign("Dept", "تخصصات العلوم البيولوجية | Biological Sciences", (0, y + 11, -176.6), (34, 4, 0.4), "Back", bg=(24, 80, 56))
 
 
 def labs():
@@ -533,9 +535,9 @@ def north_building():
             if any(c[0] - 3 <= x <= c[1] + 3 and c[2] - 3 <= z <= c[3] + 3 for c in (core_w, core_e)):
                 continue
             column(x, z, 0, 24, 4.4)
-    # cafeteria wing: Salad Creations + Larich + green sofas
-    counter(-38, 142, 0, 30, 4, (46, 140, 90), "Salad Creations | سالاد كريشنز", "Front")  # v27: was -46 (touched the west core)
-    counter(40, 142, 0, 30, 4, (40, 70, 150), "Larich", "Front")
+    # student lounge wing: study & club counters + green sofas
+    counter(-38, 142, 0, 30, 4, (24, 80, 56), "استراحة الحرم الشمالي | North Study Lounge", "Front")
+    counter(40, 142, 0, 30, 4, (36, 96, 110), "ركن النادي العلمي | BSC Info Desk", "Front")
     for q in range(5):
         for r in range(2):
             table_set(-54 + q * 22, 112 - r * 16, 0, 3, seat_cols=[(60, 130, 90), (60, 100, 170), (230, 190, 60)])
@@ -657,9 +659,9 @@ def outdoors():
         rect("Line", -250 + q * 45, -235 + q * 45, 0, 0.08, -291, -289, (240, 240, 235), "SmoothPlastic", collide=False)
     for ex in (-1000, 1000):
         for ez in (-1000, 1000):
-            rect("Desert", ex - 1000, ex + 1000, -9, -1.5, ez - 1000, ez + 1000, (218, 200, 160), "Sand")
-    rect("EastLawn", 90, 170, -1, 0.15, -170, 160 + NB_SHIFT, (100, 156, 88), "Grass")
-    rect("WestLawn", -170, -90, -1, 0.15, -170, 160 + NB_SHIFT, (100, 156, 88), "Grass")
+            rect("CampusSurround", ex - 1000, ex + 1000, -9, -1.5, ez - 1000, ez + 1000, (124, 162, 108), "Grass")
+    rect("EastLawn", 90, 430, -1, 0.15, -250, 160 + NB_SHIFT, (100, 156, 88), "Grass")
+    rect("WestLawn", -240, -90, -1, 0.15, -250, 160 + NB_SHIFT, (100, 156, 88), "Grass")
     for x in range(-130, 131, 26):
         palm(x, -240)
     for x in (-110, -70, 70, 110):
@@ -690,7 +692,7 @@ def outdoors():
     for z in range(-20, int(z1), 16):
         box("BridgeLamp", (6, 0.3, 1.5), (-40, 35.2, z), WARM, "Neon", collide=False, shadow=False)
     sign("BridgeSign", "الممر الأحمر | Red Corridor", (-40, 34.6, -29.4), (16, 2.2, 0.4), "Back", bg=(120, 54, 40))
-    # cafes
+    # student garden pavilions
     def kiosk(x, z, w, d, col, name):
         rect("Base", x - w / 2, x + w / 2, 0, 12, z - d / 2, z + d / 2, col, "SmoothPlastic")
         rect("Roof", x - w / 2 - 1, x + w / 2 + 1, 12, 13, z - d / 2 - 1, z + d / 2 + 1, (70, 72, 78), "SmoothPlastic")
@@ -698,9 +700,9 @@ def outdoors():
         sign("CafeSign", name, (x, 10, z - d / 2 - 0.3), (w - 2, 3.4, 0.5), "Front", bg=tuple(max(0, v - 30) for v in col))
         for k in range(3):
             table_set(x - w / 2 + 5 + k * 6.5, z - d / 2 - 7, 0, 3)
-    kiosk(106, -100, 18, 12, (140, 90, 180), "Pick")
-    kiosk(110, -160, 18, 12, (96, 70, 56), "Toby's Estate")
-    kiosk(115, 70 + NB_SHIFT, 20, 12, (70, 130, 80), "Caribou Coffee")
+    kiosk(106, -100, 18, 12, (24, 96, 74), "مظلة الدراسة | Study Pavilion")
+    kiosk(110, -160, 18, 12, (44, 110, 96), "استراحة الحديقة | Garden Pavilion")
+    kiosk(115, 70 + NB_SHIFT, 20, 12, (36, 90, 115), "نقطة إرشاد الطلبة | Student Hub")
     # spawn + course portal
     _base_part("CampusSpawn", (10, 1, 10), (0, 0.5, -151), (64, 140, 108), "SmoothPlastic", cls="SpawnLocation",
                extra='<bool name="Neutral">true</bool><int name="Duration">0</int>',

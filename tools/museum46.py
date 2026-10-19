@@ -93,6 +93,15 @@ def exhibit(kind,x,z,c):
 def build():
     with G.Group("Museum46"):
         with G.Group("Architecture"):
+            # Lush botanical garden terrace surrounding the museum so no flat sand is ever visible
+            G.box("MuseumBotanicalLawn",(280,1.0,320),(290,-.55,-60),(96,154,88),"Grass")
+            G.box("MuseumPlazaBorder",(184,0.8,224),(290,-.3,-50),(214,208,194),"Concrete")
+            for gx in (190, 230, 350, 390):
+                for gz in (-185, -120, -40, 35, 80):
+                    G.tree(gx, 0, gz, 1.25)
+            for hx in (196, 384):
+                G.box("MuseumHedge",(3.5,3.2,216),(hx,1.6,-50),(68,128,68),"Grass",collide=False)
+            G.box("MuseumRearHedge",(188,3.2,3.5),(290,1.6,62),(68,128,68),"Grass",collide=False)
             G.box("MuseumFloor",(160,1.2,200),(290,-.4,-50),CREAM,"Concrete")
             G.part("MuseumSpawn",(8,1,8),(290,.8,-142),TEAL,transp=1,collide=False,shadow=False)
             # Wide route around the existing parking, not through it or the train station.
@@ -115,7 +124,6 @@ def build():
             for z in (-150,-100,-50,0,50): deco("RoofBeam",(160,.7,1.5),(290,25.1,z),DARK,"Metal")
             G.box("EntryCanopy",(58,1.2,18),(290,20,-155),DARK,"Metal")
             G.sign("MuseumTitle","متحف اكتشاف الأحياء\nBSC BIOLOGY DISCOVERY",(290,15,-151.2),(30,7,.5),"Front",bg=DARK)
-            G.sign("FictionNotice","إضافة خيالية للنادي\nليست موقعًا جامعيًا موثقًا\nمحاكاة تعليمية مبسطة",(274,6,-152),(16,7,.5),"Front",bg=DARK)
             G.sign("ExitGuide","الخروج إلى الجامعة ↓\nCampus Exit",(290,13,-149),(22,4,.5),"Back",bg=DARK)
             G.sign("RouteGuide","المتحف ← حول المواقف\nMuseum via lit path",(145,5,-199),(18,5,.5),"Front",bg=DARK)
             deco("MainAisle",(14,.05,190),(290,.23,-50),(195,216,211))

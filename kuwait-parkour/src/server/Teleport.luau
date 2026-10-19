@@ -69,7 +69,7 @@ function Teleport.to(player, target, offset)
 	root.Anchored = false
 	-- 2. stand on real ground at the target
 	local feetY = Teleport.groundY(cf.Position) or cf.Position.Y
-	local standY = feetY + hum.HipHeight + root.Size.Y / 2 + 0.3
+	local standY = feetY + hum.HipHeight + root.Size.Y / 2 + 0.6
 	local look = cf.LookVector
 	local flat = Vector3.new(look.X, 0, look.Z)
 	local pos = Vector3.new(cf.Position.X, standY, cf.Position.Z)
@@ -84,13 +84,21 @@ function Teleport.to(player, target, offset)
 	end
 	char:PivotTo(final)
 	event:FireClient(player, final)
-	-- 4. safety net (client-owned physics can still replay a stale frame)
-	task.delay(0.6, function()
-		if root.Parent and hum.Health > 0 and root.Position.Y < feetY - 6 then
-			char:PivotTo(final)
-			event:FireClient(player, final)
-		end
-	end)
+	-- 4. dual safety net (client-owned physics can replay a stale frame right after teleport)
+	for _, waitSec in ipairs({ 0.25, 0.7 }) do
+		task.delay(waitSec, function()
+			if root.Parent and hum.Health > 0 and root.Position.Y < feetY - 1.5 then
+				for _, part in ipairs(char:GetDescendants()) do
+					if part:IsA("BasePart") then
+						part.AssemblyLinearVelocity = Vector3.zero
+						part.AssemblyAngularVelocity = Vector3.zero
+					end
+				end
+				char:PivotTo(final)
+				event:FireClient(player, final)
+			end
+		end)
+	end
 	return true
 end
 

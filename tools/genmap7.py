@@ -154,21 +154,25 @@ def k_sequence(c, th, t, k):
     """DNA complement puzzle: press the complementary bases in order to open the bridge"""
     comp = {"A": "T", "T": "A", "G": "C", "C": "G"}
     n = 3 if t < 0.5 else 4
-    template = "".join(rng.choice("ATGC") for _ in range(n))
+    raw = [rng.choice("ATGC") for _ in range(n)]
+    for i in range(1, n):
+        if raw[i] == raw[i - 1]:
+            raw[i] = "ATGC"[("ATGC".index(raw[i]) + 1) % 4]
+    template = "".join(raw)
     answer = "".join(comp[b] for b in template)
     sid = "q%d" % k
     L = 16
     z0 = M2.cursor_gap(c, L, 2)
-    M2.slab(th, c["x"], c["y"], z0, 22, L)
+    M2.slab(th, c["x"], c["y"], z0, 28, L)
     G.part("SeqKey|%s|%s" % (sid, answer), (1, 1, 1), (c["x"], c["y"] - 3, z0), (0, 0, 0), "SmoothPlastic", transp=1,
            collide=False)
     cols = {"A": (230, 80, 80), "T": (80, 150, 240), "G": (90, 200, 110), "C": (240, 200, 70)}
     for i, b in enumerate("ATGC"):
-        x = c["x"] - 7.5 + i * 5
-        G.part("SeqBtn|%s|%s" % (sid, b), (3.6, 0.6, 3.6), (x, c["y"] + 0.3, z0 + 3), cols[b], "Neon",
+        x = c["x"] - 9.3 + i * 6.2
+        G.part("SeqBtn|%s|%s" % (sid, b), (4.0, 0.6, 4.0), (x, c["y"] + 0.3, z0 + 2.5), cols[b], "Neon",
                text=dict(face="Top", text=b, color=(255, 255, 255), bg=cols[b], bg_t=0.0))
-    sign("SeqSign", "القالب: %s\nاضغط القواعد المكمّلة بالترتيب" % " - ".join(template), (c["x"], c["y"] + 6, z0 + L / 2 - 0.5),
-         (20, 5, 0.5), "Front", bg=(30, 40, 70))
+    sign("SeqSign", "🧬 القالب: %s\nاضغط القواعد المكمّلة بالترتيب (A ↔ T ، G ↔ C)" % " - ".join(template),
+         (c["x"], c["y"] + 12.5, z0 + L / 2 - 0.5), (26, 5.2, 0.5), "Front", bg=(30, 40, 70), collide=False)
     M2.walk.append(("brk",))
     z = z0 + L / 2 + 1.5
     for i in range(5):

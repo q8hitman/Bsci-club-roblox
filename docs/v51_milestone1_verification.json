@@ -1,0 +1,27 @@
+{
+  "static": {
+    "forbidden_found": [],
+    "required_present": [
+      "CampusSurround",
+      "IslandFoundation",
+      "MuseumBotanicalLawn",
+      "MuseumHedge",
+      "CartConsole",
+      "CartBtn_Go",
+      "CartBtn_Faster",
+      "CartBtn_Slower",
+      "CartBtn_Horn",
+      "BilayerHead",
+      "MembraneArch",
+      "استراحة طلبة العلوم",
+      "تخصصات العلوم البيولوجية"
+    ],
+    "map_size_mb": 19.76
+  },
+  "studio": {
+    "studio_connected": true,
+    "screenshots": [],
+    "server_test": "{\"cart_3d_buttons\":true,\"plant_puzzle_o2_key\":\"ABCDEF\",\"campus_above_ground\":true,\"campus_y\":3.6,\"island_above_ground\":true,\"dna_puzzle_key\":\"CGCG\",\"island_y\":3.6,\"lab_y\":302.6,\"lab_coat_equipped\":true,\"dna_puzzle_id\":\"q54\",\"dna_no_consecutive_duplicates\":true,\"plant_puzzle_o2_completed\":true}",
+    "client_test": "{\"cellTrainGuiLoaded\":true,\"player\":\"q8hitman\",\"cameraType\":\"Enum.CameraType.Custom\",\"camBtnDefaultText\":\"🎥 كاميرا: سينمائية\"}"
+  }
+}

@@ -151,7 +151,7 @@ stopBadge.Visible = false
 stopBadge.Parent = gui
 Instance.new("UICorner", stopBadge).CornerRadius = UDim.new(0.3, 0)
 
-local freeCam = false
+local freeCam = true
 local fastMode = false
 
 camBtn.Activated:Connect(function()
@@ -160,6 +160,12 @@ camBtn.Activated:Connect(function()
 	local cam = workspace.CurrentCamera
 	if cam then
 		cam.CameraType = freeCam and Enum.CameraType.Custom or Enum.CameraType.Scriptable
+		if freeCam and player.Character then
+			local h = player.Character:FindFirstChildOfClass("Humanoid")
+			if h then
+				cam.CameraSubject = h
+			end
+		end
 	end
 end)
 
@@ -207,16 +213,28 @@ local function ride()
 	train.Name = "LocalCellTrain"
 	train.PrimaryPart = train:FindFirstChild("Base")
 	train.Parent = workspace
+	local frontPart = train:FindFirstChild("Front") or train.PrimaryPart
+	if frontPart and frontPart:IsA("BasePart") then
+		frontPart.CanQuery = true
+		local cd = Instance.new("ClickDetector")
+		cd.MaxActivationDistance = 20
+		cd.Parent = frontPart
+		cd.MouseClick:Connect(function()
+			fastMode = not fastMode
+			speedBtn.Text = fastMode and "⚡ السرعة: سريعة" or "⚡ السرعة: عادية"
+		end)
+	end
 	local seat = train:FindFirstChild("Seat1")
 	root.Anchored = true
 	local cam = workspace.CurrentCamera
-	freeCam = false
+	freeCam = true
 	fastMode = false
-	camBtn.Text = "🎥 كاميرا: سينمائية"
+	camBtn.Text = "🔄 كاميرا: حرة"
 	speedBtn.Text = "⚡ السرعة: عادية"
-	cam.CameraType = Enum.CameraType.Scriptable
+	cam.CameraType = Enum.CameraType.Custom
+	cam.CameraSubject = hum
 	caption.Text =
-		"🚋 أهلاً فيك في قطار الخلية! جولة داخل الخلية الحيوانية"
+		"🚋 أهلاً فيك في قطار الخلية! حرّك الكاميرا بحرية لتستكشف العضيات"
 	caption.Visible, exitBtn.Visible = true, true
 	camBtn.Visible, speedBtn.Visible, stopBadge.Visible = true, true, true
 

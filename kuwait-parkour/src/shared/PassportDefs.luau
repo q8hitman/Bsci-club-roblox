@@ -26,7 +26,6 @@ return {
 	Worlds = {
 		Campus = true,
 		HQ = true,
-		Island = true,
 		Course = true,
 		Cart = true,
 		Train = true,
@@ -44,7 +43,7 @@ return {
 	Weekly = {
 		{
 			id = "explore",
-			ar = "جولة الجزيرة",
+			ar = "جولة الكلية والعوالم",
 			desc = "زُر 5 عوالم مختلفة من القائمة أو البوابات",
 			field = "visits",
 			goal = 5,

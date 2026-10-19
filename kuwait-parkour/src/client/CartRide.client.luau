@@ -456,7 +456,36 @@ remote.OnClientEvent:Connect(function(action, cart)
 	cam.CameraSubject = hum
 	gui.Enabled = true
 	refreshUI(r)
-	say("🚆 أهلاً في قطار التخصصات! اضغط ▶ مرة وحدة", 5)
+	say(
+		"🚆 أهلاً في قطار التخصصات! اضغط ▶ على لوحة العربة أو الشاشة",
+		5
+	)
+	-- Wire 3D physical buttons mounted on the cart dashboard
+	local function wireCartBtn(partName, fn)
+		local p = cart:FindFirstChild(partName, true)
+		local cd = p and p:FindFirstChildOfClass("ClickDetector")
+		if cd then
+			table.insert(
+				r.conns,
+				cd.MouseClick:Connect(function(clicker)
+					if clicker == player and ride == r then
+						fn()
+					end
+				end)
+			)
+		end
+	end
+	wireCartBtn("CartBtn_Go", toggleGo)
+	wireCartBtn("CartBtn_Faster", function()
+		changeSpeed(1)
+	end)
+	wireCartBtn("CartBtn_Slower", function()
+		changeSpeed(-1)
+	end)
+	wireCartBtn("CartBtn_Horn", function()
+		play("sting")
+		say("🚂 توت توت! قطار التخصصات البيولوجية ينطلق", 2.5)
+	end)
 	-- jumping out of the seat ends the ride (back on the platform); dying ends it too
 	table.insert(
 		r.conns,

@@ -1,3 +1,59 @@
+# v51 (Milestone 1 Rebuild) — Campus Authenticity Cleanup, Museum Botanical Landscaping, Idempotent Obby Puzzles, Hub Unification, 3D Cart Controls, Free-Look Cell Train & Lab Coat — 2026-10-20
+
+Branch `dev/v51-milestone1`; pre-edit backup at `backups\KuwaitParkour_v50_backup_before_v51.rbxlx`. Master Audit & Traceability Matrix: [BSC_MASTER_REBUILD_AUDIT_AND_ROADMAP.md](docs/BSC_MASTER_REBUILD_AUDIT_AND_ROADMAP.md).
+Executed Milestone 1 of the Owner's Master Creative & Technical Rebuild Directive and verified inside Roblox Studio (`Play Solo`):
+
+1. **KU College of Science Campus Cleanup (`tools/genmap5.py`, `tools/campus9.py`, `tools/ku_science34.py`, `tools/north_campus44.py`)**:
+   - Removed the incorrect `"قسم الفيزياء | Department of Physics"` (`DeptPhysics`) sign on the South Campus.
+   - Removed all commercial/invented cafes (`برجر كينق`, `سكند كب`, `Old Friends`, `Pick`, `Toby's Estate`, `Caribou Coffee`, `Starbucks`, `Salad Creations`, `Larich`, `PhotoShop`) and replaced them with authentic College of Science student study lounges, Biological Sciences exhibition counters, and garden pavilions.
+   - Removed all floating `WalkNote` memory signposts cluttering the garden paths while preserving the Campus Cats, pergolas, and Red Bridge (`الممر الأحمر`).
+   - Updated the 8 Department doors on L3 to represent the 8 Biological Sciences Specialties of the club.
+2. **BSC Discovery Museum Botanical Landscaping (`tools/museum46.py`, `tools/genmap5.py`)**:
+   - Replaced the exposed `Desert` sand planes with `CampusSurround` grass parkland, extended `EastLawn` (`x = 90..430`), and added `MuseumBotanicalLawn` (`280×320`), `MuseumPlazaBorder`, perimeter `MuseumHedge`s, and 20 shade trees around `Museum46`.
+   - Removed the intrusive front `FictionNotice` disclaimer wall at the Museum entrance.
+3. **Obby Plant Life-Cycle & Stage 54 DNA Sequence Puzzle Recovery (`Obstacles.server.luau`, `tools/genmap.py`, `tools/parkour9.py`, `tools/genmap7.py`)**:
+   - Fixed `pressSeq` (`Obstacles.server.luau`) so re-stepping on an already-lit green tile (`table.find(litFor[player][id], part)`) or stepping on tiles during the 20s open-bridge window (`solvedUntil`) never resets puzzle progress.
+   - Defaulted `G.sign()` (`tools/genmap.py`) to `collide=False` so no sign in the game blocks player movement or camera; widened `_button_board` spacing (`8.4` studs X, `9.0` studs Z) and raised `PuzzleSign`, `SimonBoard`, `SeqSign`, `FootSign`, and `TimedSign` above `y + 12.5`.
+   - Rebalanced Stage 54 (`k_sequence` in `tools/genmap7.py`) so no two consecutive DNA bases in `template` are identical (`dna_no_consecutive_duplicates = true`, e.g., `CGCG`) and displayed the `A ↔ T ، G ↔ C` pairing rule on the overhead board.
+4. **Spawning / Under-Map Recovery & Primary Hub Unification (`Teleport.luau`, `Main.server.luau`, `CartRide.server.luau`, `tools/island11.py`)**:
+   - Added a solid 6-stud `IslandFoundation` (`360×6×440`) beneath `IslandSpawn` and the central plaza so players never fall into thin Synty road mesh cavities.
+   - Tightened `Teleport.to` ground clearance (`+0.6` studs) and dual anti-clip safety nets (`0.25s` and `0.7s` at `feetY - 1.5`).
+   - Unified `LeaveCourse` and `CartRide` completion return around the main University Campus / Club HQ Hub.
+5. **Vehicles, Research Lab Coat, Virus Tag & Exam Hall (`CartRide.*`, `CellTrain.client.luau`, `cartride.py`, `celltrain.py`, `Lab.server.luau`, `VirusTag.server.luau`, `ExamHall.server.luau`)**:
+   - Added physical 3D interactive buttons (`CartBtn_Slower`, `CartBtn_Go`, `CartBtn_Faster`, `CartBtn_Horn`) with `ClickDetector`s on `CartTemplate` (`cart_3d_buttons = true`).
+   - Defaulted `CellTrain.client.luau` to 360° free-look (`Enum.CameraType.Custom`) and added a glowing phospholipid bilayer entry tunnel (`BilayerHead`, `MembraneArch`) in `tools/celltrain.py`.
+   - Added automatic 3D white Lab Coat (`BSC_LabCoat`) equipment when entering the Research Lab (`lab_coat_equipped = true`).
+   - Added non-repeating Patient Zero selection (`Random.new()` + `lastZero`), adrenaline speed surges, and a 1-player **Solo Bio-Drone Survival Mode** in `VirusTag.server.luau`.
+   - Added a 2-second pre-drop answer lock-in (`committed[p]`) in `ExamHall.server.luau`.
+
+Build: `BSC_project_full\KuwaitParkour_v51.rbxlx` & `Desktop\KuwaitParkour\KuwaitParkour_v51.rbxlx` (`36.93 MB`). Not published, not merged into `main`.
+
+---
+
+# v50 — Gram Staining Lab, Interactive Train HUDs, Full Passport XP Integration, Live Arcade Board & PC/Mobile Play Verification — 2026-10-19
+
+Branch `dev/v50`; full pre-edit backup at `Desktop\KuwaitParkour\backup_before_v50_20261019`. Full audit & verification report: [v50_release_report.md](docs/v50_release_report.md).
+Completed all remaining approved Master Vision features and verified gameplay, camera, and PC/Mobile UI inside Roblox Studio:
+
+1. **Interactive Gram Staining Wet-Lab Station (`LabStation|gram`) & Bilingual Lab Polish (`tools/island11.py`, `LabData.luau`, `Lab.server.luau`, `Lab.client.luau`)**:
+   - Built a 5th wet-lab bench (`LabStation|gram` at `x = -26..-12, z = -33..-27`) in `ResearchLab` with reagent bottles, sink, and slide rack.
+   - Added a 4-step interactive Gram staining protocol (`1️⃣ Crystal Violet -> 2️⃣ Gram's Iodine -> 3️⃣ Alcohol Decolorizer -> 4️⃣ Safranin`) with live color-changing slide preview and Gram-positive (`Staphylococcus aureus`, `Bacillus subtilis`) vs. Gram-negative (`Escherichia coli`, `Pseudomonas aeruginosa`) cell-wall diagnosis (`+6 RP` + Passport `activity:lab` stamp).
+   - Added bilingual scientific headers and honest simulation labels across `microscope`, `gel`, `pcr`, and `gram`.
+2. **Interactive Train Controls & Progress HUDs (`CellTrain.client.luau`, `CartRide.client.luau`)**:
+   - Added **Camera Mode Toggle (`🎥 كاميرا: سينمائية / 🔄 كاميرا: حرة`)**, **Speed Toggle (`⚡ السرعة: عادية / سريعة`)**, and **Stop Progress Badge (`📍 المحطة X/12`)** to the Cell Train (`CellTrain.client.luau`).
+   - Added **Train Horn (`🔔`)** and **Specialty Room Progress (`📍 التخصص X/8`)** to the Specialties Train (`CartRide.client.luau`).
+3. **Unified Passport XP & Achievements Across All Modes (`PassportDefs.luau`, `PassportState.luau`, `PassportService.luau`, `Progression.luau`, `Progression.server.luau`, `PuzzleRooms.server.luau`, `ExamHall.server.luau`)**:
+   - Integrated Specialties Train (`train:cart`, `+20 XP`), Cell Train (`train:cell`, `+20 XP`), Puzzle Rooms (`puzzle:CellControl`, `+30 XP` + `activity:puzzle` + cosmetic achievement/title `خبير الألغاز 🧩`), and Group Exam (`exam:pass`, `+30 XP` + `activity:exam`) into the server-authoritative Passport ledger.
+4. **Live Arcade Lobby Board (`Arcade.server.luau`)**:
+   - Connected `ArcadeBoard` in the Arcade Lobby to display live round status, current difficulty tier (`المستوى 1..3`), active mutation, and previous round winners.
+5. **Mobile (`801×413`) & Desktop (`1365×768`) UI Layout & Live Play Solo Verification (`WorldMenu.client.luau`, `PhotoMode.client.luau`, `tools/verify_and_build_v50.py`)**:
+   - Tuned the 15-card `5×3` `WorldMenu` grid (`MinTextSize = 8`, `AspectRatio = 1.72`) and `PhotoModeGui` dock so `15/15` world cards and `5/5` Photo Mode controls pass `TextFits` and touch bounds on both `iPhone XR` (`801×413`) and Desktop (`1365×768`).
+   - Verified in live Studio Play Solo (`is_start = True`): `Humanoid:MoveTo` walk with `Jump = 0` across the Red Corridor North junction (`redWalkPassed = true`), `100%` third-person camera smoothness across Campus doors/corridors/MAIN walk, and `15/15` solid world spawn destinations.
+
+Build: `BSC_project_full\KuwaitParkour_v50.rbxlx` & `Desktop\KuwaitParkour\KuwaitParkour_v50.rbxlx`. Not published, not merged into `main`.
+
+---
+
 # v49 — Campus Architectural Polish, WorldMenu 15-World Integration, Game Show Memory Mode & Media Photo Mode — 2026-10-19
 
 Branch `dev/v49`; full pre-edit backup at `Desktop\KuwaitParkour\backup_before_v49_20261019`.

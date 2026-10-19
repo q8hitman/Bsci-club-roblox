@@ -264,9 +264,9 @@ def tiered_lecture():
 
 def amenities():
     with G.Group('ExistingAmenities'):
-        evidence('legacy=C: existing cafes, games, study furniture and computer displays retained')
-        C5.counter(-38, 142, 0, 30, 4, (46, 140, 90), 'Salad Creations | سالاد كريشنز', 'Front')
-        C5.counter(40, 142, 0, 30, 4, (40, 70, 150), 'Larich', 'Front')
+        evidence('legacy=C: study lounges, games, study furniture and computer displays retained')
+        C5.counter(-38, 142, 0, 30, 4, (24, 80, 56), 'استراحة الطلبة | Student Lounge', 'Front')
+        C5.counter(40, 142, 0, 30, 4, (36, 96, 110), 'ركن القراءة | Reading Corner', 'Front')
         for q in range(5):
             for r in range(2):
                 C5.table_set(-54+q*22, 112-r*16, 0, 3, seat_cols=[(60, 130, 90), (60, 100, 170), (230, 190, 60)])

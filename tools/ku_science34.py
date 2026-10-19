@@ -444,7 +444,7 @@ def garden_walk():
         for (x, z, yaw) in ((-26, 104, 90), (-60, 88, 45), (-84, 104, 0)):
             if not _near_any(x, z, 1.5):
                 bench(x, z, yaw)
-        # cats + memory notes along the main walk (moved from the old walk; user memories, private RNG)
+        # cats along the main walk (private RNG)
         for n, i in enumerate(range(8, len(main) - 4, 14)):
             fx_, fz_, nx, nz = _normal(main, i)
             s_ = -1 if main[i][1] > 70 else (1 if n % 2 else -1)   # in the garden: west of the walk (the gym is east)
@@ -453,20 +453,6 @@ def garden_walk():
                 cx, cz = main[i][0] - nx * s_ * 9.0, main[i][1] - nz * s_ * 9.0
             A.cat(cx, 0.2, cz, math.degrees(math.atan2(-nx * s_, -nz * s_)), ["sit", "loaf", "walk"][n % 3])
             A.cat_bowl(cx - fx_ * 2.6, 0.2, cz - fz_ * 2.6)
-        for n, i in enumerate(range(5, len(main) - 3, 10)):
-            if n >= len(campus9.WALK_NOTES):
-                break
-            fx_, fz_, nx, nz = _normal(main, i)
-            s_ = -1 if (main[i][1] > 70 or n % 2) else 1
-            sx, sz = main[i][0] + nx * s_ * 8.4, main[i][1] + nz * s_ * 8.4
-            if in_gym(sx, sz, 3):
-                sx, sz = main[i][0] - nx * s_ * 8.4, main[i][1] - nz * s_ * 8.4
-            yaw = math.degrees(math.atan2(fx_, fz_))
-            vcyl("NotePost", sx, 0, 6, sz, 0.5, (90, 70, 50), "Wood", collide=False)
-            for face, df in (("Back", -0.08), ("Front", 0.08)):
-                G.part("WalkNote", (9, 3.2, 0.14), (sx + fx_ * df, 7.4, sz + fz_ * df), (250, 246, 236), "SmoothPlastic",
-                       rot=(0, yaw, 0), collide=False,
-                       text=dict(face=face, text=campus9.WALK_NOTES[n], color=(50, 40, 30), bg=(250, 246, 236), bg_t=0.0))
         north_link()
 
 
@@ -485,15 +471,8 @@ def north_link():
 
 # ---------------------------------------------------------------- names on the south complex
 def place_names():
-    """A: the map labels "Department of Biological Sciences" and "Guidance" sit on the south complex at the garden's
-    south-west (not on the north block, as v33 had it). v35: the ring's outer face is an open colonnade / rail, so a
-    sign there floated in the air: the department name is a freestanding wayfinding sign (dark, yellow stripe: V03) at
-    the triangle's north edge (B). "Guidance" is dropped: its block lies WEST of the triangle and is not built (no
-    reference for its shape). Physics stays on the south back.
-    v36: the department sign is removed too: standing at the triangle it now labelled the gym, and the department's own
-    block (west of the triangle) is not built yet."""
-    with G.Group("PlaceNames"):
-        sign("DeptPhysics", "قسم الفيزياء | Department of Physics", (40, 16, -29.4), (30, 3, 0.4), "Back", bg=(40, 50, 90))
+    """v51: DeptPhysics removed per owner directive (South Campus is dedicated to Biological Sciences Club)."""
+    pass
 
 
 # ---------------------------------------------------------------- south building facade + lobby details

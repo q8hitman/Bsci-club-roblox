@@ -53,10 +53,16 @@ local function spawnCart(player)
 	end
 	for _, p in ipairs(cart:GetDescendants()) do
 		if p:IsA("BasePart") then
+			local isBtn = p.Name:match("^CartBtn_") ~= nil
 			p.Anchored = false
 			p.CanCollide = false
-			p.CanQuery = false
+			p.CanQuery = isBtn
 			p.Massless = true
+			if isBtn then
+				local cd = Instance.new("ClickDetector")
+				cd.MaxActivationDistance = 18
+				cd.Parent = p
+			end
 			if p ~= seat then
 				p.CanTouch = false
 				local weld = Instance.new("WeldConstraint")
@@ -93,9 +99,11 @@ startPad.Touched:Connect(function(hit)
 end)
 
 -- v31 actions from the rider's client: "stop" (train gone, nothing else), "station" (step off onto the platform),
--- "island" (end-of-line button), "again" (a fresh train at the station). Moves always use the safe teleport.
+-- "island" (end-of-line button -> returns to Campus/HQ Hub), "again" (a fresh train at the station). Moves always use the safe teleport.
 local Teleport = require(script.Parent.Teleport)
-local islandSpawn = mapFolder:FindFirstChild("IslandSpawn", true)
+local hubSpawn = mapFolder:FindFirstChild("CampusSpawn", true)
+	or mapFolder:FindFirstChild("HQSpawn", true)
+	or mapFolder:FindFirstChild("IslandSpawn", true)
 local lastAction = {}
 remote.OnServerEvent:Connect(function(player, action)
 	if typeof(action) ~= "string" then
@@ -109,8 +117,8 @@ remote.OnServerEvent:Connect(function(player, action)
 	removeCart(player)
 	if action == "station" then
 		Teleport.to(player, spawnPoint)
-	elseif action == "island" and islandSpawn then
-		Teleport.to(player, islandSpawn)
+	elseif action == "island" and hubSpawn then
+		Teleport.to(player, hubSpawn)
 	elseif action == "again" then
 		Teleport.to(player, spawnPoint)
 		task.delay(0.4, function()
