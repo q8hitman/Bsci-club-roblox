@@ -131,7 +131,14 @@ def wall_z(z0, z1, x, y0, y1, col=WHITE, mat="Concrete", gaps=(), t=1.0):
 
 def panel_wall_x(x0, x1, z, y0, y1, face, holes=True, ribbons=()):
     """perforated cladding facing +/-z (face=+1 / -1); ribbons = [(ya, yb)] window strips"""
-    rect("Cladding", x0, x1, y0, y1, z - 0.8, z + 0.8, PANEL, "Concrete")
+    bridge_gap = (x0, x1, z, y0, face) == (-90, 90, -30, 24, 1)
+    if bridge_gap:
+        # v44: only the existing red corridor's south junction; game placement C.
+        rect("Cladding", x0, -50, y0, y1, z - 0.8, z + 0.8, PANEL, "Concrete")
+        rect("Cladding", -30, x1, y0, y1, z - 0.8, z + 0.8, PANEL, "Concrete")
+        rect("Cladding", -50, -30, 36, y1, z - 0.8, z + 0.8, PANEL, "Concrete")
+    else:
+        rect("Cladding", x0, x1, y0, y1, z - 0.8, z + 0.8, PANEL, "Concrete")
     for ya, yb in ribbons:
         rect("Ribbon", x0 + 1, x1 - 1, ya, yb, z + face * 0.5, z + face * 0.95, GLASS_DK, "Glass", transp=0.35, collide=False)
     if holes:

@@ -1,19 +1,28 @@
 # Handoff to Codex (from Claude Code)
 
-## Current handoff: v43 (2026-10-19)
-- Codex is the primary developer. The owner relayed the supervisor's v43 directive: improve existing world-menu cards only.
-- Completed and tested: 12 short Arabic activity descriptions; Arcade marked **مقترح للبداية**. No new windows or tutorial.
-- Current branch: `dev/v43`. Latest local build: `Desktop\KuwaitParkour\KuwaitParkour_v43.rbxlx`.
-- Before-edit backup: `Desktop\KuwaitParkour\backup_before_v43_20261019` (includes v42 build).
-- Studio still open on `KuwaitParkour_v37.rbxlx` with v42 content plus the tested v43 WorldMenu script, in Edit mode.
-  Do not close it: login may be lost. Device simulation has been reset to the default viewport.
-- Studio verification: iPhone XR landscape + desktop layout, all 12 card destinations via mouse input, and locked
-  Zone 2-8 portals at stage 0 passed. See BSC_PROGRESS.md for exact evidence and remaining v42 testing gaps.
-- Next: **wait for the emperor's test feedback. Do not add features.** Private publishing also needs his explicit approval.
-- Supervisor reports go in `REPORT_FOR_CHATGPT.md` and Git; the owner relays them. The send-message tool accepted a
-  request, but its delivery/reply could not be verified, so do not claim a reliable direct ChatGPT channel.
-- Codex can run local commands and use Studio MCP. The MCP device-simulator API also works; desktop-window activation
-  failed in this session, so device tests used StudioDeviceSimulatorService through MCP instead.
+## Current handoff: v44 (2026-10-19)
+- The owner explicitly authorized a modular north-building development prototype after v43. No publish/merge approval.
+- Branch `dev/v44`; local build `Desktop\KuwaitParkour\KuwaitParkour_v44.rbxlx`.
+- Before-edit full backup `Desktop\KuwaitParkour\backup_before_v44_20261019` includes the v43 build.
+- New generator `tools/north_campus44.py`: seven named modules, photo17 flat classroom and photo16 tiered lecture,
+  skylit atrium and reference-inspired envelope. Evidence values distinguish visual references from C game placements.
+- Kept inherited footprint, floor levels and stair locations. No real room numbers or new elevator/club locations.
+- Only south change: opened the pre-existing blocked red-bridge junction at x=-50..-30, y=24..36, z=-30.
+  The reason was explained to the owner before editing. All other south, garden and other-world geometry is unchanged.
+- Studio restarted with owner authorization when MCP had no connection; no new login. Current target tab is
+  `KuwaitParkour_v43.rbxlx`, containing v44 geometry and unchanged v43 scripts, in Edit mode with default viewport.
+  Do not close Studio. Match the title with list_roblox_studios; session IDs are temporary.
+- Studio QA: both classrooms, both garden routes, both stair cores all floors up/down without jumping, red bridge
+  both directions, 12 atrium-edge collision tests, 5 camera positions and real seats passed. All12 Travel destinations
+  reached their spawn; stage/coins remained0. No new game-script errors; known DataStore/UIBlox/asset warnings remain.
+- North863 parts vs756, net+107; 951 descendants. All63 script sources match v43. StreamingEnabled remains false.
+- Detailed results, performance limits and photos: `docs/north_v44_report.md`; supervisor report: `REPORT_FOR_CHATGPT.md`.
+- Direct ChatGPT communication was actually verified through the existing browser chat after the earlier uncertain
+  tool-only attempt: https://chatgpt.com/c/6ad11a54-7d40-83ed-988d-0252db67c42b . Existing session, no API key/new login.
+  Browser is reliable here; read_thread can lag or show placeholders. Keep the Git report as the durable fallback.
+- Codex can run local commands, Studio MCP and browser tools. Gemini contact was not tested in this version.
+- Next: **wait for the emperor's prototype feedback. Do not add features.** Real-phone, multiplayer and published
+  persistence tests are outstanding; private publishing still needs explicit approval.
 
 Read `BSC_RESUME.md`, `BSC_ARCHITECTURE.md` and `BSC_MASTER_VISION.md` first. The owner's rules always win:
 - never publish;
@@ -24,10 +33,10 @@ Read `BSC_RESUME.md`, `BSC_ARCHITECTURE.md` and `BSC_MASTER_VISION.md` first. Th
 ## Where things are
 - **Full local working copy** (code, Git, and the Rojo/Lune/StyLua/selene binaries):
   `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full`.
-  - Work there. It is on branch `dev/v43`.
+  - Work there. It is on branch `dev/v44`.
   - Rebuild with the commands in `CLAUDE.md` § Build, run from that folder.
-- **Branch:** `dev/v43`. Branches are stacked: v37 → v38 → v39 → v40 → v41 → v42 → v43.
-- **Latest tested local build:** `Desktop\KuwaitParkour\KuwaitParkour_v43.rbxlx`.
+- **Branch:** `dev/v44`. Branches are stacked: v37 → v38 → v39 → v40 → v41 → v42 → v43 → v44.
+- **Latest tested local build:** `Desktop\KuwaitParkour\KuwaitParkour_v44.rbxlx`.
 - **Backups:** `Desktop\KuwaitParkour\backup_v42_20261019`. Make a new backup before you change anything.
 - **Not in Git:** the tool binaries (Rojo 7.7.1, Lune 0.11.0, StyLua 2.5.2, selene 0.32.0), the generated
   `Map.rbxmx` and `Island.rbxm`, and the packs. Regenerate them with the commands in BSC_ARCHITECTURE.md.

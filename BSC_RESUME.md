@@ -1,14 +1,18 @@
 # Resume here
 
-## Current state (2026-10-19, v43)
-- Work only in `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full`, branch `dev/v43`.
-- v43 adds Arabic activity descriptions to the 12 existing world-menu cards and marks Arcade **مقترح للبداية**.
-- Backup: `Desktop\KuwaitParkour\backup_before_v43_20261019`. Build: `Desktop\KuwaitParkour\KuwaitParkour_v43.rbxlx`.
-- Desktop and iPhone XR landscape passed; all 12 card routes and locked Zone 2-8 portals passed in solo Studio Play.
-- Studio stays open on `KuwaitParkour_v37.rbxlx`, with v42 content plus the tested v43 WorldMenu script; currently Edit,
-  default viewport. Do not close Studio.
-- **Wait for the emperor's feedback. No further features, publishing, merging, or StreamingEnabled changes.**
-- Reports: `BSC_PROGRESS.md` and `REPORT_FOR_CHATGPT.md`; the owner relays the supervisor's replies.
+## Current state (2026-10-19, v44)
+- Work only in `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full`, branch `dev/v44`.
+- Owner-authorized modular north prototype: separate flat/tiered classrooms, atrium, envelope, inherited stairs/levels.
+  Visual references are documented; game layout is C, not a verified real room/stair/club plan.
+- Backup: `Desktop\KuwaitParkour\backup_before_v44_20261019`. Build: `Desktop\KuwaitParkour\KuwaitParkour_v44.rbxlx`.
+- North863 parts, net+107. Other worlds and scripts unchanged; south only has the necessary existing red-bridge opening.
+- Studio solo QA passed rooms/garden paths/both stair cores/bridge/seats/rails/camera and all12 Travel routes.
+  All63 script sources match v43. Full evidence and six screenshots: `docs/north_v44_report.md`.
+- Studio was reopened with owner permission after MCP disconnected; tab `KuwaitParkour_v43.rbxlx` now has v44 geometry,
+  unchanged v43 scripts, Edit mode and default viewport. Do not close Studio.
+- Direct supervisor contact via existing ChatGPT browser session was verified; the Git report remains the fallback.
+- **Wait for the emperor's prototype feedback. No further features, publishing, merging, or StreamingEnabled changes.**
+- Outstanding: human multiplayer, real phone, published persistence, and real room/stair/elevator locations.
 
 The older notes below are historical; the current state above and the owner's latest instructions take precedence.
 

@@ -1,5 +1,38 @@
 # Progress log
 
+## v44 (2026-10-19), branch `dev/v44`, NOT published or merged
+
+Owner-authorized modular north-building development prototype. Full report and six Play screenshots:
+[north_v44_report](docs/north_v44_report.md).
+
+- Full before-edit backup `Desktop/KuwaitParkour/backup_before_v44_20261019`; new branch from v43.
+- `tools/north_campus44.py` replaces only legacy north generation and preserves its RNG advancement.
+  Seven modules, explicit A/B visual evidence and C placement notes; distinct flat18-seat and tiered35-seat rooms.
+- Kept inherited footprint, levels, stairs, cafes/games and collectibles. No actual room-number/club/elevator claims.
+- Necessary south edit explained before implementation: opening the existing red-bridge junction through the old solid
+  cladding at x=-50..-30,y24..36,z=-30; corresponding window/mullion split only. All other south geometry unchanged.
+- Studio MCP reconnected by reopening the installed Studio with the owner's authorization. Current v43 tab has v44
+  geometry, unchanged scripts, Edit mode; app remains open and device simulator reset to default.
+- Solo R15 MoveTo tests without jumping: rooms19 goals; east garden20; west garden23; stairs25+25 all levels; bridge10.
+  Twelve atrium-edge collision tests, five camera collision checks, sitting/getting up in both room types passed.
+- All12 Travel remote routes reached their exact horizontal spawn coordinates; coins/stage stayed0. Real menu clicks
+  and progression locks were already tested in v43, not repeated as v44 UI acceptance tests.
+- Final fresh Play: no new game-script errors. Known unpublished DataStore, UIBlox and asset203785492 messages remain.
+- Visual QA: exterior garden/rear, flat classroom, lecture and atrium refined and captured. iPhone XR landscape801x413
+  visually reviewed; this is not a real-phone performance test.
+- North863 BaseParts vs756, +107; descendants951; seats53; PointLights18. Whole generated Map25941 parts.
+  Three desktop180-frame samples averaged59.97–60.02FPS, p95=17.95–18.19ms; no measured v43 FPS baseline.
+- Fixed QA issues: stair-sign collision, legacy extra roof cutout, exposed lawn at floor, lighting and obstructive sign.
+  Independent final review confirmed the roof fix and had no remaining findings.
+- Static preservation validator passes all other worlds/garden/markers and exact allowed bridge edits; 0 generator
+  violations/clashes. StyLua check passes; selene0 errors/27 known warnings/0 parse errors (warnings cause exit1).
+  Question banks pass. Final Rojo build has exactly the same63 script sources as v43; StreamingEnabled remains false.
+- Build: `Desktop/KuwaitParkour/KuwaitParkour_v44.rbxlx` (37,399,642bytes; excluded from Git).
+- Direct ChatGPT contact was verified through the existing browser conversation; earlier tool-only uncertainty in v43
+  is superseded. No new login/key. Gemini contact untested. Durable report: `REPORT_FOR_CHATGPT.md`.
+- Next: owner prototype review. No further features, publishing or merging. Human multiplayer/real phone/cloud saves
+  and additional architectural references remain outstanding.
+
 ## v43 (2026-10-19), branch `dev/v43`, NOT published or merged
 **Done: descriptions inside the existing world-menu cards (supervisor's single-task directive).**
 

@@ -25,6 +25,7 @@ import island11  # noqa: E402
 import ku_science  # noqa: E402  (v32: real-world College of Science likeness)
 import ku_science33  # noqa: E402  (v33: satellite corrections)
 import ku_science34  # noqa: E402  (v34: south complex + garden walk from the aerial view)
+import north_campus44  # noqa: E402  (v44: modular north prototype; photo16/17 room types)
 
 box, vcyl, disc, ball, sign = G.box, G.vcyl, G.disc, G.ball, G.sign
 rect = C5.rect
@@ -81,7 +82,7 @@ def build_campus():
         ku_science33.build()
         ku_science34.build()
         C5._off[2] = C5.NB_SHIFT
-        C5.north_building()
+        north_campus44.build()
         C5._off[2] = 0.0
 
 

@@ -72,14 +72,19 @@ def _ribbons_both_sides(axis, a0, a1, c, y0, y1, ribbons):
     """window ribbons on BOTH faces of the cladding (several facades had them only on the inside,
     which left big blank white walls outside), plus slim mullions so they read as windows"""
     for ya, yb in ribbons:
+        bridge_gap = axis == "x" and (a0, a1, c, ya) == (-90, 90, -30, 30)
         for s_ in (-1, 1):
             if axis == "z":
                 rect("Ribbon", c + s_ * 0.8, c + s_ * 1.05, ya, yb, a0 + 1, a1 - 1, C5.GLASS_DK, "Glass", transp=0.25,
                      collide=False)
             else:
-                rect("Ribbon", a0 + 1, a1 - 1, ya, yb, c + s_ * 0.8, c + s_ * 1.05, C5.GLASS_DK, "Glass", transp=0.25,
-                     collide=False)
+                spans = ((a0 + 1, -50), (-30, a1 - 1)) if bridge_gap else ((a0 + 1, a1 - 1),)
+                for xa, xb in spans:
+                    rect("Ribbon", xa, xb, ya, yb, c + s_ * 0.8, c + s_ * 1.05, C5.GLASS_DK, "Glass", transp=0.25,
+                         collide=False)
         for m in range(int(a0) + 6, int(a1) - 2, 9):
+            if bridge_gap and -50 < m < -30:
+                continue  # v44: the existing red corridor entrance, not a real-room claim
             for s_ in (-1, 1):
                 if axis == "z":
                     rect("Mullion", c + s_ * 1.0, c + s_ * 1.2, ya, yb, m - 0.3, m + 0.3, (220, 222, 226), "SmoothPlastic",
