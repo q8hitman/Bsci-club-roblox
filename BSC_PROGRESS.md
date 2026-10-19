@@ -1,5 +1,59 @@
 # Progress log
 
+## v41 (2026-10-19), branch `dev/v41`, NOT published
+**Done: the Light Microscopy lab** (the first complete lab, built to the supervisor's requirements).
+
+**Where and which files:**
+- A new bench in the Research Lab, `LabStation|lightmicro`.
+- Client: `LightMicroscope.client.luau`. Data: `shared/MicroscopyData.luau`. Grading: `Lab.server` (`lmStart` and
+  `lmSubmit`).
+
+**The microscope:**
+- Four objectives: 4×, 10×, 40× and 100× with oil. The total magnification shown is eyepiece 10× × objective.
+- The nosepiece turns one step at a time.
+- Coarse and fine focus. Each lens has its own depth of field.
+- Light control: higher magnification needs more light, and both too dark and too bright are shown.
+- The slide can be moved, and the sample starts off-centre so you have to find it at 4×.
+- An immersion-oil drop and a "clean" button.
+
+**The procedure is enforced, and every mistake is explained:**
+- No skipping lenses.
+- You can't go up until the sample is centred and in focus.
+- Coarse focus is blocked at 40× and 100×.
+- Without oil, 100× stays blurry.
+- With oil on the slide, you can't swing back to 40×.
+
+**The samples:**
+- Four representative drawings: a blood smear, an Elodea leaf, cheek cells and Gram-positive cocci.
+- Red blood cells are drawn with NO nucleus. White cells have purple lobed nuclei.
+- Detail appears only at the right magnification.
+
+**The notebook and the other tabs:**
+- The notebook is graded on the server. You must have actually seen the sample, centred, at the required
+  magnification (with oil for bacteria).
+- Every wrong item comes with an explanation.
+- **Practice mode:** a step guide that ticks itself off.
+- **Assessment mode:** a reward of +6 research and +5 coins, once per sample every 10 minutes for this session.
+- A "Microscope parts" tab with 8 parts, in Arabic and English, with what each one does.
+- A note on screen: "a simplified simulation, not a real lab procedure".
+
+**Tested in Studio, solo, with real clicks through the Studio mouse tool:**
+- **Focus:** coarse focus reached 87% clarity at 4×. The light step showed ✅.
+- **Finding the sample:** the slide moved until the sample was found (✅).
+- **Lenses:** 4×→40× was refused. 10× worked, fine focus reached 92%, 40× worked, and the light had to go up.
+- **Coarse at 40×:** blocked, with a message.
+- **Clarity:** 94% at 400×.
+- **Notebook:** 3 correct notes in assessment mode → "Excellent +6".
+- **Oil:** at 100× without oil, clarity was capped at 30% with a warning. After oil it rose to 69%. Going back to 40× was
+  blocked.
+- **Bugs found and fixed:** the round-view clipping (cells spilled out of the round view) and the notebook text wrap.
+- 0 errors on the server and client.
+
+**Not tested:**
+- Phone layout. The screen is dense, so it needs a check on a small device.
+- The elodea and cheek samples at 400×. Only blood was clicked through end to end.
+- Expert review of the science. It is required before calling the lab final.
+
 ## v40 (2026-10-19), branch `dev/v40`, NOT published
 **Done:**
 - **BSC Game Show studio** at (0, 300, -7000).

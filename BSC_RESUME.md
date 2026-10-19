@@ -1,7 +1,7 @@
 # Resume here
 
 ## State (2026-10-18)
-- **Version:** v40 on branch `dev/v40` (stacked: v37 → v38 → v39 → v40). It is stable; see BSC_PROGRESS.md. Codex handoff: CODEX_HANDOFF.md
+- **Version:** v41 on branch `dev/v41` (stacked: v37 → … → v41). It is stable; see BSC_PROGRESS.md. Codex handoff: CODEX_HANDOFF.md
 - **Not published.** The live game is still the v20+NPC update (PRIVATE, PlaceId 97395090487008).
 - **Studio:** two windows are open (v34, v35). The v35 window has the v37 map and scripts hot-swapped in, unsaved.
   Close those windows only if needed.
@@ -15,7 +15,7 @@
    - Add a new arena via chaos_gen.
 3. ~~Puzzle rooms~~ done in v39 (Cell Control Room).
 4. ~~Game Show (picture + category)~~ done in v40. Still to add: the sound and memory modes.
-5. **Batch 3:** Light Microscopy. Extend the Lab world (`Lab.server`/`Lab.client`, `shared/LabData`).
+5. ~~Light Microscopy~~ done in v41. Next, per the supervisor: phone and team tests of v39–v41, fix bugs, polish the whole experience (no new side projects).
 
 ## How to hot-swap a build into the open Studio
 1. Copy `Map.rbxmx` and a Folder-bundle `Scripts.rbxm` into `<Roblox version>/content/bsc/`.

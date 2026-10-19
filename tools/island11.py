@@ -397,6 +397,16 @@ def research_lab():
         r("LeadRed", -38, -36, 5.4, 5.6, 18.6, 18.9, (220, 50, 50), "SmoothPlastic", collide=False)
         r("LeadBlack", -38, -36, 5.4, 5.6, 20.1, 20.4, (20, 20, 22), "SmoothPlastic", collide=False)
         sign("GelLabel", "🧪 الفصل الكهربائي للـ DNA", at(-30, 6, 17.1), (10, 2, 0.3), "Front", bg=(30, 70, 60))
+        # v41: Light Microscopy lab bench (opens the full simulation: LightMicroscope.client)
+        r("LabStation|lightmicro", -26, -12, 0, 3.6, 22, 28, (238, 238, 232), "Marble")
+        r("ScopeBase2", -21, -17, 3.6, 4.4, 23.5, 26.5, (40, 44, 52), "Metal", collide=False)
+        r("ScopeArm2", -19.6, -18.4, 4.4, 10, 25.4, 26.4, (40, 44, 52), "Metal", collide=False)
+        r("ScopeStage2", -21, -17, 6.2, 6.6, 23.2, 25.6, (30, 32, 38), "Metal", collide=False)
+        vcyl("ScopeObjective2", LX - 19, LY + 6.8, LY + 8.6, LZ + 24.4, 0.8, (190, 194, 200), "Metal", collide=False)
+        G.part("ScopeTube2", (1.2, 3.6, 1.2), at(-19, 10.4, 24.8), (40, 44, 52), "Metal", rot=(-25, 0, 0), collide=False)
+        ball("ScopeLamp2", LX - 19, LY + 5.0, LZ + 24.4, 1.2, (255, 240, 200), "Neon", collide=False, shadow=False)
+        sign("LightMicroLabel", "🔬 مختبر المجهر الضوئي\nLight Microscopy", at(-19, 13.5, 28.2), (12, 3.4, 0.3), "Back",
+             bg=(24, 80, 56))
         # fume hood + safety corner
         r("FumeHood", -71, -61, 0, 16, -46, -36, (226, 228, 230), "SmoothPlastic")
         r("HoodSash", -60.9, -60.6, 4, 12, -45, -37, (190, 220, 235), "Glass", transp=0.45, collide=False)

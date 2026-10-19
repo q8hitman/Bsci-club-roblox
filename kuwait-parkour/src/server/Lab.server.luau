@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Profiles = require(script.Parent.Profiles)
 local LabData = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("LabData"))
 local Batches = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Batches"))
+local Micro = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("MicroscopyData"))
 local mapFolder = workspace:WaitForChild("Map")
 
 local openEvent = Instance.new("RemoteEvent")
@@ -136,7 +137,9 @@ end
 for _, inst in ipairs(mapFolder:GetDescendants()) do
 	if inst:IsA("BasePart") then
 		local kind = inst.Name:match("^LabStation|(.+)$")
-		if kind == "microscope" then
+		if kind == "lightmicro" then
+			addPrompt(inst, "مختبر المجهر الضوئي 🔬", "lightmicro")
+		elseif kind == "microscope" then
 			addPrompt(inst, "افحص العيّنة 🔬", "microscope")
 		elseif kind == "pcr" then
 			addPrompt(inst, "شغّل جهاز PCR 🧬", "pcr")
@@ -213,6 +216,58 @@ labFn.OnServerInvoke = function(player, action, a, b)
 		end
 		local gained = ok and reward(player, p.kind) or 0
 		return { ok = ok, gained = gained, research = s.research, answer = (not ok) and p.answer or nil }
+	elseif action == "lmStart" then
+		-- v41 Light Microscopy: one session per player; the notebook is graded on lmSubmit
+		local sample
+		for _, sm in ipairs(Micro.SAMPLES) do
+			if sm.id == a then
+				sample = sm
+			end
+		end
+		if not sample then
+			return nil
+		end
+		local token = newToken()
+		pending[player] = { kind = "lightmicro", sample = sample, token = token, at = os.clock() }
+		return { token = token }
+	elseif action == "lmSubmit" then
+		local p = pending[player]
+		local info = typeof(b) == "table" and b or {}
+		if not p or p.kind ~= "lightmicro" or a ~= p.token then
+			return { ok = false, reason = "session" }
+		end
+		local sample = p.sample
+		local picked = {}
+		for _, i in ipairs(typeof(info.picks) == "table" and info.picks or {}) do
+			if typeof(i) == "number" and sample.notes[i] then
+				picked[i] = true
+			end
+		end
+		local results, allRight = {}, true
+		for i, n in ipairs(sample.notes) do
+			local right = (picked[i] == true) == n[2]
+			allRight = allRight and right
+			table.insert(results, { i = i, right = right, why = (not right) and n[3] or nil })
+		end
+		local maxMag = typeof(info.maxMag) == "number" and info.maxMag or 0
+		local sawIt = maxMag >= sample.needMag and (sample.needMag < 100 or info.oil == true)
+		local ok = allRight and sawIt
+		local gained = 0
+		if ok and info.eval == true and os.clock() - p.at >= 12 then
+			s.microDone = s.microDone or {}
+			local last = s.microDone[sample.id]
+			local now = os.time()
+			if not last or now - last >= Micro.COOLDOWN then
+				s.microDone[sample.id] = now
+				s.research = (s.research or 0) + Micro.REWARD.research
+				player:SetAttribute("Research", s.research)
+				s.coins += Micro.REWARD.coins
+				player:SetAttribute("Coins", s.coins)
+				gained = Micro.REWARD.research
+			end
+		end
+		pending[player] = nil
+		return { ok = ok, sawIt = sawIt, results = results, gained = gained, research = s.research }
 	elseif action == "projects" then
 		local list = {}
 		for _, u in ipairs(LabData.UPGRADES) do

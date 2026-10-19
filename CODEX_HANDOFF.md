@@ -7,9 +7,9 @@ Read `BSC_RESUME.md`, `BSC_ARCHITECTURE.md` and `BSC_MASTER_VISION.md` first. Th
 - no horror world.
 
 ## Where things are
-- **Branch:** `dev/v40`. Branches are stacked: v37 → v38 → v39 → v40.
-- **Last stable build:** `Desktop\KuwaitParkour\KuwaitParkour_v40.rbxlx`.
-- **Backups:** `Desktop\KuwaitParkour\backup_v40_20261019`. Make a new backup before you change anything.
+- **Branch:** `dev/v41`. Branches are stacked: v37 → v38 → v39 → v40 → v41.
+- **Last stable build:** `Desktop\KuwaitParkour\KuwaitParkour_v41.rbxlx`.
+- **Backups:** `Desktop\KuwaitParkour\backup_v41_20261019`. Make a new backup before you change anything.
 - **Not in Git:** the tool binaries (Rojo 7.7.1, Lune 0.11.0, StyLua 2.5.2, selene 0.32.0), the generated
   `Map.rbxmx` and `Island.rbxm`, and the packs. Regenerate them with the commands in BSC_ARCHITECTURE.md.
 
@@ -29,7 +29,17 @@ Read `BSC_RESUME.md`, `BSC_ARCHITECTURE.md` and `BSC_MASTER_VISION.md` first. Th
 - **Codex** takes over the code when Claude stops.
 - Never let two agents edit the same files at the same time.
 
-## Next task: Light Microscopy lab (directive section 7)
+- **v41:** the Light Microscopy lab: `LightMicroscope.client`, `shared/MicroscopyData` and `Lab.server` lm* actions.
+  Tested with real clicks (see BSC_PROGRESS.md).
+
+## Next task (supervisor, 2026-10-19)
+Test v39–v41 on a phone and with real teams, fix what breaks, and improve the whole experience. Do not open new
+side projects.
+
+Testing the UI needs real clicks: `execute_luau` cannot click, so use the Studio MCP tool `user_mouse_input` with
+viewport coordinates (AbsolutePosition, without the gui inset).
+
+## (done in v41) Light Microscopy lab (directive section 7)
 Extend the existing Lab world: `Lab.server`/`Lab.client` and `shared/LabData`. Requirements:
 - the microscope parts;
 - slide handling;
