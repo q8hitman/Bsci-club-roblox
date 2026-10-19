@@ -201,3 +201,24 @@ Portals are parts named `Portal|<Kind>`. `destinations` lives in `src/server/Mai
   chaos_gen.last_cell arena at (AX, AZ-300); Studio-only workspace attribute ArcadeForce forces a game.
 - Horror/containment world is deferred: never build it.
 
+
+## v38–v42 (2026-10-19, local only, NOT published). Details: BSC_PROGRESS.md, BSC_READINESS_v42.md
+- **v38:** Lab Rush (co-op).
+- **v39:** puzzle rooms (Cell Control Room).
+- **v40:** BSC Game Show.
+- **v41:** Light Microscopy lab.
+- **v42:** phone, tablet and multiplayer pass:
+  - Game Show HUD, readable toasts, and microscope touch controls;
+  - the Game Show rewards only players who answered;
+  - the stage counter shows only in the course;
+  - the Game Show spawn was moved off the exit portal.
+- Latest build: `Desktop\KuwaitParkour\KuwaitParkour_v42.rbxlx`. Branch `dev/v42`. Backup `backup_v42_20261019`.
+- **Multiplayer test:**
+  1. Test → Start Test Session → Server and Clients.
+  2. In the server window, Test → Add Clients, once per client.
+  3. Each window shows up as its own Studio id in the MCP tools.
+- **Harness limits:**
+  - In the Device Simulator, `user_mouse_input` x lands 47 px left.
+  - In multi-client mode, scripted `InputHoldBegin` presses stop reaching the server after a few presses. Use real
+    people for full co-op runs.
+- The game is landscape-only (`LandscapeSensor`).
