@@ -289,7 +289,7 @@ local function dot(x, y, d, color, transp, shape)
 	local w = type(d) == "table" and d[1] or d
 	local h = type(d) == "table" and d[2] or d
 	local rx, ry = (x - st.cx) / o.fov, (y - st.cy) / o.fov
-	f.Visible = math.sqrt(rx * rx + ry * ry) < 0.5 + 0.3 * math.max(w, h) / o.fov -- big patches may straddle the edge
+	f.Visible = math.sqrt(rx * rx + ry * ry) + 0.5 * math.max(w, h) / o.fov < 0.49 -- big patches may straddle the edge
 	f.Position = UDim2.fromScale(0.5 + (x - st.cx) / o.fov, 0.5 + (y - st.cy) / o.fov)
 	f.Size = UDim2.fromScale(w / o.fov, h / o.fov)
 	f.BackgroundColor3 = color
@@ -445,22 +445,24 @@ local objBtns = {}
 
 local function setObjective(k)
 	local cur = st.obj
-	if math.abs(k - cur) ~= 1 then
+	-- the nosepiece is a ring: 100x sits next to 4x, so you can swing back from 100x to 4x without passing 40x
+	local backToLow = cur == #OBJ and k == 1
+	if math.abs(k - cur) ~= 1 and not backToLow then
 		say(
 			"🔄 القرص الدوّار يلف خطوة خطوة: بدّل للعدسة اللي جنب الحالية"
 		)
 		return
 	end
-	if k > cur then
+	if k > cur and not backToLow then
 		if sharpness() < 0.6 or not sampleInView(0.85) then
 			say(
 				"🎯 قبل ما تكبّر: لازم العيّنة بالوسط والصورة واضحة بالتكبير الحالي"
 			)
 			return
 		end
-	elseif cur == 4 and st.oil then
+	elseif cur == 4 and st.oil and not backToLow then
 		say(
-			"❌ لا ترجع للـ40× والزيت على الشريحة، العدسة 40× بتتوسّخ بالزيت. نظّف الشريحة أول"
+			"❌ لا ترجع للـ40× والزيت على الشريحة، العدسة 40× بتتوسّخ بالزيت. لف القرص لـ4× مباشرة ونظّف"
 		)
 		return
 	end
@@ -470,7 +472,17 @@ local function setObjective(k)
 			"⚠️ العدسة 100× تحتاج نقطة زيت غمر، وبدونه الصورة تبقى مغبّشة"
 		)
 	else
-		say(("التكبير الكلي الحين %d×"):format(Micro.OCULAR * OBJ[k].mag))
+		if backToLow then
+			say(
+				"🔄 لفّيت القرص من 100× لـ4× مباشرة بدون ما تمر على 40×. الحين تقدر تنظّف الزيت"
+			)
+		elseif OBJ[k].oil then
+			say(
+				"🔬 1000× قريب من حد التمييز للمجهر الضوئي (حوالي 0.2 ميكرومتر): أي تكبير أكثر يكبّر الصورة بدون تفاصيل جديدة"
+			)
+		else
+			say(("التكبير الكلي الحين %d×"):format(Micro.OCULAR * OBJ[k].mag))
+		end
 	end
 	render()
 end
@@ -620,8 +632,10 @@ button(
 	UDim2.fromScale(0.36, 0.12),
 	Color3.fromRGB(90, 90, 100),
 	function()
-		if st.obj == 4 then
-			say("رجّع العدسة لـ10× أو 4× قبل التنظيف")
+		if st.obj >= 3 then
+			say(
+				"رجّع العدسة لـ4× أو 10× قبل التنظيف (من 100× لف القرص لـ4× مباشرة)"
+			)
 			return
 		end
 		st.oil = false

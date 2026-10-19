@@ -25,6 +25,27 @@
 - A Game Show round shows on the HUD: the picture round with A–D and the score.
 - selene: 0 errors.
 
+**Microscope science review (Gemini) and a bug it led to:**
+- **Wording fixes:**
+  - Red cells: "biconcave, no nucleus".
+  - Platelets: "fragments or tiny dots between the cells".
+  - Bacteria: "no true nucleus (prokaryotes)".
+  - Condenser: "light and contrast".
+  - Oil: "matches the refractive index of glass".
+- **Resolution note:** at 100× the screen now says that 1000× is near the light microscope's limit of about 0.2 µm,
+  so more magnification is empty.
+- **Bug: oil at 100× was a dead end.** 40× was blocked with oil on, 100× could not turn to 4×, and cleaning needed 4× or
+  10×.
+  - **Fix:** the nosepiece is a ring, so 100× now turns straight to 4×. Going up still has to go one step at a time.
+  - Cleaning is allowed only at 4× or 10×.
+- **Fix:** cells are drawn only when they sit fully inside the round field. Before, they spilled past its edge, because
+  the CanvasGroup does not clip to the circle.
+- **Tested with real clicks:**
+  - The full blood procedure: 4× 93%, centred by dragging, 10× 94%, 40× fine focus 69%, 100× with oil 97%.
+  - 40× was refused with the new message, 100×→4× worked with its message, and cleaning worked.
+  - 0 errors from our scripts.
+- **Test-harness note:** in the Device Simulator, `user_mouse_input` x lands 47 px left. Add 47 to x.
+
 **Not tested:**
 - A real phone.
 - Portrait orientation.
