@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "clients": 2,
+  "departed": true,
+  "mode": "accelerated six-second round",
+  "ready": [
+    {"tabs": 7, "lockedDenied": true, "xp": 40, "forgedDenied": true},
+    {"tabs": 7, "lockedDenied": true, "xp": 0, "forgedDenied": true}
+  ],
+  "final": [
+    {"activities": 2, "level": 1, "arcade": true, "xp": 80},
+    {"activities": 0, "level": 1, "arcade": false, "xp": 0}
+  ]
+}

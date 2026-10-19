@@ -37,6 +37,7 @@ function Profiles.blank()
 		upgrades = {}, -- lab project id -> true
 		batch = nil, -- chosen club batch id (Shared/Batches)
 		quiz = {}, -- challenge center: "spec:level" -> best correct answers in one session (0..5)
+		passport = {}, -- v45: additive evidence ledger and current UTC week's challenge proof
 	}
 end
 

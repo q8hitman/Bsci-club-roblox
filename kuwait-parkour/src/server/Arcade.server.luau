@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Profiles = require(script.Parent.Profiles)
+local Passport = require(script.Parent.PassportService)
 local Teleport = require(script.Parent.Teleport)
 local mapFolder = workspace:WaitForChild("Map")
 local lobby = mapFolder:FindFirstChild("ArcadeLobby", true)
@@ -124,6 +125,7 @@ local function playRound(players)
 	lastGame = game_
 	local mut = pickMutation()
 	local ctx = { arena = game_.arena, alive = {}, score = {}, running = false, conns = {}, tier = tier }
+	local passportDeparted = {}
 	function ctx.connect(c)
 		table.insert(ctx.conns, c)
 	end
@@ -173,6 +175,7 @@ local function playRound(players)
 			-- left the arena some other way (portal, admin teleport...): drop out quietly, no teleports or return flag
 			local left = offset and Vector3.new(offset.X, 0, offset.Z).Magnitude > 250
 			if left then
+				passportDeparted[p] = true
 				ctx.alive[p] = nil
 				p:SetAttribute("Mutation", nil)
 				p:SetAttribute("InArcadeRound", nil)
@@ -235,6 +238,12 @@ local function playRound(players)
 		local s = p.Parent and Profiles.state[p]
 		if s then
 			s.coins += 2
+			Passport.complete(p, "arcade", {
+				departed = passportDeparted[p],
+				active = ctx.alive[p] == true,
+				present = inLobby(p),
+				returning = p:GetAttribute("ArcadeReturn") == true,
+			})
 			p:SetAttribute("Coins", s.coins)
 			addResearch(p, (s.upgrades and s.upgrades.mito) and 2 or 1) -- every round feeds the lab (+1 with mito)
 		end

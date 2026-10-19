@@ -1,6 +1,19 @@
 # Resume here
 
-## Current state (2026-10-19, v44)
+## Current state (2026-10-19, v45)
+- Owner explicitly said to send the report to the supervisor and continue; this supersedes the previous wait state.
+- Work only in `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full`, branch `dev/v45`.
+- BSC Passport implemented in the existing Profile menu: cosmetic XP/levels, five new achievements/titles, optional
+  existing batch selection, and three Monday00:00UTC weekly challenges. No new coin/research economy or geometry.
+- Backup `backup_before_v45_20261019`; build `Desktop\KuwaitParkour\KuwaitParkour_v45.rbxlx`.
+- Solo, two Studio clients, iPhoneXR UI, migration/merge/rollover/duplicate claims and all12 Travel routes passed.
+- Evidence/limits/photos: `docs/passport_v45_report.md`. Published DataStore and real phone remain untested.
+- Studio stays open in Edit/default viewport: titlev43, geometryv44, scriptsv45. No QA scripts remain in the place.
+- Send report directly to ChatGPT supervisor and continue one complete feature at a time. No publishing/merging.
+- StudioTestService:ExecuteMultiplayerTestAsync now verified; see tools/studio_tests/passport45.*.luau for test fixture.
+  Studio MCP command-context require can see a separate module cache: use a normal temporary Script to inspect game Profiles.
+
+## Historical state (2026-10-19, v44)
 - Work only in `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full`, branch `dev/v44`.
 - Owner-authorized modular north prototype: separate flat/tiered classrooms, atrium, envelope, inherited stairs/levels.
   Visual references are documented; game layout is C, not a verified real room/stair/club plan.

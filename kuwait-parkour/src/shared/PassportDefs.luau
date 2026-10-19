@@ -1,0 +1,48 @@
+-- Cosmetic progression rules for the development build; no coin/research economy changes.
+return {
+	StageXP = 10,
+	CollectXP = 25,
+	ActivityXP = 40,
+	LevelXP = 100,
+	Worlds = {
+		Campus = true,
+		HQ = true,
+		Island = true,
+		Course = true,
+		Cart = true,
+		Train = true,
+		Arcade = true,
+		Lab = true,
+		Quiz = true,
+		Exam = true,
+		Puzzle = true,
+		Show = true,
+	},
+	Activities = { arcade = true, lab = true, show = true },
+	Weekly = {
+		{
+			id = "explore",
+			ar = "جولة الجزيرة",
+			desc = "زُر 5 عوالم مختلفة من القائمة أو البوابات",
+			field = "visits",
+			goal = 5,
+			xp = 75,
+		},
+		{
+			id = "parkour",
+			ar = "خطوات ثابتة",
+			desc = "المس 3 نقاط باركور مختلفة هذا الأسبوع",
+			field = "stages",
+			goal = 3,
+			xp = 75,
+		},
+		{
+			id = "activities",
+			ar = "نوّع تجربتك",
+			desc = "أكمل نشاطين مختلفين: أركيد، مختبر، أو Game Show",
+			field = "activities",
+			goal = 2,
+			xp = 75,
+		},
+	},
+}

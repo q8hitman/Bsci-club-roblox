@@ -1,5 +1,33 @@
 # Progress log
 
+## v45 (2026-10-19), branch `dev/v45`, NOT published or merged
+
+Supervisor accepted v44 development and selected BSC Passport after the owner's explicit instruction to continue.
+Full report: [passport_v45_report](docs/passport_v45_report.md). Backup: `backup_before_v45_20261019` (includes v44).
+
+- Extended the existing Profile/Shop menu: overview, achievements, collections, cosmetics, times, weekly, optional batch.
+- Added cosmetic XP/levels from server-owned, one-time evidence: stage10, collectible25, first arcade/lab/show40,
+  weekly75; 100XP per level. Five cosmetic achievements/titles, no changes to existing coin/research rewards.
+- Backward-compatible passport ledger under existing Profiles/DataStore. Failed-load save guard retained; set-union
+  merge and Monday00:00UTC rollover tested. No client XP-grant API. Batch choices reuse the existing Lab whitelist.
+- Real solo lab token completed; replay denied. Real arcade round and full six-round Game Show completed. Real
+  stages1–3 and cat c1 collected; three weekly claims through UI. Total400XP -> level5; title equipped through UI.
+- Forged XP, unearned/repeated weekly claims, locked title and unknown batch denied. Batch2026->2025->none through
+  phone UI preserved XP400/stage3. Re-entered test fixtures only, not a live DataStore persistence claim.
+- Two real Studio clients via StudioTestService: finisher80XP, departing client0XP; distinct profiles,7tabs each,
+  forged/locked requests denied. This test shortened runtime rounds to6seconds; shipped durations unchanged.
+- Independent review found abandonment-credit issues in Arcade/Show; fixed, re-reviewed, runtime-tested. Old currency
+  eligibility/rewards unchanged. Five-level title and all12 Travel destinations passed; course resumed stage3.
+- iPhoneXR landscape801x413: all7pages clicked, all label TextFits checks passed; scrolling/claims/batch worked.
+  Close initially hit CoreGui; moved to eighth navigation slot and actual phone click verified. Default viewport restored.
+- Pure migration/merge/rollover/idempotency/isolation tests and question banks pass. StyLua check passes; selene
+  0errors/26known warnings/0parse errors. Fresh Play has no new game-script errors; known engine/asset/Datastore warnings remain.
+- Final build: `Desktop/KuwaitParkour/KuwaitParkour_v45.rbxlx`,37,414,836bytes,66script sources.
+  XML Workspace matches v44 exactly (Map and Island); no geometry or StreamingEnabled changes.
+- Studio remains open, Edit/default viewport, v43 tab with v44 geometry and v45 scripts. Temporary QA scripts removed.
+- Next: send report directly to supervisor for review, then continue the next authorized feature. Publishing/merging
+  still require owner approval. Real-phone and published persistence remain outstanding.
+
 ## v44 (2026-10-19), branch `dev/v44`, NOT published or merged
 
 Owner-authorized modular north-building development prototype. Full report and six Play screenshots:

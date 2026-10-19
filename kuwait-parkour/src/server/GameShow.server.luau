@@ -8,6 +8,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Profiles = require(script.Parent.Profiles)
+local Passport = require(script.Parent.PassportService)
 local Bank = require(script.Parent.GameShowBank)
 local studio = workspace:WaitForChild("Map"):FindFirstChild("GameShowStudio", true)
 if not studio then
@@ -385,6 +386,7 @@ local function runShow(starter)
 			local win = table.find(winners, p) ~= nil
 			local coins = win and 13 or 3
 			s.coins += coins
+			Passport.complete(p, "show", { answered = show.played[p] == true, present = inside(p) })
 			p:SetAttribute("Coins", s.coins)
 			if win then
 				s.research = (s.research or 0) + 2

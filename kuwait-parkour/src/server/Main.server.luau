@@ -7,6 +7,8 @@ local Codes = require(script.Parent.Codes)
 local Questions = require(script.Parent.Questions)
 local Zones = require(ReplicatedStorage.Shared.Zones) -- generated with the map: { {start, finish, ...}, ... }
 local Profiles = require(script.Parent.Profiles)
+local Passport = require(script.Parent.PassportService)
+local PassportState = require(script.Parent.PassportState)
 
 -- zone index a level belongs to (levels start+1 .. finish)
 local function zoneOfLevel(level)
@@ -76,7 +78,7 @@ local function withRetry(fn, tries)
 	return false, nil
 end
 
-local function applyStage(player, stage)
+local function applyStage(player, stage, gameplay)
 	local s = state[player]
 	if not s then
 		return
@@ -84,6 +86,9 @@ local function applyStage(player, stage)
 	s.stage = stage
 	s.respawn = stage
 	player:SetAttribute("Stage", stage) -- replicates to client HUD / gate locks
+	if gameplay ~= false then
+		Passport.record(player, "checkpoint", stage)
+	end
 	Profiles.fire("stage", player, stage)
 end
 
@@ -93,8 +98,9 @@ local Teleport = require(script.Parent.Teleport)
 local function pivotTo(char, part)
 	local player = char and Players:GetPlayerFromCharacter(char)
 	if player and part then
-		Teleport.to(player, part)
+		return Teleport.to(player, part)
 	end
+	return false
 end
 
 -- ------------------------------------------------------------------ portals
@@ -116,12 +122,16 @@ local function enterCourse(player, level)
 	end
 	s.respawn = level
 	player:SetAttribute("InCourse", true)
-	pivotTo(player.Character, checkpoints[level])
+	if pivotTo(player.Character, checkpoints[level]) then
+		Passport.record(player, "visit", "Course")
+	end
 end
 
 local function leaveCourse(player, dest)
 	player:SetAttribute("InCourse", false)
-	pivotTo(player.Character, destinations[dest] or destinations.HQ)
+	if pivotTo(player.Character, destinations[dest] or destinations.HQ) then
+		Passport.record(player, "visit", dest)
+	end
 end
 
 local function onPortal(player, args)
@@ -321,6 +331,7 @@ local function save(player)
 				old.upgrades[id] = true
 			end
 			old.batch = s.batch
+			old.passport = PassportState.merge(old.passport, s.passport, os.time())
 			old.quiz = old.quiz or {}
 			for key, n in pairs(s.quiz or {}) do
 				old.quiz[key] = math.max(old.quiz[key] or 0, n)
@@ -359,11 +370,12 @@ local function onPlayerAdded(player)
 		s.research = data.research or 0
 		s.upgrades = data.upgrades or {}
 		s.batch = data.batch
+		s.passport = data.passport or {}
 		s.quiz = data.quiz or {}
 		player:SetAttribute("Coins", s.coins)
-		applyStage(player, math.clamp(data.stage or 0, 0, Config.Total))
+		applyStage(player, math.clamp(data.stage or 0, 0, Config.Total), false)
 	else
-		applyStage(player, 0) -- play from start; saving stays disabled this session
+		applyStage(player, 0, false) -- play from start; saving stays disabled this session
 		warn("Could not load progress for " .. player.Name .. "; saving disabled")
 	end
 	player:SetAttribute("Coins", s.coins)
@@ -395,6 +407,9 @@ local function onPlayerAdded(player)
 				end
 			elseif level <= c.stage and level > c.respawn then
 				c.respawn = level -- replaying an earlier zone
+			end
+			if level <= c.stage and player:GetAttribute("InCourse") then
+				Passport.record(player, "checkpoint", level)
 			end
 		end)
 	end

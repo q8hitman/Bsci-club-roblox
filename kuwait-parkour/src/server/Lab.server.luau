@@ -5,6 +5,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Profiles = require(script.Parent.Profiles)
+local Passport = require(script.Parent.PassportService)
 local LabData = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("LabData"))
 local Batches = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Batches"))
 local Micro = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("MicroscopyData"))
@@ -215,6 +216,9 @@ labFn.OnServerInvoke = function(player, action, a, b)
 			ok = b == true and os.clock() - p.at > 8
 		end
 		local gained = ok and reward(player, p.kind) or 0
+		if gained > 0 then
+			Passport.record(player, "activity", "lab")
+		end
 		return { ok = ok, gained = gained, research = s.research, answer = (not ok) and p.answer or nil }
 	elseif action == "lmStart" then
 		-- v41 Light Microscopy: one session per player; the notebook is graded on lmSubmit
@@ -264,6 +268,7 @@ labFn.OnServerInvoke = function(player, action, a, b)
 				s.coins += Micro.REWARD.coins
 				player:SetAttribute("Coins", s.coins)
 				gained = Micro.REWARD.research
+				Passport.record(player, "activity", "lab")
 			end
 		end
 		pending[player] = nil

@@ -5,6 +5,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Profiles = require(script.Parent.Profiles)
+local Passport = require(script.Parent.PassportService)
 local P = require(ReplicatedStorage.Shared.Progression)
 local Zones = require(ReplicatedStorage.Shared.Zones)
 
@@ -216,11 +217,13 @@ for _, inst in ipairs(mapFolder:GetDescendants()) do
 						id
 					)
 					award(player, "golden")
+					Passport.refresh(player)
 					return
 				else
 					return
 				end
 				setAttributes(player)
+				Passport.refresh(player)
 				notify:FireClient(player, text, "collect", id)
 				checkCollections(player)
 			end)
@@ -333,6 +336,7 @@ local function snapshot(player)
 	if not s then
 		return nil
 	end
+	local passport = Passport.refresh(player)
 	return {
 		coins = s.coins,
 		owned = s.owned,
@@ -340,6 +344,8 @@ local function snapshot(player)
 		ach = s.ach,
 		found = s.found,
 		best = s.best,
+		passport = passport,
+		batch = s.batch,
 	}
 end
 
@@ -356,7 +362,9 @@ shop.OnServerInvoke = function(player, action, id)
 		end
 		lastShop[player] = now
 	end
-	if action == "buy" and typeof(id) == "string" then
+	if action == "week" then
+		Passport.claim(player, id)
+	elseif action == "buy" and typeof(id) == "string" then
 		local t = P.trail(id)
 		if t and not s.owned[id] and s.coins >= t.price then
 			s.coins -= t.price

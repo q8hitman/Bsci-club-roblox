@@ -166,6 +166,47 @@ P.Achievements = {
 	},
 }
 
+-- v45 achievements are cosmetic; existing activity coin/research rewards stay unchanged.
+for _, a in ipairs({
+	{
+		id = "arcade_play",
+		ar = "زائر الأركيد",
+		desc = "أكمل جولة أركيد",
+		coins = 0,
+		title = "رفيق الأركيد 🎮",
+	},
+	{
+		id = "lab_first",
+		ar = "أول تجربة",
+		desc = "أنجز تجربة مختبر صحيحة تستحق مكافأة",
+		coins = 0,
+		title = "باحث مبتدئ 🔬",
+	},
+	{
+		id = "show_first",
+		ar = "أهلًا بالمتسابق",
+		desc = "شارك بإجابة في حلقة Game Show حتى نهايتها",
+		coins = 0,
+		title = "نجم الاستوديو 🎤",
+	},
+	{
+		id = "explorer5",
+		ar = "مستكشف الجزيرة",
+		desc = "زُر 5 عوالم مختلفة",
+		coins = 0,
+		title = "مستكشف BSC 🧭",
+	},
+	{
+		id = "passport5",
+		ar = "جواز المستوى الخامس",
+		desc = "اجمع 400 XP في الجواز",
+		coins = 0,
+		title = "رحّالة العلوم ✨",
+	},
+}) do
+	table.insert(P.Achievements, a)
+end
+
 P.Trails = {
 	{
 		id = "leaf",

@@ -1,6 +1,27 @@
 # Handoff to Codex (from Claude Code)
 
-## Current handoff: v44 (2026-10-19)
+## Current handoff: v45 (2026-10-19)
+- Owner authorized direct supervisor reporting and continued development; do not revert to the historical wait state.
+- Supervisor accepted v44 development and selected BSC Passport as the only v45 feature.
+- Branch `dev/v45`; backup `Desktop\KuwaitParkour\backup_before_v45_20261019`; local build `KuwaitParkour_v45.rbxlx`.
+- Passport extends existing Profile/Shop/Profiles: evidence-derived cosmetic XP/levels, five achievements/titles,
+  optional batch selection and Monday00:00UTC weekly challenges. No coin/research reward or map changes.
+- New modules: shared/PassportDefs, server/PassportState, server/PassportService. Existing save merges the ledger;
+  failed-load save protection remains. No remote allows granting arbitrary XP or achievement evidence.
+- QA passed: pure migration/rollover/merge/idempotency tests, solo real lab/arcade/full Game Show/stages/collectible,
+  three weekly UI claims, title selection, batch selection/change/clear, all12 Travel, and iPhoneXR all7pages/TextFits.
+- Two actual Studio clients passed via StudioTestService, with a runtime-only6second arcade round: finisher80XP,
+  departing client0XP; separate profiles and denied forged requests. Source round durations did not change.
+- Review findings for abandoned activity XP fixed and re-reviewed. Phone close moved out of CoreGui hit area to the
+  eighth navigation slot; actual phone input passed. Final build66scripts, entire Workspace equals v44.
+- Detailed evidence and limitations: `docs/passport_v45_report.md`, `docs/v45/`, `tools/test_passport45.luau`.
+- Studio remains open in Edit/default viewport, titledv43 with v44 geometry/v45 scripts; temporary QA scripts removed.
+- Actual StudioTestService multiplayer automation works. See tools/studio_tests; EndTest stops only the temporary test.
+  Command-context require may use a separate cache; inspect Profiles via a normal temporary server Script, then remove it.
+- Next: send the report to supervisor for review and continue the next authorized feature. No new approval is needed
+  for ordinary dev work. No publishing/merging, secrets, horror world or invented real campus locations.
+
+## Historical handoff: v44 (2026-10-19)
 - The owner explicitly authorized a modular north-building development prototype after v43. No publish/merge approval.
 - Branch `dev/v44`; local build `Desktop\KuwaitParkour\KuwaitParkour_v44.rbxlx`.
 - Before-edit full backup `Desktop\KuwaitParkour\backup_before_v44_20261019` includes the v43 build.
@@ -33,10 +54,10 @@ Read `BSC_RESUME.md`, `BSC_ARCHITECTURE.md` and `BSC_MASTER_VISION.md` first. Th
 ## Where things are
 - **Full local working copy** (code, Git, and the Rojo/Lune/StyLua/selene binaries):
   `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full`.
-  - Work there. It is on branch `dev/v44`.
+  - Work there. It is on branch `dev/v45`.
   - Rebuild with the commands in `CLAUDE.md` § Build, run from that folder.
-- **Branch:** `dev/v44`. Branches are stacked: v37 → v38 → v39 → v40 → v41 → v42 → v43 → v44.
-- **Latest tested local build:** `Desktop\KuwaitParkour\KuwaitParkour_v44.rbxlx`.
+- **Branch:** `dev/v45`. Stacked on v44 (and v43 before it).
+- **Latest tested local build:** `Desktop\KuwaitParkour\KuwaitParkour_v45.rbxlx`.
 - **Backups:** `Desktop\KuwaitParkour\backup_v42_20261019`. Make a new backup before you change anything.
 - **Not in Git:** the tool binaries (Rojo 7.7.1, Lune 0.11.0, StyLua 2.5.2, selene 0.32.0), the generated
   `Map.rbxmx` and `Island.rbxm`, and the packs. Regenerate them with the commands in BSC_ARCHITECTURE.md.
