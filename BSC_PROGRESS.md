@@ -3,7 +3,8 @@
 Branch `dev/v52-world-structure` from `recovery/v51-argon-wip`. Full report: [v52_REPORT.md](docs/v52_REPORT.md);
 plan: [v52_MIGRATION_AND_SPATIAL_PLAN.md](docs/v52_MIGRATION_AND_SPATIAL_PLAN.md); screenshots `docs/v52/`.
 - **Island:** removed completely (model, terrain script, gameplay layer, menu card, travel key, portals, labels).
-- **One south-north connection:** the original Red Corridor. The duplicate garden walks, link and forecourt are gone.
+- **South-north connections:** the raised Red Corridor and the ground-level east (MAIN) garden walk. The owner chose
+  both because they match the campus. The west walk, the north_link forecourt and the desert-trail link are removed.
   The z 12 column pair moved to z 4, clear of the gym.
 - **Food:** the 9 kiosks were removed; the HQ café keeps the snack interaction.
 - **World Gateway Hall:** off the HQ south wall, 11 portals. The duplicate HQ Virus gate and the clouds inside the hall

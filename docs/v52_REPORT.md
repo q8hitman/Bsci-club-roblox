@@ -42,7 +42,17 @@ is merged into `main`.
 - **Return to hub:** the Cart end card, `LeaveCourse`, and the Exam, Arcade, Lab, Quiz and Show exits lead to the College
   of Science or the HQ (all tested; §6).
 
-## 3. Exactly ONE South–North connection: the original Red Corridor
+## 3. South–North connections (updated after the owner's marked screenshot)
+**Owner clarification:** keep the raised Red Corridor **and** the ground-level east garden walk, which matches the real
+campus. Only the second (west) walk stays removed.
+- **Restored:** the MAIN (east) walk pavers and curbs, plus its lamp posts.
+  - Walk test in Play: south back door (42,−30) → past the gym → north entrance (20,135). All 10 waypoints were reached.
+  - Um Al-Qatawa stands about 4.6 studs from the walk's edge, so she does not block it.
+  - Screenshot: `docs/v52/10_campus_top_FINAL_corridor_plus_east_walk.jpg`.
+- **Still removed:** the WEST walk with its arc bollards, the north_link forecourt and sign, and the desert-trail link
+  into the north promenade.
+
+### Original analysis (first pass)
 - **Identified:** `genmap5.py` BridgeFloor, BridgeRoof, BridgeGlass, Mull, BridgeCol, BridgeLamp and BridgeSign, at
   x −50..−30, y 24, z −30 to 130.
   - A Studio scan of every collidable floor at y 6–60 between the buildings found only this corridor.

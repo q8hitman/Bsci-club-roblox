@@ -381,9 +381,10 @@ def gym():
 
 def garden_walk():
     with G.Group("GardenWalkV34"):
-        # v52 (owner directive): exactly ONE south-north connection, the original Red Corridor. The two paved garden
-        # walks (MAIN east, WEST + its arc round the mound), their lamp posts / bollards and the north_link forecourt
-        # duplicated it and are no longer built. MAIN/WEST stay as layout guides (planting + cats keep their places).
+        # v52 (owner, with a marked screenshot): the south-north links are the raised Red Corridor + the ground-level
+        # MAIN (east) garden walk, as at the real campus. The WEST walk (+ its arc bollards) and the north_link
+        # forecourt stay removed; WEST remains only a layout guide for the planting.
+        _strip(C5._catmull(MAIN, 10), 12.0)
         # A: wide paved band along the north block (alternating grey / beige courses) with trees in square planters
         x0, x1, z0, z1 = PROMENADE
         n = int((x1 - x0) / 4)
@@ -406,8 +407,14 @@ def garden_walk():
                 K33.varied_tree(x + (z % 7), z, 0.8)
         mound()
         gym()
-        # lamp posts along the main walk + low bollards along the curved path (A: low lighting and lamp posts)
+        # lamp posts along the main walk (A: low lighting and lamp posts)
         main = C5._catmull(MAIN, 10)
+        for i in range(4, len(main) - 2, 9):
+            fx, fz, nx, nz = _normal(main, i)
+            s_ = 1 if (i // 9) % 2 else -1
+            lx, lz = main[i][0] + nx * s_ * 8.5, main[i][1] + nz * s_ * 8.5
+            if not in_gym(lx, lz, 3):
+                C3.lamp_post(lx, 0, lz, 11)
         # A (satellite): the west half is a dense dark-green planted mass between the paths; lighter to the east
         for q in range(150):
             x, z = R.uniform(-104, 64), R.uniform(GARDEN_Z[0] + 2, PROMENADE[2] - 2)
