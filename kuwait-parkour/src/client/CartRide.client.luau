@@ -2,7 +2,7 @@
 -- train to us; we move it along the track waypoints ("CW|i|flags|label", RightVector = the track's right-hand side).
 -- Controls: ▶ start once and the train runs on its own; ＋ / － change the cruise speed one step (it stays there);
 -- ⏸ pauses smoothly, ▶ resumes. Sharp bends and the end of the line slow the train down by themselves, so no speed
--- can throw anyone off. At the end it stops gently and offers "back to the island" or "ride again". No questions.
+-- can throw anyone off. At the end it stops gently and offers "back to the College of Science" or "ride again". No questions.
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -148,7 +148,7 @@ local function cardButton(name, text, x, color)
 	Instance.new("UICorner", b).CornerRadius = UDim.new(0.25, 0)
 	return b
 end
-local islandBtn = cardButton("IslandBtn", "🏝️ رجوع للجزيرة", 0.04, Color3.fromRGB(24, 110, 70))
+local hubBtn = cardButton("HubBtn", "🏛️ رجوع لكلية العلوم", 0.04, Color3.fromRGB(24, 110, 70))
 local againBtn = cardButton("AgainBtn", "🔁 رحلة ثانية", 0.52, Color3.fromRGB(70, 90, 160))
 
 local captionUntil = 0
@@ -263,7 +263,7 @@ local function endRide(action)
 	gui.Enabled = false
 	endCard.Visible = false
 	caption.Visible = false
-	-- the server removes the train and, for "station"/"island", moves us with the safe teleport
+	-- the server removes the train and, for "station"/"hub", moves us with the safe teleport
 	remote:FireServer(action or "stop")
 end
 _G.BSCEndCart = function()
@@ -314,8 +314,8 @@ end)
 exitBtn.Activated:Connect(function()
 	endRide("station")
 end)
-islandBtn.Activated:Connect(function()
-	endRide("island")
+hubBtn.Activated:Connect(function()
+	endRide("hub")
 end)
 againBtn.Activated:Connect(function()
 	endRide("again")

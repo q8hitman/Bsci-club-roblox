@@ -68,13 +68,8 @@ def virus_arena():
                 ball("Cloud", VX + r * math.cos(a) + rng.uniform(-10, 10), VY - 20 + rng.uniform(-10, 20),
                      VZ + r * math.sin(a) + rng.uniform(-10, 10), rng.uniform(14, 24), (250, 250, 252), "SmoothPlastic", transp=0.15,
                      collide=False, shadow=False)
-    # portal from the HQ: west wall, between the posters
-    x, z = HX - 74.0, HZ + 47.0
-    G.part("Portal|Virus", (0.6, 12, 11), (x, HY + 6.2, z), (240, 110, 170), "Neon", transp=0.45, collide=False, shadow=False)
-    for s_ in (-1, 1):
-        box("VirusPost", (2, 15, 2), (x, HY + 7.5, z + s_ * 6.5), (60, 64, 74), "SmoothPlastic")
-    box("VirusTop", (2, 2, 15), (x, HY + 15.5, z), (60, 64, 74), "SmoothPlastic")
-    sign("VirusPortalSign", "🦠 لعبة الفيروس (مع الربع)", (x + 0.6, HY + 18.4, z), (0.4, 3, 15), "Right", bg=(110, 40, 90))
+    # v52: the HQ's west-wall Virus gate (it clipped a plant pot) is replaced by the Virus Tag portal in the
+    # World Gateway Hall (tools/hq.py HALL_PORTALS), so every world has one door in one place.
 
 
 def graduation():

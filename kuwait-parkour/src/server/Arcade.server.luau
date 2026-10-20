@@ -208,7 +208,7 @@ local function playRound(players)
 					if fell and hum and hum.Health > 0 then
 						sendToLobby(p)
 					else
-						-- died in the arena (e.g. the enzyme sweeper): respawn next to the arcade, not on the island
+						-- died in the arena (e.g. the enzyme sweeper): respawn next to the arcade, not at the hub
 						p:SetAttribute("ArcadeReturn", true)
 					end
 				end

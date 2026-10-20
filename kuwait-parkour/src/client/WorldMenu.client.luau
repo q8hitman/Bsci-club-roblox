@@ -11,7 +11,6 @@ local travel = ReplicatedStorage:WaitForChild("Travel")
 local WORLDS = {
 	{ "Campus", "🏛️", "كلية العلوم", "College of Science", Color3.fromRGB(70, 110, 150) },
 	{ "HQ", "🏠", "مقر النادي", "BSC HQ", Color3.fromRGB(24, 110, 76) },
-	{ "Island", "🏝️", "جزيرة المغامرة", "Adventure Island", Color3.fromRGB(40, 140, 160) },
 	{ "Course", "🏃", "كمّل الباركور", "Continue Parkour", Color3.fromRGB(210, 120, 40) },
 	{ "Museum", "🦕", "متحف الأحياء", "Bio Museum", Color3.fromRGB(45, 145, 135) },
 	{ "Cart", "🚆", "قطار التخصصات", "Specialties Train", Color3.fromRGB(150, 90, 170) },
@@ -30,7 +29,6 @@ local WORLDS = {
 local DESCRIPTIONS = {
 	Campus = "تجوّل في\nكلية العلوم",
 	HQ = "استرح واستكشف\nمقر النادي",
-	Island = "استكشف الجزيرة\nوبوابات العوالم",
 	Course = "اقفز وتقدّم\nعبر المراحل",
 	Museum = "معارض تفاعلية\nللتخصصات الثمانية",
 	Cart = "جولة بين\nتخصصات الأحياء",

@@ -191,7 +191,7 @@ for _, a in ipairs({
 	},
 	{
 		id = "explorer5",
-		ar = "مستكشف الجزيرة",
+		ar = "مستكشف العوالم",
 		desc = "زُر 5 عوالم مختلفة",
 		coins = 0,
 		title = "مستكشف BSC 🧭",

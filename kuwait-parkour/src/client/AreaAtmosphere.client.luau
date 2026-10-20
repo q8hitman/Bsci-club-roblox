@@ -22,13 +22,6 @@ end
 
 -- clock, ambient, outdoor, atmosphere {density, haze, color, decay}, grade {tint, saturation, contrast}
 local PRESETS = {
-	island = {
-		16.3,
-		rgb(118, 118, 122),
-		rgb(128, 128, 133),
-		{ 0.24, 1.1, rgb(219, 217, 209), rgb(235, 194, 153) },
-		{ rgb(255, 249, 240), 0.14, 0.1 },
-	},
 	campus = {
 		13.2,
 		rgb(130, 122, 110),
@@ -216,8 +209,6 @@ local function areaAt(p)
 		return "arcade"
 	elseif p.X > 4000 and p.Z > 4000 then
 		return "lab"
-	elseif p.Z > 7000 then
-		return "island"
 	end
 	if p.X > -90 and p.X < 90 and p.Z > -160 and p.Z < -30 and p.Y < 90 then
 		return "campus_in"

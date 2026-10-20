@@ -1,4 +1,4 @@
--- Dialogue box for island characters: name + role, one line at a time, tap/click to continue.
+-- Dialogue box for the world characters: name + role, one line at a time, tap/click to continue.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")

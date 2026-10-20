@@ -106,8 +106,10 @@ def clouds():
         x, z = r * math.cos(a), r * math.sin(a)
         y = rng.uniform(-30, 40)
         for k in range(rng.randint(3, 5)):
-            ball("Cloud", x + rng.uniform(-14, 14), y + rng.uniform(-3, 4), z + rng.uniform(-14, 14), rng.uniform(14, 26),
-                 (250, 250, 252), "SmoothPlastic", transp=0.15, collide=False, shadow=False)
+            cx, cy, cz, d = x + rng.uniform(-14, 14), y + rng.uniform(-3, 4), z + rng.uniform(-14, 14), rng.uniform(14, 26)
+            if abs(cx) < 50 + d / 2 and 70 - d / 2 < cz < 154 + d / 2 and cy < 32 + d / 2:
+                continue   # v52: never inside the World Gateway Hall (same RNG draws, so the other clouds keep their places)
+            ball("Cloud", cx, cy, cz, d, (250, 250, 252), "SmoothPlastic", transp=0.15, collide=False, shadow=False)
 
 
 def floor_polish():

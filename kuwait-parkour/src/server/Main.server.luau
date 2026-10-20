@@ -47,7 +47,6 @@ local destinations = {
 	Campus = mapFolder:FindFirstChild("CampusSpawn", true),
 	Cart = mapFolder:FindFirstChild("CartSpawnPoint", true),
 	Virus = mapFolder:FindFirstChild("VirusSpawn", true),
-	Island = mapFolder:FindFirstChild("HQSpawn", true) or mapFolder:FindFirstChild("CampusSpawn", true),
 	Exam = mapFolder:FindFirstChild("ExamSpawn", true),
 	Arcade = mapFolder:FindFirstChild("ArcadeSpawn", true),
 	Lab = mapFolder:FindFirstChild("LabSpawn", true),
@@ -179,7 +178,6 @@ end)
 local TRAVEL = {
 	Campus = true,
 	HQ = true,
-	Island = true,
 	Course = true,
 	Cart = true,
 	Train = true,

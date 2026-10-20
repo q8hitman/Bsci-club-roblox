@@ -1,5 +1,5 @@
-"""v11 BSC Island gameplay layer (absolute coordinates; offsets must be 0 when called):
-  island_layer()  spawn, plaza monument, gateways + portals in front of every building, signs, NPC markers
+"""Gameplay worlds outside the campus (absolute coordinates; offsets must be 0 when called).
+  v52: the old BSC Island (origin 0,0,9000) was removed by the owner; npc_markers() places the characters by role.
   exam_hall()     the Exam Hall interior: desks, screen, 4 answer zones over a drop pit (ExamZone|A..D, ExamTrap|A..D)
   arcade()        the minigames hall: lobby + the three Chaos Campus arenas (ArcadeLobby, Arena_*)
 Meshes/scenery of the island itself come from tools/world/island.luau (Synty packs).
@@ -13,114 +13,30 @@ import bsc_art as A
 box, vcyl, disc, ball, sign = G.box, G.vcyl, G.disc, G.ball, G.sign
 rect = C5.rect
 
-OX, OZ = 0.0, 9000.0                  # island origin
 EX, EY, EZ = 6000.0, 300.0, -6000.0   # exam hall interior
 AX, AY, AZ = -6000.0, 300.0, -6000.0  # arcade
 PASTEL = [c for (_, c, _) in A.HEXES]
 GREEN = (24, 80, 56)
 
 
-def gateway_at(name, X, Y, Z, face, title, sub, col, width=10.0, h=12.5):
-    """a free-standing glowing gateway (portal sheet inside a framed arch) at absolute (X, Y, Z) facing `face` = (nx, nz)"""
-    nx, nz = face
-    along_x = abs(nz) > 0.5
-    METAL = (44, 50, 56)
-    for s_ in (-1, 1):
-        px, pz = (X + s_ * (width / 2 + 0.6), Z) if along_x else (X, Z + s_ * (width / 2 + 0.6))
-        vcyl("GatePost", px, Y, Y + h + 0.8, pz, 1.0, METAL, "Metal")
-        ball("GateCap", px, Y + h + 1.2, pz, 1.3, col, "Neon", collide=False, shadow=False)
-    box("GateBeam", (width + 1.2, 0.7, 0.7) if along_x else (0.7, 0.7, width + 1.2), (X, Y + h + 0.45, Z), METAL, "Metal")
-    G.part(name, (width, h, 0.4) if along_x else (0.4, h, width), (X, Y + h / 2 + 0.1, Z), col, "Neon", transp=0.5, collide=False,
-           shadow=False)
-    faceName = {(0, 1): "Back", (0, -1): "Front", (1, 0): "Right", (-1, 0): "Left"}[(int(round(nx)), int(round(nz)))]
-    size = (min(width + 1, 11.5), 2.2, 0.3) if along_x else (0.3, 2.2, min(width + 1, 11.5))
-    sign("GateTitle", title, (X + nx * 0.5, Y + h + 2.1, Z + nz * 0.5), size, faceName, color=(255, 246, 225), bg=(30, 36, 42))
-
-
-def gateway(name, x, z, face, title, sub, col, width=12.0, h=14.0):
-    """Compatibility wrapper placing gateway on Campus / HQ instead of retired Island"""
-    gateway_at(name, x, 0.0, z, face, title, sub, col, width=width, h=h)
-
-
-def island_layer():
-    """v52: The separate Island (OZ=9000) is decommissioned per owner decision.
-    All essential content (9 Biology Snack Kiosks, 8 NPCs, Activity Gateways, and Club Monument)
-    is consolidated into the BSC Club HQ (0, 600, -9000) and KU College of Science Campus Plaza (0, 0, 44..110)."""
+def npc_markers():
+    """v52 (owner directive): the old Island is gone. Each character stands where its role belongs, one marker each
+    (NPCs.server.luau spawns them). yaw: 0 faces -Z, 180 faces +Z, 90 faces -X, -90 faces +X."""
     import hq
     HX, HY, HZ = hq.HQ_OFFSET
-    with G.Group("CampusHubMigration"):
-        # Safe invisible fallback part named IslandSpawn at Campus Plaza so legacy references never error
-        G.part("IslandSpawn", (6, 1, 6), (0, 0.5, 70), (64, 140, 108), "SmoothPlastic", transp=1.0, collide=False, shadow=False)
-
-        # ---- 1. BSC Club HQ Activity Portal Gallery (West & East Walls of HQ so HQ is a complete 100% Hub)
-        hq_portals = [
-            ("Portal|Exam",   -73.8, -14.0, (1, 0),  "📝 قاعة الاختبارات", (255, 210, 80)),
-            ("Portal|Lab",    -73.8,   6.0, (1, 0),  "🔬 معهد الأبحاث والمختبر", (140, 220, 255)),
-            ("Portal|Arcade", -73.8,  26.0, (1, 0),  "🎮 صالة الألعاب (Chaos)", (240, 110, 200)),
-            ("Portal|Quiz",    73.8, -14.0, (-1, 0), "🎓 مركز التحديات العلمية", (255, 200, 120)),
-            ("Portal|Museum",  73.8,   6.0, (-1, 0), "🏛️ متحف العلوم التفاعلي", (120, 230, 190)),
-            ("Portal|Show",    73.8,  26.0, (-1, 0), "🎪 مسرح المسابقات", (255, 150, 90)),
-            ("Portal|Racers",  73.8,  45.0, (-1, 0), "🏎️ سباق الميكروبات", (110, 210, 255)),
-            ("Portal|Laser",  -52.0, -54.0, (0, 1),  "⚡ الهروب من الليزر", (255, 95, 120)),
-        ]
-        for pname, dx, dz, face, title, col in hq_portals:
-            gateway_at(pname, HX + dx, HY, HZ + dz, face, title, "", col, width=8.5, h=11.0)
-
-        # ---- 2. Campus Courtyard Biology Snack Promenade (ShopOrder|1..9 migrated from Island to Campus!)
-        # Placed along the shaded East & West Courtyard Promenades south of Building 114 (z = 48..96)
-        names = [
-            ("كافيه الخلية ☕", -1, 50.0),
-            ("مخبز الخميرة 🥐", -1, 61.5),
-            ("دونات DNA 🍩", -1, 73.0),
-            ("سلطة الكلوروبلاست 🥗", -1, 84.5),
-            ("ميلك شيك الكلوروفيل 🥤", -1, 96.0),
-            ("آيس كريم الميتوكوندريا 🍦", 1, 54.0),
-            ("برجر البروتين 🍔", 1, 67.5),
-            ("بيتزا البكتيريا 🍕", 1, 81.0),
-            ("عصير الفيتامينات 🍊", 1, 94.5),
-        ]
-        sign("CampusFoodHeaderW", "🍩 ركن الكافيهات العلمية • Biology Café Row", (-38, 10.8, 43.0), (14, 2.2, 0.4), "Back", bg=GREEN)
-        sign("CampusFoodHeaderE", "🥤 استراحة نادي العلوم • Free Bio Snacks", (38, 10.8, 43.0), (14, 2.2, 0.4), "Back", bg=GREEN)
-        for i, (text, side, z) in enumerate(names):
-            kx = side * 38.0
-            # Shaded kiosk booth + counter + menu sign + ShopOrder|1..9 marker
-            box("KioskBack", (1.2, 8.6, 8.8), (kx + side * 2.2, 4.3, z), (236, 230, 218), "Marble")
-            box("ShopCounter", (1.8, 3.4, 7.6), (kx, 1.7, z), (242, 236, 224), "Marble")
-            box("ShopCounterTop", (2.4, 0.35, 8.0), (kx - side * 0.2, 3.55, z), (150, 104, 66), "WoodPlanks")
-            box("ShopAwning", (4.2, 0.45, 9.0), (kx, 8.4, z), (200, 70, 60) if i % 2 else (36, 118, 88),
-                "Fabric", rot=(0, 0, side * 10), collide=False)
-            G.part("ShopName", (0.4, 2.2, 8.6), (kx + side * 1.4, 6.4, z), (30, 34, 42), "SmoothPlastic", collide=False,
-                   text=dict(face="Right" if side < 0 else "Left", text=text, color=(255, 240, 200), bg=(24, 80, 56), bg_t=0.0))
-            G.part("ShopOrder|%d" % (i + 1), (1.2, 1.2, 1.2), (kx - side * 1.3, 3.6, z), (0, 0, 0), "SmoothPlastic", transp=1,
-                   collide=False, shadow=False)
-
-        # ---- 3. Campus Outdoor Activity Gateways (West & East of the South Plaza so Campus also links to all worlds)
-        campus_portals = [
-            ("Portal|HQ",     -56.0, 48.0, (1, 0),  "🏠 مقر نادي العلوم (HQ)", (120, 255, 200)),
-            ("Portal|Lab",    -56.0, 64.0, (1, 0),  "🔬 معهد الأبحاث والمختبر", (140, 220, 255)),
-            ("Portal|Exam",   -56.0, 80.0, (1, 0),  "📝 قاعة الاختبارات", (255, 210, 80)),
-            ("Portal|Quiz",   -56.0, 96.0, (1, 0),  "🎓 مركز التحديات", (255, 200, 120)),
-            ("Portal|Cart",    56.0, 48.0, (-1, 0), "🚆 قطار التخصصات الـ8", (250, 160, 90)),
-            ("Portal|Arcade",  56.0, 64.0, (-1, 0), "🎮 محطة الألعاب والألغاز", (240, 110, 200)),
-            ("Portal|Course",  56.0, 80.0, (-1, 0), "🏃 باركور الـ100 مرحلة", (110, 200, 255)),
-            ("Portal|Virus",   56.0, 96.0, (-1, 0), "🦠 مختبر العدوى (Virus Tag)", (140, 255, 90)),
-        ]
-        for pname, cx, cz, face, title, col in campus_portals:
-            gateway_at(pname, cx, 0.0, cz, face, title, "", col, width=9.5, h=11.5)
-
-        # ---- 4. All 8 Interactive NPCs migrated to meaningful Campus & Club HQ spots
-        npcs_abs = [
-            ("NPC|abu_ali",   HX + 20.0, HY + 0.5, HZ + 36.0, -35),   # Welcoming students inside BSC Club HQ
-            ("NPC|gamer",     HX - 58.0, HY + 0.5, HZ + 24.0,  90),   # By the Arcade & Virus portals inside HQ
-            ("NPC|dr_sara",       -16.0,      0.5,      24.0, 180),   # South Campus Atrium entrance (Specialties & Lab guide)
-            ("NPC|noura",          16.0,      0.5,      24.0, 180),   # South Campus Atrium entrance (Campus tour guide)
-            ("NPC|yousef",        -46.0,      0.5,      78.0,  90),   # Near Exam Hall & Quiz portals on Campus
-            ("NPC|chef",           32.0,      0.5,      67.5, -90),   # By the Biology Snack Promenade on Campus
-            ("NPC|lifeguard",      12.0,      0.5,      98.0,   0),   # By the Campus Plaza Fountain
-            ("NPC|cat_lady",       74.0,      0.5,      58.0, -90),   # Along the Campus Garden Walk near the cats
-        ]
-        for name, nx, ny, nz, yaw in npcs_abs:
-            G.part(name, (2, 1, 2), (nx, ny, nz), (0, 0, 0), "SmoothPlastic", transp=1, collide=False, shadow=False,
+    marks = [
+        ("NPC|abu_ali", HX + 16, HY + 0.5, HZ + 60, 0),         # HQ guard, beside the World Gateway Hall doorway
+        ("NPC|chef", HX - 77, HY + 0.5, HZ - 21, -90),           # behind the HQ cafe counter (ShopOrder|10..13)
+        ("NPC|gamer", AX + 12, AY + 0.5, AZ - 2, 90),            # Arcade lobby
+        ("NPC|dr_sara", LX - 10, LY + 0.5, LZ + 30, 180),        # Research Lab entrance (microbiology professor)
+        ("NPC|yousef", QX + 12, QY + 0.5, QZ + 40, 180),         # Science Challenge Center
+        ("NPC|lifeguard", 300.0, 0.8, -142.0, 90),               # museum guide at the Museum entrance (id kept)
+        ("NPC|noura", 24.0, 0.5, -146.0, 90),                    # College of Science south lobby, near the spawn
+        ("NPC|cat_lady", 60.0, 0.5, 6.0, 90),                    # east lawn by the campus cats (clear of the gym)
+    ]
+    with G.Group("NPCMarkers"):
+        for name, x, y, z, yaw in marks:
+            G.part(name, (2, 1, 2), (x, y, z), (0, 0, 0), "SmoothPlastic", transp=1, collide=False, shadow=False,
                    rot=(0, yaw, 0))
 
 
@@ -176,9 +92,6 @@ def exam_hall():
         rect("ExamPitFloor", EX - 60, EX + 60, EY - 60, EY - 58, EZ - 56, EZ - 24, (80, 200, 120), "Neon")   # "retake" slime
         G.part("ExamPitCatch", (130, 4, 40), (EX, EY - 50, EZ - 40), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
         rect("ExamDivider", EX - 60, EX + 60, EY, EY + 0.12, EZ - 27, EZ - 26, (60, 66, 80), "Neon", collide=False)  # start line
-        # v52 Anti-Exploit Spectator Barrier: closes once Q1 locks so eliminated/late players cannot enter active answer zones mid-exam
-        G.part("ExamActiveBarrier", (138, 12, 0.8), (EX, EY + 6, EZ - 26.5), (120, 210, 255), "Glass", transp=1.0, collide=False,
-               shadow=False)
         G.part("ExamSpawn", (10, 1, 10), (EX, EY + 0.5, EZ + 10), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
         G.part("Portal|HQ", (12, 12, 0.6), (EX - 9, EY + 6.2, EZ + 88), (120, 255, 200), "Neon", transp=0.45, collide=False,
                shadow=False)
@@ -618,7 +531,7 @@ def quiz_center():
 
 
 def build():
-    island_layer()
+    npc_markers()
     research_lab()
     quiz_center()
     import gameshow

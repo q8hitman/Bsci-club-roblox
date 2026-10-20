@@ -1,5 +1,5 @@
--- "Back to the island" button, shown only while the player is inside the parkour course.
--- Progress is kept; the server just moves the player to the island (and clears InCourse).
+-- "Back to the hub" button, shown only while the player is inside the parkour course.
+-- Progress is kept; the server just moves the player back to the College of Science (and clears InCourse).
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -23,7 +23,7 @@ button.BackgroundColor3 = Color3.fromRGB(24, 80, 56)
 button.TextColor3 = Color3.new(1, 1, 1)
 button.TextScaled = true
 button.Font = Enum.Font.GothamBold
-button.Text = "🏝️ رجوع للجزيرة"
+button.Text = "🏛️ رجوع لكلية العلوم"
 button.Visible = false
 button.Parent = gui
 local corner = Instance.new("UICorner")

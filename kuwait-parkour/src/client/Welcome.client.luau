@@ -137,7 +137,7 @@ local function attachBeam()
 				cleanup()
 				break
 			end
-			-- follow the nearest parkour gate (island tower or the HQ gate)
+			-- follow the nearest parkour gate (the HQ gate)
 			local best, bestD = nil, 500
 			for _, g in ipairs(courseGates) do
 				local d = (g.Position - root.Position).Magnitude

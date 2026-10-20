@@ -1,4 +1,4 @@
--- Safe teleport used by every server-side move of a character (portals, "back to the island", fall recovery, arcade,
+-- Safe teleport used by every server-side move of a character (portals, "back to the hub", fall recovery, arcade,
 -- exam pit). v31: a plain PivotTo could leave the player welded to a cart seat (the ride dragged them back), keep the
 -- falling velocity (client-owned physics replays it), or land them in/under geometry. This:
 --   1. unseats the humanoid and removes seat welds,

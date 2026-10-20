@@ -1,7 +1,7 @@
 -- Paints soft desert dunes around the College of Science campus when the server starts, so the campus
 -- no longer sits on a flat sand sheet. Runtime version of tools/terrain_dunes.luau (kept in code so a
--- rebuilt place never loses it). It never clears terrain: the island terrain (z ~9000) is painted by
--- IslandTerrain.server.luau and lies far outside this radius.
+-- rebuilt place never loses it). It never clears terrain outside this radius (v52: the old island terrain
+-- and IslandTerrain.server.luau were removed).
 local T = workspace.Terrain
 local CELL = 10
 local RADIUS = 700
@@ -18,7 +18,7 @@ local function outside(x, z)
 	return math.min(rectDist(FLAT[1], x, z), rectDist(FLAT[2], x, z))
 end
 
-task.wait(2) -- let the island (where players spawn) start first
+task.wait(2) -- let the map finish loading first
 for x = -RADIUS, RADIUS, CELL do
 	for z = -RADIUS, RADIUS, CELL do
 		local d = outside(x, z)

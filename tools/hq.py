@@ -53,7 +53,10 @@ def shell():
     rect("Ceiling", -X, X, H, H + 1, -Z, Z, (250, 250, 248), "SmoothPlastic")
     # walls; east/west get tall window bands so the sky shows
     rect("WallN", -X, X, 0, H, -Z - 1, -Z, WALL, "SmoothPlastic")
-    rect("WallS", -X, X, 0, H, Z, Z + 1, WALL, "SmoothPlastic")
+    # v52: the south wall opens into the World Gateway Hall (doorway x -12..12, 24 tall)
+    rect("WallS", -X, -12, 0, H, Z, Z + 1, WALL, "SmoothPlastic")
+    rect("WallS", 12, X, 0, H, Z, Z + 1, WALL, "SmoothPlastic")
+    rect("WallS", -12, 12, 24, H, Z, Z + 1, WALL, "SmoothPlastic")
     for sx in (-1, 1):
         x0 = sx * X
         rect("WallLow", min(x0, x0 + sx), max(x0, x0 + sx), 0, 20, -Z, Z, WALL, "SmoothPlastic")
@@ -137,8 +140,58 @@ def rides():
     A.logo_board(X - 1.4, 30, 2, R=1.6, nx=-1.0, nz=0.0)
 
 
+# v52 World Gateway Hall: every world in one calm, spacious room behind the HQ's south doorway. One portal style
+# (portal()), one destination per portal, nothing else on the walls. Kinds match Main.server destinations.
+HALL_X, HALL_Z1, HALL_H = 48.0, 152.0, 30.0
+HALL_PORTALS = [
+    # (kind, wall, position along the wall, colour, Arabic title, English subtitle)
+    ("Arcade", "W", 84, (240, 110, 200), "🎮 صالة الألعاب", "Arcade"),
+    ("Puzzle", "W", 102, (255, 200, 90), "🧩 غرف الألغاز", "Puzzle Rooms"),
+    ("Racers", "W", 120, (110, 210, 255), "🏎️ سباق الميكروبات", "Micro Racers"),
+    ("Laser", "W", 138, (255, 95, 120), "⚡ الهروب من الليزر", "Laser Escape"),
+    ("Exam", "E", 84, (255, 210, 80), "📝 قاعة الاختبارات", "Exam Hall"),
+    ("Quiz", "E", 102, (255, 170, 110), "🎓 مركز التحديات العلمية", "Challenge Center"),
+    ("Show", "E", 120, (255, 150, 90), "🎪 استوديو المسابقات", "Game Show"),
+    ("Virus", "E", 138, (140, 255, 90), "🦠 مختبر العدوى", "Virus Tag"),
+    ("Lab", "S", -26, (140, 220, 255), "🔬 معهد الأبحاث", "Research Lab"),
+    ("Campus", "S", 0, (255, 190, 120), "🏛️ كلية العلوم", "College of Science"),
+    ("Museum", "S", 26, (120, 230, 190), "🏺 متحف العلوم", "Science Museum"),
+]
+
+
+def gateway_hall():
+    z0, z1, x = Z + 1, HALL_Z1, HALL_X
+    rect("HallFloor", -x, x, -1, 0, z0, z1, (236, 226, 208), "WoodPlanks")
+    rect("HallRunner", -8, 8, 0, 0.05, z0, z1 - 4, (214, 232, 220), "SmoothPlastic", collide=False)
+    rect("HallCeiling", -x, x, HALL_H, HALL_H + 1, z0, z1, (250, 250, 248), "SmoothPlastic")
+    rect("HallWallW", -x - 1, -x, 0, HALL_H, z0, z1, WALL, "SmoothPlastic")
+    rect("HallWallE", x, x + 1, 0, HALL_H, z0, z1, WALL, "SmoothPlastic")
+    rect("HallWallS", -x, x, 0, HALL_H, z1, z1 + 1, WALL, "SmoothPlastic")
+    for (a, b, c_, d) in ((-x + 0.1, -x + 0.4, z0, z1), (x - 0.4, x - 0.1, z0, z1)):
+        rect("Ribbon", a, b, 25.6, 26.4, c_, d, CLUB_GREEN, "SmoothPlastic", collide=False)
+    rect("Ribbon", -x, x, 25.6, 26.4, z1 - 0.4, z1 - 0.1, CLUB_GREEN, "SmoothPlastic", collide=False)
+    for lx in (-24, 0, 24):
+        for lz in (92, 118, 144):
+            C5.light_panel(lx, HALL_H - 0.4, lz, 12, 5, 1.2 if lx == 0 else 0.0001, 40 if lx == 0 else 1)
+    sign("HallTitle", "🌍 بوابات العوالم | World Gateway Hall", (0, 26.5, Z - 0.6), (24, 3, 0.5), "Front", bg=CLUB_GREEN)
+    sign("HallTitleIn", "🌍 بوابات العوالم\nاختر عالمك • القائمة 🌍 العوالم توديك لنفس الأماكن", (0, 27.2, z1 - 0.6), (40, 4.6, 0.5),
+         "Front", bg=CLUB_GREEN)
+    for kind, wall, at, col, title, sub in HALL_PORTALS:
+        if wall == "W":
+            px, pz, nx, nz = -x + 3, at, 1, 0
+        elif wall == "E":
+            px, pz, nx, nz = x - 3, at, -1, 0
+        else:
+            px, pz, nx, nz = at, z1 - 3, 0, -1
+        portal("Portal|" + kind, px, pz, 11, 13, col, title, nx, nz, sub)   # 18-stud pitch: a clear gap between frames
+        # a coloured floor pad in front of each portal guides the eye without cluttering the aisle
+        cx, cz = px + nx * 5, pz + nz * 5
+        rect("GatePad", cx - (2 if nx else 7), cx + (2 if nx else 7), 0, 0.06, cz - (7 if nx else 2), cz + (7 if nx else 2), col,
+             "Neon", transp=0.55, collide=False)
+
+
 def south_wall():
-    portal("Portal|Island", 0, Z - 6, 18, 16, (120, 220, 255), "🏝️ جزيرة BSC", 0, -1, "BSC Island")
+    gateway_hall()
     sign("Discord", "💬 انضموا لمجتمعنا على Discord\ndiscord.gg/8hw9hBn27\nأكواد الجوائز تنزل هناك أول بأول!", (-40, 10, Z - 0.6),
          (24, 9, 0.5), "Front", bg=(88, 101, 242))
     sign("HowTo", "طريقة اللعب\n• البوابات الشمالية: باركور 100 مرحلة بتخصصاتنا\n• كل 5 مراحل سؤال\n"

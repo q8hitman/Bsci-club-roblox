@@ -99,11 +99,9 @@ startPad.Touched:Connect(function(hit)
 end)
 
 -- v31 actions from the rider's client: "stop" (train gone, nothing else), "station" (step off onto the platform),
--- "island" (end-of-line button -> returns to Campus/HQ Hub), "again" (a fresh train at the station). Moves always use the safe teleport.
+-- "hub" (end-of-line button -> back to the College of Science, the main hub), "again" (a fresh train at the station). Moves always use the safe teleport.
 local Teleport = require(script.Parent.Teleport)
-local hubSpawn = mapFolder:FindFirstChild("CampusSpawn", true)
-	or mapFolder:FindFirstChild("HQSpawn", true)
-	or mapFolder:FindFirstChild("IslandSpawn", true)
+local hubSpawn = mapFolder:FindFirstChild("CampusSpawn", true) or mapFolder:FindFirstChild("HQSpawn", true)
 local lastAction = {}
 remote.OnServerEvent:Connect(function(player, action)
 	if typeof(action) ~= "string" then
@@ -117,7 +115,7 @@ remote.OnServerEvent:Connect(function(player, action)
 	removeCart(player)
 	if action == "station" then
 		Teleport.to(player, spawnPoint)
-	elseif action == "island" and hubSpawn then
+	elseif action == "hub" and hubSpawn then
 		Teleport.to(player, hubSpawn)
 	elseif action == "again" then
 		Teleport.to(player, spawnPoint)

@@ -127,6 +127,8 @@ def install():
     def vcylh(name, cx, y0, y1, cz, diam, *a, **kw):
         if name == "BridgeCol" and C5._off[2] == 0.0 and in_gym(cx, cz, 2.0):
             return None   # v37: no columns through the gym roof; the corridor spans the gym on girders (bridge_girders)
+        if name == "BridgeCol" and C5._off[2] == 0.0 and abs(cz - 12.0) < 0.1:
+            cz = 4.0   # v52: the z 12 pair was clipped by the gym roof eave (checked in Studio); z 4 is clear of the gym
         r = orig_vcyl(name, cx, y0, y1, cz, diam, *a, **kw)
         if name == "Column" and C5._off[2] == 0.0 and cz < -170 and diam >= 4.4:
             y = y0 + 3.2   # A (V03): cream columns with horizontal joints
@@ -379,8 +381,9 @@ def gym():
 
 def garden_walk():
     with G.Group("GardenWalkV34"):
-        for path, w in _paths():
-            _strip(path, w)
+        # v52 (owner directive): exactly ONE south-north connection, the original Red Corridor. The two paved garden
+        # walks (MAIN east, WEST + its arc round the mound), their lamp posts / bollards and the north_link forecourt
+        # duplicated it and are no longer built. MAIN/WEST stay as layout guides (planting + cats keep their places).
         # A: wide paved band along the north block (alternating grey / beige courses) with trees in square planters
         x0, x1, z0, z1 = PROMENADE
         n = int((x1 - x0) / 4)
@@ -405,17 +408,6 @@ def garden_walk():
         gym()
         # lamp posts along the main walk + low bollards along the curved path (A: low lighting and lamp posts)
         main = C5._catmull(MAIN, 10)
-        for i in range(4, len(main) - 2, 9):
-            fx, fz, nx, nz = _normal(main, i)
-            s_ = 1 if (i // 9) % 2 else -1
-            lx, lz = main[i][0] + nx * s_ * 8.5, main[i][1] + nz * s_ * 8.5
-            if not in_gym(lx, lz, 3):
-                C3.lamp_post(lx, 0, lz, 11)
-        arc = [q for q in C5._catmull(WEST, 10) if q[1] > 70]   # the curved stretch round the mound
-        for i in range(2, len(arc) - 1, 5):
-            fx, fz, nx, nz = _normal(arc, i)
-            for s_ in (-1, 1):
-                bollard(arc[i][0] + nx * s_ * 5.6, arc[i][1] + nz * s_ * 5.6)
         # A (satellite): the west half is a dense dark-green planted mass between the paths; lighter to the east
         for q in range(150):
             x, z = R.uniform(-104, 64), R.uniform(GARDEN_Z[0] + 2, PROMENADE[2] - 2)
@@ -453,7 +445,6 @@ def garden_walk():
                 cx, cz = main[i][0] - nx * s_ * 9.0, main[i][1] - nz * s_ * 9.0
             A.cat(cx, 0.2, cz, math.degrees(math.atan2(-nx * s_, -nz * s_)), ["sit", "loaf", "walk"][n % 3])
             A.cat_bowl(cx - fx_ * 2.6, 0.2, cz - fz_ * 2.6)
-        north_link()
 
 
 def north_link():
@@ -637,7 +628,7 @@ def bridge_girders():
     it (z 84). Their underside (y 20.6) stays above the gym roof there (max ~17 at x -31)."""
     with G.Group("BridgeGirders"):
         for x in (-48.0, -32.0):
-            C5.rect("BridgeGirder", x - 1.1, x + 1.1, 20.6, 23.0, 12.0, 84.0, C5.CREAM, "Concrete")
+            C5.rect("BridgeGirder", x - 1.1, x + 1.1, 20.6, 23.0, 4.0, 84.0, C5.CREAM, "Concrete")   # v52: from the z 4 columns
 
 
 def build():

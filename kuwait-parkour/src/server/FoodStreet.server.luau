@@ -1,5 +1,5 @@
--- Order points: ShopOrder|1..9 = the island food street (tools/island11.py, same order as the shop names),
--- ShopOrder|10..13 = the club café counter in the HQ (tools/hq_fill.py).
+-- Order point: ShopOrder|10..13 = the club café counter in the HQ (tools/hq_fill.py). v52: the nine island food-street
+-- kiosks (ShopOrder|1..9) were removed with the island; the café keeps the same free snack + science fact.
 -- Ordering is free: the player gets a small snack to hold (a Tool) and a short, checked food-science fact.
 -- Click / tap while holding it to "eat" it. One snack at a time; a short cooldown stops prompt spam.
 local Players = game:GetService("Players")

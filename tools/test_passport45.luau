@@ -28,7 +28,7 @@ equal(S.claim(a, "activities", monday), false, "weekly double claim denied")
 equal(S.summary(a, monday).xp, 155, "XP sums finite evidence")
 for i = 1, 4 do S.record(a, "visit", "HQ", monday) end
 equal(S.summary(a, monday).weekly[1].progress, 1, "duplicate visits don't count")
-for _, id in ipairs({ "Campus", "Island", "Course", "Arcade" }) do S.record(a, "visit", id, monday) end
+for _, id in ipairs({ "Campus", "Lab", "Course", "Arcade" }) do S.record(a, "visit", id, monday) end
 equal(S.claim(a, "explore", monday), true, "five worlds")
 for _, n in ipairs({ 1, 1, 2, 3 }) do S.record(a, "checkpoint", n, monday) end
 equal(S.claim(a, "parkour", monday), true, "three distinct checkpoints")

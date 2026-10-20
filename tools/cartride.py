@@ -204,7 +204,9 @@ class Turtle:
 
 
 # ====================================================================== sections
-# v52: Grand 8-Specialty Science Express Coaster-Tour with dynamic booster stretches, banked turns, and over-track portals.
+# v31 sightseeing tour through the eight specialties (smooth S-bends, gentle hills, no loops/jumps). v52 kept Argon's
+# visual upgrades (locomotive, rails, spine, specialty gates over the track) but removed the decorative "b" booster
+# flags: the ride client never boosts, so glowing booster pads would promise a feature that does not exist.
 SECTIONS = [
     ("المحطة", "Station"),
     ("مايكروبيولوجي 🦠", "Microbiology"),
@@ -231,17 +233,17 @@ SPEC_TRACK_COL = [
 
 
 def build_track():
-    """Each specialty runs along its own grand biodome row, joined by sweeping banked U-turns with booster segments."""
+    """a snake of rows: every specialty runs along its own row, rows are joined by wide U-turns (gentle hills only)."""
     t = Turtle()
     t.yaw = 90.0                               # rows run along +X / -X
     t.marks = {}
     t.emit(["s0"], "المحطة")
     t.straight(50)
-    t.straight(60, dy=-12, flags=["b"])
+    t.straight(60, dy=-12)
     side = [1]
 
     def uturn():
-        t.straight(30, flags=["b"])
+        t.straight(30)
         t.turn(180 * side[0], 70)
         side[0] = -side[0]
         t.straight(30)
@@ -250,27 +252,27 @@ def build_track():
         t.straight(50)
         t.turn(20, 140)
         t.turn(-20, 140)
-        t.straight(70, dy=hill, flags=["b"])
+        t.straight(70, dy=hill)
         t.turn(-20, 140)
         t.turn(20, 140)
-        t.straight(70, dy=-hill, flags=["b"])
+        t.straight(70, dy=-hill)
         t.straight(40)
 
     for k, key in enumerate(SECTION_KEYS, start=1):
         name = SECTIONS[k][0] + " " + SECTIONS[k][1]
         t.section(name)
         if key == "molecular":
-            # a dramatic climb around the giant DNA helix and back down the other side
-            t.straight(40, flags=["b"])
+            # a slow climb around the giant DNA helix and back down the other side
+            t.straight(40)
             t.turn(360 * side[0], 30, dy=30)
             t.marks["dna"] = t.last_center
-            t.straight(80, flags=["b"])
+            t.straight(80)
             t.turn(-360 * side[0], 30, dy=-30)
             t.straight(40)
         else:
-            tour_row({"micro": 10, "biochem": -8, "animal": 12, "plant": -10, "forensic": 6, "agri": 8, "biotech": -8}[key])
+            tour_row({"micro": 8, "biochem": -6, "animal": 10, "plant": -8, "forensic": 0, "agri": 6, "biotech": -6}[key])
         if key == "biotech":
-            t.straight(50, dy=10, flags=["b"])
+            t.straight(50, dy=10)
             t.emit(["end"], "🎉 خلصت الرحلة! نادي العلوم البيولوجية يشكرك")
         else:
             uturn()
@@ -1024,9 +1026,9 @@ def stations(t):
              "Back", bg=(80, 40, 130))
         A.logo_board(sx + 22, sy + 30, sz - 33.0, R=1.5, nx=0.0, nz=1.0)
         G.part("CartSpawnPoint", (6, 1, 6), (sx - 9, sy - 1.2, sz - 22), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
-        G.part("Portal|Island", (0.6, 12, 10), (sx - 29.4, sy + 4.6, sz - 18), (120, 255, 200), "Neon", transp=0.45, collide=False,
+        G.part("Portal|Campus", (0.6, 12, 10), (sx - 29.4, sy + 4.6, sz - 18), (120, 255, 200), "Neon", transp=0.45, collide=False,
                shadow=False)
-        sign("BackHQ", "↩ الجزيرة", (sx - 29.2, sy + 12.4, sz - 18), (0.4, 2.4, 10), "Right", bg=(24, 80, 56))
+        sign("BackHQ", "↩ كلية العلوم", (sx - 29.2, sy + 12.4, sz - 18), (0.4, 2.4, 10), "Right", bg=(24, 80, 56))
         cart_model(sx + 12, sy - 1.4, sz - 6)
         cart_car_model(sx + 22, sy - 1.4, sz - 6)   # template for the trailing cars (cloned locally by CartRide.client)
         rect("Canopy", sx - 30, sx + 30, sy + 20, sy + 21, sz - 34, sz - 10, (120, 64, 176), "SmoothPlastic", transp=0.1)
@@ -1043,7 +1045,7 @@ def stations(t):
         A.logo_board(ex - fx * 10, ey + 34, ez - fz * 10, R=1.4, nx=-fx, nz=-fz)
         cx, cz = ex + fx * 18, ez + fz * 18
         rect("FinishDeck", cx - 18, cx + 18, ey - 2.4, ey - 1.4, cz - 18, cz + 18, (236, 226, 208), "WoodPlanks")
-        G.part("Portal|Island", (10, 12, 0.6), (cx, ey + 4.6, cz + fz * 14), (120, 255, 200), "Neon", transp=0.45, collide=False,
+        G.part("Portal|Campus", (10, 12, 0.6), (cx, ey + 4.6, cz + fz * 14), (120, 255, 200), "Neon", transp=0.45, collide=False,
                shadow=False, rot=(0, eyaw, 0))
         G.part("CartFinishPoint", (6, 1, 6), (cx, ey - 1.2, cz), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
 

@@ -295,8 +295,9 @@ DESERT_PLANTS = [("العرفج", "Rhanterium", "نبتة الكويت الوط�
 
 def desert_garden():
     """west lawn: a walk through Kuwait's desert plants, each bed labelled"""
-    rect("GardenWalk", -146, -134, 0.15, 0.4, -182, 250, (214, 200, 170), "Pebble", collide=False)
-    rect("GardenWalkLink", -134, -100, 0.15, 0.4, 114, 126, (214, 200, 170), "Pebble", collide=False)
+    # v52 (owner: exactly ONE south-north connection = the Red Corridor): the trail stays inside the desert garden and
+    # no longer runs on to the north building; its link into the north promenade was removed.
+    rect("GardenWalk", -146, -134, 0.15, 0.4, -182, 100, (214, 200, 170), "Pebble", collide=False)
     sign("DesertGardenSign", "🌵 حديقة نباتات الكويت الصحراوية | Desert Plants Garden", (-140, 6, -166), (26, 3.4, 0.4), "Front",
          bg=(120, 90, 40))
     for i, (ar, sci, note) in enumerate(DESERT_PLANTS):

@@ -1,3 +1,26 @@
+# v52 — Owner's final world structure (Island removed, one Red Corridor, World Gateway Hall) — 2026-10-20
+
+Branch `dev/v52-world-structure` from `recovery/v51-argon-wip`. Full report: [v52_REPORT.md](docs/v52_REPORT.md);
+plan: [v52_MIGRATION_AND_SPATIAL_PLAN.md](docs/v52_MIGRATION_AND_SPATIAL_PLAN.md); screenshots `docs/v52/`.
+- **Island:** removed completely (model, terrain script, gameplay layer, menu card, travel key, portals, labels).
+- **One south-north connection:** the original Red Corridor. The duplicate garden walks, link and forecourt are gone.
+  The z 12 column pair moved to z 4, clear of the gym.
+- **Food:** the 9 kiosks were removed; the HQ café keeps the snack interaction.
+- **World Gateway Hall:** off the HQ south wall, 11 portals. The duplicate HQ Virus gate and the clouds inside the hall
+  were removed.
+- **NPCs:** placed by role, with lines rewritten.
+- **Cleanup:** `ExamActiveBarrier` removed. The fake cart "booster" flags were removed and the hills restored.
+- **Tested in Studio Play (solo):**
+  - all 14 menu destinations;
+  - the 11 hall portals and the world return portals;
+  - spawn and respawn;
+  - a full Specialties Train ride with its hub button;
+  - a Red Corridor walk both ways;
+  - collision scans.
+- **Not tested:** multiplayer, phone, live DataStore. Build `KuwaitParkour_v52.rbxlx`. Not published, not merged.
+
+---
+
 # v51 (Milestone 1 Rebuild) — Campus Authenticity Cleanup, Museum Botanical Landscaping, Idempotent Obby Puzzles, Hub Unification, 3D Cart Controls, Free-Look Cell Train & Lab Coat — 2026-10-20
 
 Branch `dev/v51-milestone1`; pre-edit backup at `backups\KuwaitParkour_v50_backup_before_v51.rbxlx`. Master Audit & Traceability Matrix: [BSC_MASTER_REBUILD_AUDIT_AND_ROADMAP.md](docs/BSC_MASTER_REBUILD_AUDIT_AND_ROADMAP.md).
