@@ -20,11 +20,24 @@ LabData.SLIDES = {
 }
 
 -- Gel electrophoresis: DNA is negative and moves toward the + pole; SMALLER fragments travel FARTHER.
-LabData.GELS = {
-	{ "150 bp", "900 bp", "3000 bp" },
-	{ "200 bp", "1200 bp", "500 bp" },
-	{ "4000 bp", "350 bp", "1500 bp" },
-	{ "700 bp", "2500 bp", "100 bp" },
+-- v53: a DNA size ladder (bp) and the unknown fragments a player has to size against it.
+LabData.GEL_LADDER = { 100, 200, 500, 1000, 2000, 5000 }
+LabData.GEL_UNKNOWNS = { 150, 250, 400, 700, 1500, 3000 }
+-- distance from the wells as a fraction of the gel (0 = wells, 1 = far end): proportional to -log(size)
+function LabData.gelDistance(bp)
+	return math.clamp(1 - (math.log10(bp) - 1.8) / 2.1, 0.05, 0.95)
+end
+
+-- v53 PCR: the primer must pair (A-T, G-C) with the start of the template strand
+LabData.PCR_TEMPLATE = "3'-TACGGATC…-5'"
+LabData.PCR_PRIMERS = {
+	{ seq = "5'-ATGCCTAG-3'", ok = true, why = "صح: كل A مقابل T وكل G مقابل C" },
+	{ seq = "5'-TACGGATC-3'", ok = false, why = "هذا نفس شريط القالب، مو مكمّل له" },
+	{
+		seq = "5'-GATCCGTA-3'",
+		ok = false,
+		why = "هذا مقلوب: البادئ لازم يقابل القالب قاعدة بقاعدة",
+	},
 }
 
 -- PCR: one cycle = denaturation (~95 °C) -> annealing (~55 °C) -> extension (~72 °C)

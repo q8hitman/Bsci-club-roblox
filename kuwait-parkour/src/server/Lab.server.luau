@@ -278,17 +278,40 @@ labFn.OnServerInvoke = function(player, action, a, b)
 		pending[player] = { kind = "microscope", answer = slide[2], token = token }
 		return { token = token, text = slide[1], research = s.research }
 	elseif action == "gel" then
-		local g = LabData.GELS[rng:NextInteger(1, #LabData.GELS)]
-		local smallest, best = 1, math.huge
-		for i, label in ipairs(g) do
-			local n = tonumber(label:match("%d+"))
-			if n < best then
-				smallest, best = i, n
+		-- v53: an unknown DNA fragment run next to a size ladder. The client only gets three size options now;
+		-- band positions arrive after a correct run (gelRun), and the player reads the size against the ladder.
+		local sizes = LabData.GEL_UNKNOWNS
+		local pick = rng:NextInteger(1, #sizes)
+		local options = { sizes[pick] }
+		for _, d in ipairs({ -2, 2, -3, 3 }) do
+			local q = sizes[pick + d]
+			if q and #options < 3 then
+				table.insert(options, q)
 			end
 		end
+		for i = #options, 2, -1 do
+			local j = rng:NextInteger(1, i)
+			options[i], options[j] = options[j], options[i]
+		end
+		local answer = table.find(options, sizes[pick])
 		local token = newToken()
-		pending[player] = { kind = "gel", answer = smallest, token = token }
-		return { token = token, bands = g, research = s.research }
+		pending[player] = { kind = "gel", answer = answer, size = sizes[pick], token = token }
+		return { token = token, options = options, research = s.research }
+	elseif action == "gelRun" then
+		-- a = token, b = true when the + electrode is at the far end (DNA is negative and runs toward +)
+		local p = pending[player]
+		if not p or p.kind ~= "gel" or a ~= p.token then
+			return nil
+		end
+		if b ~= true then
+			return { reversed = true }
+		end
+		p.ran = true
+		local ladder = {}
+		for _, bp in ipairs(LabData.GEL_LADDER) do
+			table.insert(ladder, { bp = bp, y = LabData.gelDistance(bp) })
+		end
+		return { ladder = ladder, sample = LabData.gelDistance(p.size) }
 	elseif action == "pcr" then
 		local token = newToken()
 		pending[player] = { kind = "pcr", token = token, at = os.clock() }
@@ -324,8 +347,10 @@ labFn.OnServerInvoke = function(player, action, a, b)
 		end
 		pending[player] = nil
 		local ok
-		if p.kind == "microscope" or p.kind == "gel" then
+		if p.kind == "microscope" then
 			ok = b == p.answer
+		elseif p.kind == "gel" then
+			ok = p.ran == true and b == p.answer -- only after the gel was actually run
 		elseif p.kind == "gram" then
 			-- only a properly decolourised slide counts, and the whole procedure takes real time
 			ok = p.quality == "ok" and b == p.answer

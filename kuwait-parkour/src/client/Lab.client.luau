@@ -194,182 +194,350 @@ local function microscope()
 	end
 end
 
--- ------------------------------------------------------------------ gel electrophoresis
+-- ------------------------------------------------------------------ v53 gel electrophoresis: load, electrodes, run, read
+-- Load the size ladder and the sample into their wells, put the + electrode where the DNA should go (it is negative),
+-- run the gel, then size the sample band against the ladder. Positions come from the server only after a correct run.
 local function gel()
 	clear()
 	local my = session
-	header.Text = "🧪 الفصل الكهربائي | Gel Electrophoresis (محاكاة)"
+	header.Text = "🧪 الفصل الكهربائي | Gel Electrophoresis"
 	local data = labFn:InvokeServer("gel")
 	if my ~= session or not data then
 		return
 	end
 	setRP(data.research)
-	text(
+	local note = text(
 		body,
-		"الـ DNA سالب الشحنة فيمشي باتجاه القطب الموجب (+). اختار القطعة اللي بتقطع أطول مسافة:",
+		"1️⃣ حمّل الآبار: اضغط أنبوب الـ Ladder وأنبوب العيّنة",
 		UDim2.fromScale(0, 0),
-		UDim2.fromScale(1, 0.18),
-		INK
+		UDim2.fromScale(1, 0.12),
+		INK,
+		true
 	)
-	-- the gel: wells at the top, bands start there and only move after you answer
 	local gelBox = Instance.new("Frame")
-	gelBox.Position = UDim2.fromScale(0.05, 0.2)
-	gelBox.Size = UDim2.fromScale(0.9, 0.42)
-	gelBox.BackgroundColor3 = Color3.fromRGB(150, 200, 230)
+	gelBox.Position = UDim2.fromScale(0.3, 0.14)
+	gelBox.Size = UDim2.fromScale(0.4, 0.56)
+	gelBox.BackgroundColor3 = Color3.fromRGB(170, 210, 235)
 	gelBox.Parent = body
 	corner(gelBox, 0.05)
-	text(gelBox, "− (الآبار)", UDim2.fromScale(0, 0), UDim2.fromScale(0.3, 0.12), INK)
-	text(gelBox, "+", UDim2.fromScale(0.9, 0.86), UDim2.fromScale(0.1, 0.14), INK, true)
-	local bands = {}
-	for i = 1, #data.bands do
-		local band = Instance.new("Frame")
-		band.Position = UDim2.fromScale(0.08 + (i - 1) * 0.31, 0.14)
-		band.Size = UDim2.fromScale(0.22, 0.06)
-		band.BackgroundColor3 = Color3.fromRGB(40, 60, 160)
-		band.Parent = gelBox
-		bands[i] = band
+	local topPole = text(gelBox, "", UDim2.fromScale(0.82, 0), UDim2.fromScale(0.18, 0.1), INK, true)
+	local bottomPole = text(gelBox, "", UDim2.fromScale(0.82, 0.9), UDim2.fromScale(0.18, 0.1), INK, true)
+	local wells, bands = {}, {}
+	for lane = 1, 2 do
+		local w = Instance.new("Frame")
+		w.Position = UDim2.fromScale(0.12 + (lane - 1) * 0.42, 0.04)
+		w.Size = UDim2.fromScale(0.3, 0.04)
+		w.BackgroundColor3 = Color3.fromRGB(60, 70, 90)
+		w.Parent = gelBox
+		wells[lane] = w
+		bands[lane] = {}
 	end
 	local result = text(body, "", UDim2.fromScale(0, 0.88), UDim2.fromScale(1, 0.12), GREEN, true)
-	local answered = false
-	for i, label in ipairs(data.bands) do
-		button(
-			body,
-			label,
-			UDim2.fromScale(0.05 + (i - 1) * 0.31, 0.66),
-			UDim2.fromScale(0.27, 0.18),
-			Color3.fromRGB(60, 90, 170),
-			function()
-				if answered then
-					return
-				end
-				answered = true
-				local r = labFn:InvokeServer("answer", data.token, i)
-				if my ~= session then
-					return
-				end
-				result.Text = feedback(r, r and r.answer and data.bands[r.answer])
-				setRP(r and r.research)
-				-- run the gel: distance ~ inverse to log(size)
-				for j, lb in ipairs(data.bands) do
-					local bp = tonumber(lb:match("%d+"))
-					local y = 0.14 + math.clamp(1 - (math.log10(bp) - 2) / 1.7, 0.05, 1) * 0.7
-					TweenService:Create(
-						bands[j],
-						TweenInfo.new(1.4, Enum.EasingStyle.Quad),
-						{ Position = UDim2.fromScale(0.08 + (j - 1) * 0.31, y) }
-					):Play()
-				end
-				task.delay(2.6, function()
-					if my == session then
-						gel()
+	local controls = Instance.new("Frame")
+	controls.Position = UDim2.fromScale(0, 0.72)
+	controls.Size = UDim2.fromScale(1, 0.15)
+	controls.BackgroundTransparency = 1
+	controls.Parent = body
+	local function clearControls()
+		for _, c in ipairs(controls:GetChildren()) do
+			c:Destroy()
+		end
+	end
+	local function band(lane, y, label)
+		local b = Instance.new("Frame")
+		b.Position = UDim2.fromScale(0.12 + (lane - 1) * 0.42, 0.04)
+		b.Size = UDim2.fromScale(0.3, 0.025)
+		b.BackgroundColor3 = lane == 1 and Color3.fromRGB(40, 50, 120) or Color3.fromRGB(200, 60, 130)
+		b.BorderSizePixel = 0
+		b.Parent = gelBox
+		TweenService:Create(
+			b,
+			TweenInfo.new(2.2, Enum.EasingStyle.Quad),
+			{ Position = UDim2.fromScale(0.12 + (lane - 1) * 0.42, 0.04 + y * 0.9) }
+		):Play()
+		if label then
+			local t = text(gelBox, label, UDim2.fromScale(-0.62, 0.02 + y * 0.9), UDim2.fromScale(0.6, 0.06), INK, true)
+			t.TextXAlignment = Enum.TextXAlignment.Right
+			t.TextTransparency = 1
+			TweenService:Create(t, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 2.2), {
+				TextTransparency = 0,
+			}):Play()
+		end
+	end
+
+	local function ask()
+		note.Text =
+			"4️⃣ قارن شريط العيّنة 🌸 بشرائط الـ Ladder: كم حجمها تقريباً؟"
+		clearControls()
+		local answered = false
+		for i, opt in ipairs(data.options) do
+			button(
+				controls,
+				("%d bp"):format(opt),
+				UDim2.fromScale((i - 1) * 0.34, 0),
+				UDim2.fromScale(0.32, 1),
+				Color3.fromRGB(60, 90, 170),
+				function()
+					if answered or my ~= session then
+						return
 					end
-				end)
+					answered = true
+					local r = labFn:InvokeServer("answer", data.token, i)
+					if my ~= session then
+						return
+					end
+					result.Text = feedback(r, r and r.answer and ("%d bp"):format(data.options[r.answer]))
+						.. "\nالقطع الصغيرة تمشي أبعد لأنها تعبر مسام الجل أسهل"
+					setRP(r and r.research)
+					task.delay(3.5, function()
+						if my == session then
+							gel()
+						end
+					end)
+				end
+			).Name = "GelOption_"
+				.. i
+		end
+	end
+
+	local function electrodes()
+		note.Text = "2️⃣ وين تحط القطب الموجب (+)؟ تذكّر: الـ DNA شحنته سالبة"
+		clearControls()
+		for i, far in ipairs({ false, true }) do
+			button(
+				controls,
+				far and "➕ تحت (بعيد عن الآبار)" or "➕ فوق (عند الآبار)",
+				UDim2.fromScale((i - 1) * 0.52, 0),
+				UDim2.fromScale(0.48, 1),
+				Color3.fromRGB(190, 70, 70),
+				function()
+					if my ~= session then
+						return
+					end
+					local run = labFn:InvokeServer("gelRun", data.token, far)
+					if my ~= session or not run then
+						return
+					end
+					if run.reversed then
+						play("wrong")
+						result.TextColor3 = Color3.fromRGB(170, 60, 40)
+						result.Text =
+							"❌ الـ DNA بيطلع من الآبار للخلف ويضيع! السالب ينجذب للموجب، فالموجب لازم يكون بعيد"
+						return
+					end
+					play("click")
+					result.Text = ""
+					result.TextColor3 = GREEN
+					topPole.Text, bottomPole.Text = "−", "+"
+					note.Text = "3️⃣ ⚡ التيار شغّال… الشرائط تمشي باتجاه +"
+					clearControls()
+					for _, l in ipairs(run.ladder) do
+						band(1, l.y, ("%d"):format(l.bp))
+					end
+					band(2, run.sample)
+					task.delay(2.6, function()
+						if my == session then
+							ask()
+						end
+					end)
+				end
+			).Name = far
+					and "PlusFar"
+				or "PlusNear"
+		end
+	end
+
+	local loaded = {}
+	for i, tube in ipairs({
+		{ "🧪 Ladder (أحجام معروفة)", 1 },
+		{ "🧬 العيّنة المجهولة", 2 },
+	}) do
+		button(
+			controls,
+			tube[1],
+			UDim2.fromScale((i - 1) * 0.52, 0),
+			UDim2.fromScale(0.48, 1),
+			i == 1 and Color3.fromRGB(40, 50, 120) or Color3.fromRGB(200, 60, 130),
+			function()
+				if loaded[i] or my ~= session then
+					return
+				end
+				loaded[i] = true
+				play("click")
+				wells[tube[2]].BackgroundColor3 = i == 1 and Color3.fromRGB(40, 50, 120) or Color3.fromRGB(200, 60, 130)
+				if loaded[1] and loaded[2] then
+					electrodes()
+				end
 			end
-		)
+		).Name = i
+					== 1
+				and "LoadLadder"
+			or "LoadSample"
 	end
 end
 
--- ------------------------------------------------------------------ PCR (timing game)
+-- ------------------------------------------------------------------ v53 PCR: primer choice, then the thermocycler
+-- Pick the primer that pairs with the template, then hit each temperature window for 3 cycles. The copy counter
+-- doubles every cycle (2 -> 4 -> 8), the reason PCR makes millions of copies in a couple of hours.
 local function pcr()
 	clear()
 	local my = session
-	header.Text = "🧬 تفاعل البوليميراز | PCR Thermocycler (محاكاة)"
+	header.Text = "🧬 تفاعل البوليميراز | PCR"
 	local data = labFn:InvokeServer("pcr")
 	if my ~= session or not data then
 		return
 	end
 	setRP(data.research)
-	local stepLabel = text(body, "", UDim2.fromScale(0, 0), UDim2.fromScale(1, 0.16), INK, true)
-	local bar = Instance.new("Frame")
-	bar.Position = UDim2.fromScale(0.04, 0.2)
-	bar.Size = UDim2.fromScale(0.92, 0.16)
-	bar.BackgroundColor3 = Color3.fromRGB(225, 230, 235)
-	bar.Parent = body
-	corner(bar, 0.2)
-	local zone = Instance.new("Frame")
-	zone.BackgroundColor3 = Color3.fromRGB(90, 200, 120)
-	zone.BackgroundTransparency = 0.2
-	zone.Parent = bar
-	local needle = Instance.new("Frame")
-	needle.Size = UDim2.fromScale(0.012, 1.3)
-	needle.AnchorPoint = Vector2.new(0.5, 0.5)
-	needle.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
-	needle.Parent = bar
-	local tempLabel =
-		text(body, "", UDim2.fromScale(0, 0.38), UDim2.fromScale(1, 0.12), Color3.fromRGB(200, 40, 40), true)
-	local result = text(body, "", UDim2.fromScale(0, 0.86), UDim2.fromScale(1, 0.12), GREEN, true)
-	local LO, HI = 40, 100
-	local stepIndex, cycle, temp, t0 = 1, 1, 40, os.clock()
-	local function showStep()
-		local st = LabData.PCR_STEPS[stepIndex]
-		stepLabel.Text = ("الدورة %d/%d • %s (%d–%d °م)"):format(
-			cycle,
-			LabData.PCR_CYCLES,
-			st.name,
-			st.lo,
-			st.hi
-		)
-		zone.Position = UDim2.fromScale((st.lo - LO) / (HI - LO), 0)
-		zone.Size = UDim2.fromScale((st.hi - st.lo) / (HI - LO), 1)
-	end
-	showStep()
-	local conn = RunService.RenderStepped:Connect(function()
-		if my ~= session then
-			return
-		end
-		-- the block heats and cools continuously (about 3.4 s per sweep)
-		temp = LO + (HI - LO) * (0.5 - 0.5 * math.cos((os.clock() - t0) * 1.85))
-		needle.Position = UDim2.fromScale((temp - LO) / (HI - LO), 0.5)
-		tempLabel.Text = ("🌡️ %d °م"):format(math.floor(temp + 0.5))
-	end)
-	local done = false
-	button(
+	local result = text(body, "", UDim2.fromScale(0, 0.86), UDim2.fromScale(1, 0.14), GREEN, true)
+	local intro = text(
 		body,
-		"اضغط الحين! ⏺",
-		UDim2.fromScale(0.25, 0.54),
-		UDim2.fromScale(0.5, 0.24),
-		Color3.fromRGB(46, 140, 90),
-		function()
-			if done or my ~= session then
+		("1️⃣ هذا شريط القالب:\n%s\nاختار البادئ (Primer) اللي يرتبط فيه"):format(
+			LabData.PCR_TEMPLATE
+		),
+		UDim2.fromScale(0, 0),
+		UDim2.fromScale(1, 0.34),
+		INK,
+		true
+	)
+	local choices = Instance.new("Frame")
+	choices.Position = UDim2.fromScale(0, 0.38)
+	choices.Size = UDim2.fromScale(1, 0.44)
+	choices.BackgroundTransparency = 1
+	choices.Parent = body
+
+	local function thermocycler()
+		intro:Destroy()
+		choices:Destroy()
+		local stepLabel = text(body, "", UDim2.fromScale(0, 0), UDim2.fromScale(1, 0.14), INK, true)
+		local bar = Instance.new("Frame")
+		bar.Position = UDim2.fromScale(0.04, 0.17)
+		bar.Size = UDim2.fromScale(0.92, 0.13)
+		bar.BackgroundColor3 = Color3.fromRGB(225, 230, 235)
+		bar.Parent = body
+		corner(bar, 0.2)
+		local zone = Instance.new("Frame")
+		zone.BackgroundColor3 = Color3.fromRGB(90, 200, 120)
+		zone.BackgroundTransparency = 0.2
+		zone.Parent = bar
+		local needle = Instance.new("Frame")
+		needle.Size = UDim2.fromScale(0.012, 1.3)
+		needle.AnchorPoint = Vector2.new(0.5, 0.5)
+		needle.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+		needle.Parent = bar
+		local tempLabel =
+			text(body, "", UDim2.fromScale(0, 0.31), UDim2.fromScale(0.5, 0.1), Color3.fromRGB(200, 40, 40), true)
+		local copies = text(body, "🧬 × 1", UDim2.fromScale(0.5, 0.31), UDim2.fromScale(0.5, 0.1), GREEN, true)
+		local LO, HI = 40, 100
+		local stepIndex, cycle, temp, t0 = 1, 1, 40, os.clock()
+		local function showStep()
+			local st = LabData.PCR_STEPS[stepIndex]
+			stepLabel.Text = ("الدورة %d/%d • %s (%d–%d °م)"):format(
+				cycle,
+				LabData.PCR_CYCLES,
+				st.name,
+				st.lo,
+				st.hi
+			)
+			zone.Position = UDim2.fromScale((st.lo - LO) / (HI - LO), 0)
+			zone.Size = UDim2.fromScale((st.hi - st.lo) / (HI - LO), 1)
+		end
+		showStep()
+		local conn = RunService.RenderStepped:Connect(function()
+			if my ~= session then
 				return
 			end
-			local st = LabData.PCR_STEPS[stepIndex]
-			if temp >= st.lo and temp <= st.hi then
-				play("click")
-				stepIndex += 1
-				if stepIndex > #LabData.PCR_STEPS then
-					stepIndex = 1
-					cycle += 1
-				end
-				if cycle > LabData.PCR_CYCLES then
-					done = true
-					conn:Disconnect()
-					local r = labFn:InvokeServer("answer", data.token, true)
-					if my == session then
-						result.Text = r
-								and r.ok
-								and ("✅ تضاعف الـ DNA 8 مرات (2³)! +%d نقطة"):format(r.gained or 0)
-							or "⏳ أسرع من اللازم، جرّب مرة ثانية"
-						setRP(r and r.research)
-						play(r and r.ok and "collect" or "wrong")
-					end
+			-- the block heats and cools continuously (about 3.4 s per sweep)
+			temp = LO + (HI - LO) * (0.5 - 0.5 * math.cos((os.clock() - t0) * 1.85))
+			needle.Position = UDim2.fromScale((temp - LO) / (HI - LO), 0.5)
+			tempLabel.Text = ("🌡️ %d °م"):format(math.floor(temp + 0.5))
+		end)
+		local done = false
+		button(
+			body,
+			"اضغط الحين! ⏺",
+			UDim2.fromScale(0.25, 0.46),
+			UDim2.fromScale(0.5, 0.22),
+			Color3.fromRGB(46, 140, 90),
+			function()
+				if done or my ~= session then
 					return
 				end
-				result.Text = "👍"
-				showStep()
-			else
-				play("wrong")
-				result.Text = "مو الحين! راقب المدى الأخضر"
+				local st = LabData.PCR_STEPS[stepIndex]
+				if temp >= st.lo and temp <= st.hi then
+					play("click")
+					stepIndex += 1
+					if stepIndex > #LabData.PCR_STEPS then
+						-- one full cycle: every DNA copy was copied once more
+						copies.Text = ("🧬 × %d"):format(2 ^ cycle)
+						stepIndex = 1
+						cycle += 1
+					end
+					if cycle > LabData.PCR_CYCLES then
+						done = true
+						conn:Disconnect()
+						local r = labFn:InvokeServer("answer", data.token, true)
+						if my == session then
+							result.Text = r
+									and r.ok
+									and ("✅ 3 دورات = 8 نسخ (2³). بعد 30 دورة: أكثر من مليار نسخة! +%d نقطة"):format(
+										r.gained or 0
+									)
+								or "⏳ أسرع من اللازم، جرّب مرة ثانية"
+							setRP(r and r.research)
+							play(r and r.ok and "collect" or "wrong")
+						end
+						return
+					end
+					result.Text = st.name:find("Extension")
+							and "👍 إنزيم Taq بلمرز يبني الشريط الجديد"
+						or "👍"
+					showStep()
+				else
+					play("wrong")
+					result.Text = "مو الحين! راقب المدى الأخضر"
+				end
 			end
-		end
-	)
-	-- stop the sweep when the panel changes
-	task.spawn(function()
-		while my == session do
-			task.wait(0.5)
-		end
-		conn:Disconnect()
-	end)
+		).Name =
+			"PcrPress"
+		task.spawn(function()
+			while my == session do
+				task.wait(0.5)
+			end
+			conn:Disconnect()
+		end)
+	end
+
+	local order = table.clone(LabData.PCR_PRIMERS)
+	for i = #order, 2, -1 do
+		local j = math.random(1, i)
+		order[i], order[j] = order[j], order[i]
+	end
+	for i, pr in ipairs(order) do
+		button(
+			choices,
+			pr.seq,
+			UDim2.fromScale(0.1, (i - 1) * 0.34),
+			UDim2.fromScale(0.8, 0.3),
+			Color3.fromRGB(70, 100, 170),
+			function()
+				if my ~= session then
+					return
+				end
+				if pr.ok then
+					play("click")
+					result.TextColor3 = GREEN
+					result.Text = pr.why
+					thermocycler()
+				else
+					play("wrong")
+					result.TextColor3 = Color3.fromRGB(170, 60, 40)
+					result.Text = "❌ " .. pr.why
+				end
+			end
+		).Name = pr.ok
+				and "PrimerRight"
+			or ("PrimerWrong" .. i)
+	end
 end
 
 -- ------------------------------------------------------------------ computer: projects
