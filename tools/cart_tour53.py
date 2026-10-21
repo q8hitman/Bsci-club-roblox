@@ -384,6 +384,31 @@ def cell_ranges(t):
 
 STRATA = [(205, 176, 136), (188, 156, 118), (214, 188, 150)]   # canyon rock layers (v56)
 
+# v62 (owner: "change the theme"): every valley was walled by the same desert sandstone, so the stages read as one
+# template. Each specialty now has its own walls, ridge faces and scree: (three layer colours, part material, scree
+# terrain material). Same rng calls as before, so the track and the layout do not move.
+WALLS = {
+    "station": (STRATA, "Sandstone", "Limestone"),
+    "micro": ([(238, 228, 200), (226, 214, 182), (246, 238, 216)], "SmoothPlastic", "Salt"),        # agar plate rim
+    "biochem": ([(204, 196, 232), (186, 178, 220), (222, 216, 242)], "Marble", "Slate"),            # lab tiles
+    "animal": (STRATA, "Sandstone", "Limestone"),                                                     # Kuwait desert
+    "plant": ([(92, 138, 72), (74, 116, 60), (108, 154, 84)], "Grass", "LeafyGrass"),                # green hills
+    "molecular": ([(34, 40, 78), (26, 30, 62), (46, 54, 100)], "SmoothPlastic", "Basalt"),           # dark gel lab
+    "forensic": ([(74, 76, 88), (62, 64, 74), (88, 90, 102)], "Concrete", "Asphalt"),                # night city
+    "agri": ([(156, 116, 74), (136, 100, 62), (172, 132, 88)], "Ground", "Ground"),                   # farm earth
+    "biotech": ([(222, 230, 236), (204, 212, 220), (236, 240, 244)], "Metal", "Concrete"),          # clean lab
+}
+CELLS = []   # x ranges (hi, lo) of the station and the eight valleys, set by valleys()
+
+
+def key_at(x):
+    """which world the x position belongs to ("station" for the station cell and outside)"""
+    for k, (hi, lo) in enumerate(CELLS):
+        if lo <= x <= hi:
+            return "station" if k == 0 else CR.SECTION_KEYS[k - 1]
+    return "station"
+
+
 
 def canyon_wall_x(x1, x, s_, top):
     """a long side wall facing the valley (+-z), built as three stepped rock layers with a crag on top"""
@@ -391,10 +416,12 @@ def canyon_wall_x(x1, x, s_, top):
     cx, L = (x1 + x) / 2, x - x1 + 2
     for tier, (ya, yb, setback) in enumerate(((GROUND_Y - 4, h0, 0), (h0, h1, 12), (h1, top, 26))):
         zf = s_ * (CELLZ + setback)
-        box("Cliff", (L, yb - ya, 44), (cx, (ya + yb) / 2, zf + s_ * 22), STRATA[tier], "Sandstone",
+        cols, mat, _ = WALLS[key_at(cx)]
+        box("Cliff", (L, yb - ya, 44), (cx, (ya + yb) / 2, zf + s_ * 22), cols[tier], mat,
             rot=(0, rng.uniform(-2.5, 2.5), 0))
+    cols, mat, _ = WALLS[key_at(cx)]
     box("CliffCrag", (rng.uniform(24, 46), rng.uniform(16, 34), rng.uniform(20, 34)),
-        (cx + rng.uniform(-20, 20), top + 6, s_ * (CELLZ + 34)), STRATA[rng.randrange(3)], "Sandstone",
+        (cx + rng.uniform(-20, 20), top + 6, s_ * (CELLZ + 34)), cols[rng.randrange(3)], mat,
         rot=(rng.uniform(-10, 10), rng.uniform(0, 90), rng.uniform(-10, 10)), collide=False)
 
 
@@ -410,20 +437,23 @@ def ridge(xm, next_col):
         for tier, (ya, yb, half) in enumerate(((GROUND_Y - 4, h0, RIDGE_T / 2 + 14), (h0, h1, RIDGE_T / 2 + 4),
                                                (h1, top, RIDGE_T / 2 - 6))):
             x0, x1 = xm - half - rng.uniform(0, 6), xm + half + rng.uniform(0, 6)
-            if z1 < -14 or z > 14 or ya >= 22:
-                rect("Ridge", x0, x1, ya, yb, z, z1, STRATA[tier], "Sandstone")
-            else:
-                for za, zb in ((z, -14), (14, z1)):
-                    if zb - za > 0.5:
-                        rect("Ridge", x0, x1, ya, yb, za, zb, STRATA[tier], "Sandstone")
-                rect("Ridge", x0, x1, 22, yb, -14, 14, STRATA[tier], "Sandstone")
+            for xa, xb, side in ((x0, xm, key_at(xm - 60)), (xm, x1, key_at(xm + 60))):   # west face, east face
+                cols, mat, _ = WALLS[side]
+                if z1 < -14 or z > 14 or ya >= 22:
+                    rect("Ridge", xa, xb, ya, yb, z, z1, cols[tier], mat)
+                else:
+                    for za, zb in ((z, -14), (14, z1)):
+                        if zb - za > 0.5:
+                            rect("Ridge", xa, xb, ya, yb, za, zb, cols[tier], mat)
+                    rect("Ridge", xa, xb, 22, yb, -14, 14, cols[tier], mat)
         z = z1
     # a stepped crest so the skyline is not one flat line
     for q in range(10):
         zz = rng.uniform(-CELLZ, CELLZ)
         if abs(zz) > 40:
+            cols, mat, _ = WALLS[key_at(xm - 60)]
             box("RidgeCrag", (RIDGE_T * 0.7, rng.uniform(20, 50), rng.uniform(30, 60)), (xm, GROUND_Y + 265, zz),
-                (184, 152, 114), "Sandstone", rot=(0, rng.uniform(-20, 20), rng.uniform(-8, 8)), collide=False)
+                cols[2], mat, rot=(0, rng.uniform(-20, 20), rng.uniform(-8, 8)), collide=False)
 
 
 def draw_tunnels(t, stage_cols):
@@ -455,6 +485,7 @@ def draw_tunnels(t, stage_cols):
 
 def valleys(t):
     cells = cell_ranges(t)
+    CELLS[:] = cells
     xs_all = [c[0] for c in cells] + [cells[-1][1]]
     east, west = xs_all[0], xs_all[-1]
     with G.Group("CartValleys"):
@@ -474,8 +505,9 @@ def valleys(t):
                 top = GROUND_Y + rng.uniform(230, 290)
                 canyon_wall_x(x1, x, s_, top)
                 x = x1
-        for xe in (east, west):
-            rect("Cliff", xe - 20, xe + 20, GROUND_Y - 4, GROUND_Y + 280, -CELLZ - 40, CELLZ + 40, ROCK, "Sandstone")
+        for xe, side in ((east, "station"), (west, CR.SECTION_KEYS[-1])):
+            cols, mat, _ = WALLS[side]
+            rect("Cliff", xe - 20, xe + 20, GROUND_Y - 4, GROUND_Y + 280, -CELLZ - 40, CELLZ + 40, cols[0], mat)
         for xm in t.ridges:
             ridge(xm, None)
         draw_tunnels(t, CR.SPEC_TRACK_COL)
@@ -785,9 +817,8 @@ def stage_molecular(t, clear, cx, Y):
         rect("GridLine", lo, hi, Y, Y + 0.15, zg - 0.4, zg + 0.4, (60, 200, 140), "Neon", collide=False, shadow=False)
         zg += 80
     sc(clear, cx, 4, 16, lambda x, z: CR._dna(x, Y, z, 80))
-    sc(clear, cx, 14, 6, lambda x, z: sign("Codon",
-               rng.choice(["AUG", "UUU", "GGC", "UGG", "TATA", "A-T", "G-C"]), (x, Y + rng.uniform(20, 60), z), (10, 4, 0.4),
-               "Front", bg=(20, 60, 50), color=(120, 255, 180)))
+    sc(clear, cx, 14, 6, lambda x, z: _base_pair(   # v62: floating base pairs (were text boards)
+        x, z, rng.choice([((255, 90, 90), (255, 220, 80)), ((90, 200, 110), (90, 150, 255))]), Y + rng.uniform(20, 60)))
 
 
 def stage_forensic(t, clear, cx, Y):
@@ -900,15 +931,21 @@ STAGES = {"micro": stage_micro, "biochem": stage_biochem, "animal": stage_animal
           "molecular": stage_molecular, "forensic": stage_forensic, "agri": stage_agri, "biotech": stage_biotech}
 
 
+def _base_pair(x, z, cols, y):
+    """a floating base pair (A-T red/yellow or G-C green/blue): two glowing bases joined by a bond"""
+    for s_, col in ((-1, cols[0]), (1, cols[1])):
+        ball("BasePair", x + s_ * 3, y, z, 3.2, col, "Neon", collide=False, shadow=False)
+    box("BaseBond", (3, 0.5, 0.5), (x, y, z), (240, 240, 250), "SmoothPlastic", collide=False, shadow=False)
+
+
 RAIL_PROPS = {
     "micro": lambda x, z: disc("ColonyDot", x, GROUND_Y + 0.2, z, rng.uniform(6, 14), 0.5,
                                rng.choice([(250, 240, 205), (240, 190, 90), (230, 140, 170)]), "SmoothPlastic", collide=False),
     "biochem": lambda x, z: CR._tube(x, GROUND_Y, z),
     "animal": lambda x, z: CR._cactus(x, GROUND_Y, z) if rng.random() < 0.6 else _bigpalm(x, z),
     "plant": lambda x, z: (CR._flower if rng.random() < 0.7 else CR._leaf)(x, GROUND_Y, z),
-    "molecular": lambda x, z: sign("Codon", rng.choice(["AUG", "UAA", "GCC", "A-T", "G-C", "5'→3'"]),
-                                   (x, GROUND_Y + rng.uniform(8, 22), z), (8, 3, 0.4), "Front", bg=(20, 60, 50),
-                                   color=(120, 255, 180)),
+    "molecular": lambda x, z: _base_pair(x, z, rng.choice([((255, 90, 90), (255, 220, 80)), ((90, 200, 110), (90, 150, 255))]),
+                                         GROUND_Y + rng.uniform(8, 22)),   # v62: a glowing base pair, no text
     "forensic": lambda x, z: CR._tape(x, GROUND_Y, z),
     "agri": lambda x, z: _bigpalm(x, z),
     "biotech": lambda x, z: CR._bioreactor(x, GROUND_Y, z),
@@ -1143,14 +1180,16 @@ def grand_features(t, clear, k, key):
         for s_ in (-1, 1):
             h = rng.uniform(55, 95)
             inner = rng.uniform(9, 13)
-            rect("CanyonWall", kx + s_ * inner, kx + s_ * (inner + 34), Y - 2, Y + h, z, z + L, STRATA[rng.randrange(3)],
-                 "Sandstone")
+            cols, mat, _ = WALLS[key]   # v62: the canyon is in the valley's own material too
+            rect("CanyonWall", kx + s_ * inner, kx + s_ * (inner + 34), Y - 2, Y + h, z, z + L, cols[rng.randrange(3)],
+                 mat)
         if rng.random() < 0.35:
             box("Chockstone", (30, rng.uniform(8, 14), rng.uniform(10, 16)), (kx, ky + rng.uniform(32, 46), z + L / 2),
-                STRATA[1], "Sandstone", rot=(rng.uniform(-8, 8), rng.uniform(-10, 10), rng.uniform(-6, 6)), collide=False)
+                WALLS[key][0][1], WALLS[key][1], rot=(rng.uniform(-8, 8), rng.uniform(-10, 10), rng.uniform(-6, 6)),
+                collide=False)
         z += L
     for s_ in (-1, 1):
-        TERRAIN.append((kx + s_ * 36, Y + 70, (za + zb) / 2, 30, "Limestone"))
+        TERRAIN.append((kx + s_ * 36, Y + 70, (za + zb) / 2, 30, WALLS[key][2]))
     # river under the high bridge, the full width of the valley
     if key in RIVERS:
         b0, b1 = t.marks[key + ":bridge"]
@@ -1279,13 +1318,68 @@ def districts(t, clear, k, key):
         box("BarnRoof", (42, 4, 32), (x + 110, Y + 26, z), (90, 40, 34), "WoodPlanks", collide=False)
         label("🌴 مزرعة نخيل: النخلة الوحدة ممكن تعطي أكثر من 100 كيلو تمر بالسنة", x, Y + 10, z, x, z)
     elif key == "biotech":
+        ox, oy, oz = CR.CART_OFFSET
         for q in range(3):
+            if _ENV and in_envelope((56, 56, 56), (x - 70 + q * 70 + ox, Y + oy, z + oz), (0, 0, 0)):
+                continue   # v62: never a dome across the riders' path
             ball("GreenDome", x - 70 + q * 70, Y, z, 56, (200, 240, 220), "Glass", transp=0.45, collide=False)
             disc("DomeGarden", x - 70 + q * 70, Y + 0.3, z, 50, 0.6, (90, 170, 80), "Grass", collide=False)
         for q in range(6):
             box("SolarPanel", (14, 0.4, 8), (x - 60 + q * 24, Y + 4, z + 60), (30, 50, 110), "Glass", rot=(-25, 0, 0),
                 collide=False)
         label("🌱 بيوت محمية: نزرع نباتات معدّلة وراثياً تتحمّل الحر والملوحة", x, Y + 10, z, x, z)
+
+
+CONCEPT_SPOTS = []   # (x, z, r) of the v62 theory sculptures: hills and later props keep away from them
+
+
+def concepts(t, clear, k, key):
+    """v62: four theory sculptures per valley (tools/cart_concepts62.py), beside the low parts of the ride so they
+    are at eye level, facing the rails, each with one on-screen caption"""
+    import cart_concepts62 as CC
+    starts = [i for i, _ in t.sections] + [len(t.pts)]
+    i0, i1 = starts[k - 1], starts[k]
+    canyon = t.marks[key + ":canyon"]
+    low = [i for i in range(i0 + 4, i1 - 4)
+           if t.pts[i][1] < GROUND_Y + 30 and not any(f in ("t", "m") for f in t.pts[i][4])
+           and min(abs(t.pts[i][0] - xr) for xr in t.ridges + [CELL[1]]) > 130   # not jammed against a ridge
+           and not (canyon[0] - 12 <= i <= canyon[1] + 12)]                       # nor inside the slot canyon
+    hi, lo = CELL
+    plan = CC.CONCEPTS[key]
+    for j, (fn, r, text) in enumerate(plan):
+        if not low:
+            break
+        placed = False
+        for shift in (0, 12, -12, 24, -24, 40, -40, 60, -60):
+            ii = low[min(len(low) - 1, max(0, int(len(low) * (j + 0.5) / len(plan)) + shift))]
+            p = t.pts[ii]
+            fx, fz = math.sin(math.radians(p[3])), math.cos(math.radians(p[3]))
+            rx, rz = fz, -fx
+            for dist in (r + 26, r + 40, r + 56):
+                for side in (1, -1):
+                    x, z = p[0] + rx * side * dist, p[2] + rz * side * dist
+                    if not (lo + r + 20 < x < hi - r - 20 and abs(z) < CELLZ - r - 30):
+                        continue
+                    if not clear.ok(x, z, r):
+                        continue
+                    if any(math.hypot(x - cx, z - cz) < r + cr + 12 for cx, cz, cr in CONCEPT_SPOTS):
+                        continue
+                    if any(math.hypot(x - lm[2], z - lm[3]) < r + 30 for lm in CR.LANDMARKS if lm[1] != "NOT PLACED"):
+                        continue
+                    nx, nz = p[0] - x, p[2] - z
+                    nl = math.hypot(nx, nz) or 1.0
+                    with G.Group("Concept_" + fn.__name__, "Model"):
+                        fn(CC.F(x, z, GROUND_Y, (fx, fz), (nx / nl, nz / nl)))
+                    CONCEPT_SPOTS.append((x, z, r))
+                    label(text, x, GROUND_Y + 10, z, x, z)
+                    placed = True
+                    break
+                if placed:
+                    break
+            if placed:
+                break
+        if not placed:
+            CR.LANDMARKS.append((fn.__name__, "NOT PLACED", 0, 0))
 
 
 def scenery(t, cells):
@@ -1300,6 +1394,7 @@ def scenery(t, cells):
             grand_features(t, clear, k, key)
             districts(t, clear, k, key)
             rail_props(t, clear, k, key)
+            concepts(t, clear, k, key)
 
 
 def station_hall(t):
@@ -1335,7 +1430,7 @@ def terrain_plan(t, cells):
             for s_ in (-1, 1):
                 r = tr.uniform(26, 44)
                 if clear.ok(x, s_ * (CELLZ - r * 0.25), r * 0.7):
-                    TERRAIN.append((x, GROUND_Y - r * 0.35, s_ * (CELLZ - r * 0.25), r, "Limestone"))
+                    TERRAIN.append((x, GROUND_Y - r * 0.35, s_ * (CELLZ - r * 0.25), r, WALLS[key][2]))
             x += tr.uniform(36, 52)
         for xr in (hi, lo):
             z = -CELLZ + 20
@@ -1344,7 +1439,7 @@ def terrain_plan(t, cells):
                     r = tr.uniform(24, 40)
                     xx = xr - r * 0.3 if xr == hi else xr + r * 0.3
                     if clear.ok(xx, z, r * 0.7):
-                        TERRAIN.append((xx, GROUND_Y - r * 0.35, z, r, "Limestone"))
+                        TERRAIN.append((xx, GROUND_Y - r * 0.35, z, r, WALLS[key][2]))
                 z += tr.uniform(36, 52)
         if key in HILLS:
             mat, n = HILLS[key]
@@ -1355,7 +1450,7 @@ def terrain_plan(t, cells):
                     break
                 r = tr.uniform(30, 70)
                 x, z = tr.uniform(lo + r, hi - r), tr.uniform(-CELLZ + r, CELLZ - r)
-                if clear.ok(x, z, r * 0.8):
+                if clear.ok(x, z, r * 0.8) and not any(math.hypot(x - cx, z - cz) < r + cr for cx, cz, cr in CONCEPT_SPOTS):
                     TERRAIN.append((x, GROUND_Y - r * 0.6, z, r, mat))
                     placed += 1
 
