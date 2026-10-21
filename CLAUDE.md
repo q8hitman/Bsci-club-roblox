@@ -230,3 +230,8 @@ Portals are parts named `Portal|<Kind>`. `destinations` lives in `src/server/Mai
 - Gram stain: reagent rack + decolouriser timing; server action gramView decides the observed colour.
 - First Day questline: PassportService sets attribute FirstDay ("0000".."1111"), achievement firstday; FirstDay.client.
 - Run selene from kuwait-parkour/ (root = false errors). Don't stylua generated shared/*.luau. Codex CLI is callable (handoff §9).
+
+## v54 (2026-10-21, local only, NOT published). Branch dev/v54-labs-cartride. Full state: docs/DEVELOPMENT_HANDOFF.md
+- Wet lab = tools/labs54.py + Labs54.server + Bench54.client (Item|/Slot|/Use| naming, Studio-only QA hook
+  ServerStorage.Labs54QA). Cart Ride = grand valleys in cart_tour53 (LEGZ/CELLZ, 48k studs), captions instead of
+  boards, CartTerrain blocks for rivers. Cart keys: Enter/V. Studio MCP Luau runs in a separate _G (use keys/clicks).

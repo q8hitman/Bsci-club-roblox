@@ -1,4 +1,4 @@
-# BSC Island: development handoff (v53, 2026-10-21)
+# BSC Island: development handoff (v54, 2026-10-21)
 
 For whoever continues: Claude Code, Codex, or a person. **Continue this project. Do not restart or redesign it.**
 
@@ -6,10 +6,19 @@ For whoever continues: Claude Code, Codex, or a person. **Continue this project.
 | | |
 |---|---|
 | Repo | `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full` (GitHub `q8hitman/Bsci-club-roblox`) |
-| Branch | `dev/v53-release-push`, created from `dev/v52-world-structure` at `7172e2e` |
-| Commits | v53 work runs from `b48b181` (Grand Tour) through `5b1b762` (cart props). Run `git log --oneline 7172e2e..HEAD` for the full list. |
-| Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v53.rbxlx` (not published). v52 and every older build and backup are untouched. |
-| Studio | One session titled `KuwaitParkour_v53.rbxlx`. Its scripts and map were hot-swapped to the latest code; **unsaved and not needed**, because the file on disk is newer. |
+| Branch | `dev/v54-labs-cartride`, created from `dev/v53-release-push` at `6aac766`. Neither branch is merged into `main`. |
+| Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v54.rbxlx` (not published). v53 and every older build and backup are untouched. |
+| Studio | Session `KuwaitParkour_v53.rbxlx`, hot-swapped to the v54 code. It is unsaved; the file on disk is newer. |
+
+## 1b. Done in v54 (all committed and pushed)
+| Feature | Static | Studio solo | Multiplayer (2 clients) | Phone |
+|---|---|---|---|---|
+| **Hands-on 3D wet lab** (`tools/labs54.py`, `Labs54.server`, `Bench54.client`):<br>• lab coat and goggles at the entrance<br>• carry real equipment, place it on slots, pour, draw and connect<br>• one player per bench; others can watch | selene OK | **Gram:** refusals (no heat-fix, wrong reagent), colour changes, timed rinse, microscope, identify: +6<br>**Gel:** reversed electrode loses the DNA; correct run; reading under UV: +4<br>**PCR:** no Taq gives NO PRODUCT with the reason; complete run gives about a billion copies: +8<br>**Microscopy:** the placed slide opens the focus simulation<br>A real `E` press picks up an item | **Pass:** bench lock, two benches in parallel, bench freed when its user leaves (`tools/studio_tests/labs54.server.luau`) | no |
+| **Massive Cart Ride**:<br>• 48,070 studs; per world: spiral climb, overlook pavilion, high bridge over a Terrain river, S-bends, big drop, hero run, tunnel through a mesa, double spiral around the world's tower | 0 clashes; ride-time sim: 23 min at 35, **18 at 45 (default)**, 14 at 60, 10 at 90, 8.6 at 120 (`tools/cart_ride_time.py`) | **Full ride at 120:** all 8 worlds, end card, back to campus, 0 errors, measured 94 studs/s | v53 test: each player sees the other's cart (cart system unchanged) | no; **perf risk:** 39k parts |
+| **Text cleanup**:<br>• cart landmark boards become captions while passing<br>• obby LEVEL boards become small number plates<br>• slimmer Laser hints<br>• Cell Train name boards removed | genmap 0 violations | Captions seen during the ride | n/a | no |
+| **Cell Train**:<br>• detour inside the nucleus through pores and around the nucleolus<br>• all 13 stop captions now show (half never did before) | n/a | Rode through the nucleus; the ride ended at the station | no | no |
+| **Arcade**:<br>• 5 s start countdown on the HUD<br>• ATP combo shown | selene OK | Countdown in code only | v53 results-screen test | no |
+| **Cart keys:** `Enter` start/pause, `V` camera (`P` and `C` belong to Photo Mode) | | Seen | | |
 
 ## 2. Build, lint and test commands (run from the repo root)
 ```
@@ -75,7 +84,14 @@ Smaller items:
   - shared friend carts;
   - continuing the ride from the last stage.
 
-## 5. Next steps, in priority order
+## 5. Next steps, in priority order (v54)
+0. **Owner review of v54:** the lab feel, the ride length (18 min at the default speed), the part count on a phone.
+   - If the phone struggles: lower `cart_tour53.DENSITY`, tie spacing, or `LEGZ`.
+1. **Virus Tag:** add a solo practice opponent (a computer-controlled "virus") so one player can play.
+2. **Cart worlds art:** licensed meshes, a petri rim, more distinct areas inside each valley.
+3. **The campus and HQ** stay as the owner approved them. Sign redesign there needs the owner's OK.
+
+## 5-old. Earlier next steps (v53)
 1. **Owner tests on a real phone:**
    - the cart ride (buttons, progress bar, 🎥 camera);
    - the Gram, gel and PCR panels (text size);
@@ -140,6 +156,6 @@ Smaller items:
 ## 9. Exact prompt to start Codex
 From the repo root:
 ```
-"C:\Users\User\AppData\Local\OpenAI\Codex\bin\896a0166b774037a\codex.exe" exec -C "C:\Users\User\Desktop\KuwaitParkour\BSC_project_full" "Continue BSC Island development. Read docs/DEVELOPMENT_HANDOFF.md first, then CLAUDE.md and BSC_RESUME.md. Work on branch dev/v53-release-push from the latest commit. Follow section 5 (next steps) in order, respect section 6 (owner decisions) and ask before anything in section 7. Build with the commands in section 2, never overwrite older .rbxlx builds (next build is KuwaitParkour_v54.rbxlx), commit after each verified milestone, and never publish."
+"C:\Users\User\AppData\Local\OpenAI\Codex\bin\896a0166b774037a\codex.exe" exec -C "C:\Users\User\Desktop\KuwaitParkour\BSC_project_full" "Continue BSC Island development. Read docs/DEVELOPMENT_HANDOFF.md first, then CLAUDE.md and BSC_RESUME.md. Work on branch dev/v54-labs-cartride from the latest commit. Follow section 5 (next steps) in order, respect section 6 (owner decisions) and ask before anything in section 7. Build with the commands in section 2, never overwrite older .rbxlx builds (next build is KuwaitParkour_v55.rbxlx), commit after each verified milestone, and never publish."
 ```
 Or paste the same text into the existing Codex thread `01a14bdc-a4d3-7360-a7e5-eacb9a8c4924` in the Codex app.
