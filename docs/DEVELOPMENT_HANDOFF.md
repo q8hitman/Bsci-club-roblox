@@ -7,7 +7,7 @@ For whoever continues: Claude Code, Codex, or a person. **Continue this project.
 |---|---|
 | Repo | `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full` (GitHub `q8hitman/Bsci-club-roblox`) |
 | Branch | `dev/v54-labs-cartride`, created from `dev/v53-release-push` at `6aac766`. Neither branch is merged into `main`. |
-| Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v57.rbxlx` (not published). v56 and every older build and backup are untouched. |
+| Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v58.rbxlx` (not published). v57 and every older build and backup are untouched. |
 | Studio | Session `KuwaitParkour_v53.rbxlx`, hot-swapped to the v54 code. It is unsaved; the file on disk is newer. |
 
 ## 00. v57: research-driven polish (report: `docs/BSC_CREATIVE_RESEARCH_AND_POLISH.md`)
