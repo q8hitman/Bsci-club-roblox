@@ -1,4 +1,4 @@
-# BSC Island: development handoff (v60, 2026-10-21)
+# BSC Island: development handoff (v61, 2026-10-22)
 
 For whoever continues: Claude Code, Codex, or a person. **Continue this project. Do not restart or redesign it.**
 
@@ -7,8 +7,19 @@ For whoever continues: Claude Code, Codex, or a person. **Continue this project.
 |---|---|
 | Repo | `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full` (GitHub `q8hitman/Bsci-club-roblox`) |
 | Branch | `dev/v54-labs-cartride`, created from `dev/v53-release-push` at `6aac766`. Neither branch is merged into `main`. |
-| Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v60.rbxlx` (not published). v59 and every older build and backup are untouched. |
+| Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v61.rbxlx` (not published). v60 and every older build and backup are untouched. |
 | Studio | Session `KuwaitParkour_v53.rbxlx`, hot-swapped to the v54 code. It is unsaved; the file on disk is newer. |
+
+## 00000. v61: the owner's notes on stages, race track, lab, minigames, questions, puzzles
+| Area | What changed | Evidence |
+|---|---|---|
+| Cart Ride | Rider clearance envelope checked in the generator (0 underground points, 0 big intruders, supports never pierce lower spiral loops); each valley has its own giant (phage, ATP synthase, turtle, sunflower, magnifier, date palm, bioreactor; DNA in molecular), its own tunnel material and its own finale (`FINALE` in `tools/cart_tour53.py`: spirals of different size, an S-bend past the giant, or riding *through* it: forensic magnifier ring, biotech bioreactor tube); stage banners -> neon gate beam; captions and stage title cards fade in/out | Generator prints; Studio screenshots of phage, sunflower, magnifier ring, bioreactor |
+| Race tracks | `tools/racetrack61.py`: corner points + fillet radii -> closed dense centreline (6 studs) for physics, bots, road, barriers, curbs; two longer tracks (cell 1759, helix 1562 studs) | Probe 0 holes / 0 barrier gaps; full races with the QA driver |
+| Lab | PPE coat rebuilt (R15 shells, gloves, goggles); lab notebook panel with the scientific question and step checklist per bench | Screenshots, notebook step test |
+| Puzzle room | "Restart the Cell" (`chaos_gen.cell_control_room`): room is the inside of a cell; ATP circuit 4x5 from the mitochondrion; microscope with six real cell types + field guide (`PuzzleTypes/Specimens`); nucleus lock = complementary DNA strand (`PuzzleTypes/Core`); goal line on entry and a lamp per station. Studio-only `ServerStorage.PuzzleQA:Invoke(id, op, step)` | Full solve incl. early/wrong lever refusals in Studio |
+| Minigames | Lab Rush = real science (complementary strand, enzyme + substrate, Gram/shape sorter, centrifuge balance; fantasy lab removed); Petri Floor = agar dish, ATP Rush = mitochondrion, Enzyme Sweeper = enzyme with active site | Lab Rush played to a team win (all 4 stations); screenshots of Lab Rush, Petri, ATP |
+| Questions | `server/QuestionHistory.luau`: per-player memory shared by HQ stations, Exam Hall, Science Challenge Center and Game Show; pickers take the least seen questions | Studio unit check: no overlap until the pool runs out |
+**Not verified:** a phone, several real players over a network, a full Cart Ride by keyboard after the v61 finales (geometry checked by the generator and screenshots only), Enzyme Sweeper screenshot.
 
 ## 0000. v60: Micro Racers as an arcade kart racer
 | Area | What changed | Evidence |

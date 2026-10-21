@@ -260,3 +260,8 @@ Portals are parts named `Portal|<Kind>`. `destinations` lives in `src/server/Mai
 - RacerMath is shared by server, client prediction and bots: keep it deterministic (no os.clock / random).
 - Client sends one intent per 0.05 s tick with seq; server queues + acks. Studio-only RacerAutopilot / QA_Kart.
 - Tests: tools/test_racers60.luau; Studio minimized = black 3D captures (restore the window).
+
+## v61 (2026-10-22, local only, NOT published). Same branch. Owner notes: docs/DEVELOPMENT_HANDOFF.md section 00000
+- Cart: FINALE per valley in cart_tour53 (spiral / beside / through), clearance envelope checks every build.
+- Race tracks: tools/racetrack61.py (fillet corners). Puzzle room "Restart the Cell" + ServerStorage.PuzzleQA (Studio).
+- Lab Rush is real science now; arenas themed. Shared QuestionHistory (server) for every quiz mode.
