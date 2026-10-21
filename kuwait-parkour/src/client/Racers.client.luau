@@ -509,7 +509,8 @@ Run.RenderStepped:Connect(function(dt)
 		input:FireServer(latest.raceId, seq, {
 			throttle = active("throttle") and 1 or 0,
 			brake = active("brake") and 1 or 0,
-			steer = (active("right") and 1 or 0) - (active("left") and 1 or 0),
+			-- v59: a heading increase turns the car to the LEFT of the chase camera, so right = -1 (was reversed)
+			steer = (active("left") and 1 or 0) - (active("right") and 1 or 0),
 			boost = active("boost"),
 		})
 	end

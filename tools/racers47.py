@@ -31,48 +31,115 @@ def arch(name,x,y,z,color,text,width=22,yaw=0):
         G.box("GateLabel",(width,3,.5),(x,y+10,z),DARK,rot=(0,yaw,0),collide=False,text=dict(face="Front",text=text,bg=DARK,bg_t=0))
 
 
+AGAR=(222,178,92)        # nutrient agar: warm amber floor of the giant petri dish
+ROAD=(54,58,66)
+CURB_R=(214,64,58)
+CURB_W=(236,236,232)
+BARRIER=(232,236,240)
+COLONY=[(246,228,170),(240,150,120),(170,206,120),(250,214,96),(214,168,226)]
+
+
 def track(d,index):
+    """v59 owner: 'floating outlines in an empty void'. Each track now lies on amber agar inside a giant glass
+    petri dish on a lab bench: a real road with barriers, red-white curbs at the corners, a chequered start line,
+    colonies as scenery, and a microscope objective overhead as the landmark. Decorative only: the race itself
+    runs on RacerData (server physics), so none of this collides with the camera."""
     ox,y,oz=d['origin']; pts=d['points']; color=TEAL if index==0 else PINK
+    w=d['width']
     with G.Group("Track_"+d['id']):
-        G.box("CytoplasmBase",(340,3,300),(ox,y-5,oz),(40,62,82),"Slate")
-        # Broad overlapping deck segments follow exactly the same corridors used by server physics.
+        # bench + dish: no more void under the track
+        G.box("LabBench",(560,6,560),(ox,y-12,oz),(196,200,204),"Marble")
+        deco("BenchEdge",(562,1.2,562),(ox,y-8.6,oz),(70,76,86),"Metal")
+        G.disc("DishBase",ox,y-6.5,oz,420,3,(205,226,232),"Glass",transp=.45)
+        G.disc("Agar",ox,y-2.1,oz,412,3.2,AGAR,"SmoothPlastic")
+        for k in range(48):
+            a=k*math.pi*2/48
+            deco("DishWall",(28,14,1.2),(ox+math.sin(a)*207,y+1,oz+math.cos(a)*207),(196,226,236),"Glass",
+                 transp=.55,rot=(0,math.degrees(a),0))
+        # colonies on the agar, outside the road corridors (a fixed pattern, no RNG)
+        for k in range(26):
+            a=k*2.39996
+            r=60+(k*37)%140
+            cx,cz=math.sin(a)*r,math.cos(a)*r
+            near=min(math.hypot(cx-px,cz-pz) for px,pz in pts)
+            on_road=any(_seg_dist(cx,cz,p,q)<w/2+14 for p,q in zip(pts,pts[1:]+pts[:1]))
+            if on_road or near<w: continue
+            dia=7+(k*13)%16
+            G.disc("Colony",ox+cx,y-.35,oz+cz,dia,.9,COLONY[k%len(COLONY)],"SmoothPlastic",collide=False,shadow=False)
+            deco("ColonyCore",(dia*.35,.9,dia*.35),(ox+cx,y+.05,oz+cz),tuple(max(0,c-40) for c in COLONY[k%len(COLONY)]))
+        # road: segments + corner decks, white edge lines, low barriers, curbs at each corner
         edges=list(zip(pts,pts[1:]+pts[:1]))
         if d.get('shortcut'): edges.append((pts[d['shortcut']['a']-1],pts[d['shortcut']['b']-1]))
         for i,(a,b) in enumerate(edges):
             dx,dz=b[0]-a[0],b[1]-a[1]
             length=math.hypot(dx,dz)
-            w=d['shortcut']['width'] if i==len(pts) else d['width']
+            ww=d['shortcut']['width'] if i==len(pts) else w
             yaw=math.degrees(math.atan2(dx,dz))
-            G.box("Road",(w,1,length+1),(ox+(a[0]+b[0])/2,y-.5,oz+(a[1]+b[1])/2),DARK,"Asphalt",rot=(0,yaw,0))
+            mx,mz=ox+(a[0]+b[0])/2,oz+(a[1]+b[1])/2
+            G.box("Road",(ww,1,length+1),(mx,y-.5,mz),ROAD,"Asphalt",rot=(0,yaw,0))
             for side in (-1,1):
-                x=ox+(a[0]+b[0])/2+side*dz/length*w/2
-                z=oz+(a[1]+b[1])/2-side*dx/length*w/2
-                deco("MembraneRail",(.6,1.6,length+1),(x,y+.8,z),color,"Neon",rot=(0,yaw,0))
-            for t in (.25,.5,.75):
-                deco("LaneGuide",(.7,.08,3),(ox+a[0]+dx*t,y+.03,oz+a[1]+dz*t),(210,220,227),rot=(0,yaw,0))
+                nx,nz=side*dz/length,-side*dx/length
+                deco("EdgeLine",(.6,.06,length-4),(mx+nx*(ww/2-1.6),y+.03,mz+nz*(ww/2-1.6)),CURB_W,rot=(0,yaw,0))
+                G.box("Barrier",(1.4,1.6,length-ww*.6),(mx+nx*(ww/2+.4),y+.8,mz+nz*(ww/2+.4)),BARRIER,"SmoothPlastic",
+                      rot=(0,yaw,0),collide=False)
+                deco("BarrierStripe",(1.5,.35,length-ww*.6),(mx+nx*(ww/2+.4),y+1.2,mz+nz*(ww/2+.4)),color,rot=(0,yaw,0))
+            for t in (.2,.4,.6,.8):
+                deco("LaneDash",(.6,.06,4),(ox+a[0]+dx*t,y+.03,oz+a[1]+dz*t),CURB_W,rot=(0,yaw,0))
         for i,p in enumerate(pts,1):
-            G.disc("CornerDeck",ox+p[0],y-.5,oz+p[1],d["width"],1,DARK,"Asphalt")
+            G.disc("CornerDeck",ox+p[0],y-.5,oz+p[1],w,1,ROAD,"Asphalt")
             G.part("Waypoint_"+str(i),(1,1,1),(ox+p[0],y+.5,oz+p[1]),DARK,transp=1,collide=False,shadow=False)
+            # red-white curb arc on the corner's outer edge
+            prv,nxt=pts[i-2],pts[i%len(pts)]
+            hin=math.atan2(p[0]-prv[0],p[1]-prv[1]); hout=math.atan2(nxt[0]-p[0],nxt[1]-p[1])
+            turn=math.atan2(math.sin(hout-hin),math.cos(hout-hin))
+            if abs(turn)<.2: continue
+            outer=-1 if turn>0 else 1   # outside of the bend
+            mid=(hin+hout)/2+(math.pi if abs(hout-hin)>math.pi else 0)
+            for k in range(-3,4):
+                a=mid+outer*math.pi/2+k*.16
+                deco("Curb",(3.2,.25,2.2),(ox+p[0]+math.sin(a)*(w/2-1),y+.08,oz+p[1]+math.cos(a)*(w/2-1)),
+                     CURB_R if k%2 else CURB_W,rot=(0,math.degrees(a),0))
+        # start / finish: chequered line + a real arch (the last checkpoint is the finish, not "point 5")
+        a,b=pts[0],pts[1]
+        yaw=math.degrees(math.atan2(b[0]-a[0],b[1]-a[1]))
+        hx,hz=math.cos(math.radians(yaw)),-math.sin(math.radians(yaw))
+        for k in range(-int(w/2/2),int(w/2/2)):
+            for r in (0,1):
+                deco("StartChequer",(2,.07,2),(ox+a[0]+hx*(k*2+1)+(r*2-1)*math.sin(math.radians(yaw)),y+.04,
+                     oz+a[1]+hz*(k*2+1)+(r*2-1)*math.cos(math.radians(yaw))),
+                     (20,20,24) if (k+r)%2 else (240,240,240),rot=(0,yaw,0))
         for i,g in enumerate(d['gates'],1):
             p=pts[g-1]
             nxt=pts[g%len(pts)]
-            arch("Checkpoint_"+str(i),ox+p[0],y,oz+p[1],color,"نقطة %d"%i,width=d['width'],yaw=math.degrees(math.atan2(nxt[0]-p[0],nxt[1]-p[1])))
+            last=i==len(d['gates'])
+            arch("Checkpoint_"+str(i),ox+p[0],y,oz+p[1],(240,240,240) if last else color,
+                 "خط النهاية • FINISH" if last else "بوابة %d"%i,width=w,
+                 yaw=math.degrees(math.atan2(nxt[0]-p[0],nxt[1]-p[1])))
         for p in d['pickups']:
             G.disc("Pickup_"+p['id'],ox+p['x'],y+.12,oz+p['z'],9,.2,(80,182,246) if p['kind']=='boost' else (173,146,246),"Neon",collide=False,shadow=False)
-            G.sign("PickupGuide","سرعة ↑" if p['kind']=='boost' else "درع ◇",(ox+p['x'],y+5,oz+p['z']),(8,2,.4),"Front",bg=DARK)
+            if p['kind']=='boost':
+                for k in (-1,0,1):
+                    deco("PickupArrow",(1,.08,3),(ox+p['x']+k*2.2,y+.25,oz+p['z']),(255,255,255))
         for p in d['hazards']:
             G.ball("SporeObstacle",ox+p['x'],y+1.5,oz+p['z'],p['r']*2,(247,153,111),"SmoothPlastic",collide=False)
+            for k in range(6):
+                a=k*math.pi/3
+                deco("SporeSpike",(.5,.5,p['r']*1.2),(ox+p['x']+math.sin(a)*p['r'],y+1.5,oz+p['z']+math.cos(a)*p['r']),
+                     (200,100,80),rot=(0,math.degrees(a),0))
         if d.get('shortcut'):
-            G.sign("ShortcutGuide","اختصار ضيق ↗\nالبوابات بالترتيب",(ox+110,y+9,oz-70),(22,5,.5),"Front",bg=DARK)
-        # Large cells and molecular structures outside the drivable lanes, all original primitives.
-        for j,(x,z) in enumerate(((0,0),(-155,-140),(155,140),(-155,140),(155,-140))):
-            diam=25 if j==0 else 16
-            G.ball("Cell",ox+x,y+diam*.55,oz+z,diam,(90,151,156) if index==0 else (137,107,160),"Glass",transp=.35,collide=False,shadow=False)
-            G.ball("CellNucleus",ox+x,y+diam*.55,oz+z,diam*.35,color,"SmoothPlastic",collide=False,shadow=False)
-        for j in range(12):
-            a=j*.65
-            for side in (-1,1): G.ball("DNA_Node",ox+side*math.cos(a)*6,y+5+j*1.8,oz+side*math.sin(a)*6,.9,color if side==1 else YELLOW,"Neon",collide=False,shadow=False)
-        G.sign("TrackTitle",d['ar']+"\nMICRO RACERS",(ox,y+18,oz-150),(50,8,.6),"Front",bg=DARK)
+            G.sign("ShortcutGuide","اختصار ضيق",(ox+110,y+7,oz-70),(14,3,.5),"Front",bg=DARK)
+        # landmark: a microscope objective hanging over the dish (you are racing under the microscope)
+        lx,lz=ox+120,oz+150
+        G.vcyl("Objective",lx,y+70,y+130,lz,26,(226,228,232),"Metal",collide=False)
+        G.vcyl("ObjectiveRing",lx,y+66,y+70,lz,22,color,"SmoothPlastic",collide=False)
+        G.vcyl("ObjectiveLens",lx,y+64,y+66,lz,14,(150,205,230),"Glass",transp=.3,collide=False)
+        G.sign("TrackTitle",d['ar']+"\nMICRO RACERS",(ox,y+16,oz-200),(46,8,.6),"Front",bg=DARK)
+
+
+def _seg_dist(x,z,a,b):
+    dx,dz=b[0]-a[0],b[1]-a[1]
+    t=max(0,min(1,((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz)))
+    return math.hypot(x-(a[0]+dx*t),z-(a[1]+dz*t))
 
 
 def build():

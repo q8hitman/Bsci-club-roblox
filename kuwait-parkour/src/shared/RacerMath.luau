@@ -90,7 +90,7 @@ function M.step(s, raw, dt, track)
 		s.boostUntil = s.time + 1.6
 		s.boostReadyAt = s.time + 10
 	end
-	local maxSpeed = s.time < s.boostUntil and 60 or 42
+	local maxSpeed = s.time < s.boostUntil and 60 or (s.topSpeed or 42) -- v59: bots get a lower topSpeed
 	if s.time < s.slowUntil then
 		maxSpeed = 18
 	end
@@ -101,7 +101,15 @@ function M.step(s, raw, dt, track)
 	if road.excess > 0 then
 		local dx, dz = x - road.x, z - road.z
 		x, z = road.x + dx / road.d * road.limit, road.z + dz / road.d * road.limit
-		s.speed *= 0.55
+		-- v59: slide along the barrier instead of sticking to it (x0.55 per step pinned cars at ~2 studs/s):
+		-- lose some speed and turn the heading toward the wall's tangent
+		local tx, tz = -dz / road.d, dx / road.d
+		if tx * math.sin(s.heading) + tz * math.cos(s.heading) < 0 then
+			tx, tz = -tx, -tz
+		end
+		local along = math.atan2(tx, tz)
+		s.heading = angle(s.heading + angle(along - s.heading) * 0.35)
+		s.speed *= 0.93
 	end
 	s.x, s.z = x, z
 	for _, p in ipairs(track.pickups) do

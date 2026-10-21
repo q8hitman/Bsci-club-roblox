@@ -318,6 +318,8 @@ Run.Heartbeat:Connect(function(dt)
 					room.cars,
 					{ id = "bot" .. i, name = "متسابق آلي " .. i, bot = true, state = grid(room.track, i) }
 				)
+				-- v59: bots at 35/37/39 (players 42) so a clean driver can win; they used to lap at full speed
+				room.cars[#room.cars].state.topSpeed = 33 + 2 * math.min(i - 1, 3)
 			end
 			room.phase = "running"
 			room.started = workspace:GetServerTimeNow()
