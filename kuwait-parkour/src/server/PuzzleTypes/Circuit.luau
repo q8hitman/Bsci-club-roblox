@@ -1,4 +1,5 @@
--- Energy Circuit: a rows x cols grid of floor tiles (CircuitTile|r|c), each a straight or corner pipe. Tap a tile to
+-- Energy Circuit (v61: ATP from the mitochondrion = CircuitSource): a rows x cols grid of floor tiles
+-- (CircuitTile|r|c), each a straight or corner pipe. Tap a tile to
 -- turn it 90°. Energy enters row "entry" from the west (CircuitSource) and must leave row "exit" to the east
 -- (CircuitSink). The powered part of the chain lights up as you go, so progress is always visible.
 -- Every reset builds a new random solvable layout and scrambles it.
@@ -210,14 +211,14 @@ function Circuit:check()
 			self.sink.Material = Enum.Material.Neon
 		end
 		self.room.reveal(self.cfg.symbolSlot)
-		self.room.tell("⚡ الدائرة اشتغلت! الرمز طلع على الشاشة")
+		self.room.tell("⚡ الطاقة (ATP) وصلت! طلع حرفين من شيفرة DNA على شاشة ⚡")
 		self.room.changed()
 	end
 end
 
 function Circuit:hint(level)
 	if level == 1 then
-		return "الطاقة تدخل من المكعب الأصفر يسار وتطلع للجهاز يمين. لفّ القطع لين يمشي الضو بالخط"
+		return "الطاقة تطلع من الميتوكوندريا البرتقالية وتروح للجهاز الثاني. لفّ القطع لين يمشي الضو بالخط"
 	elseif level == 2 then
 		for t in pairs(self.onPath) do
 			if t.part and not t.part:FindFirstChild("PathHint") then

@@ -183,68 +183,91 @@ def lab_rush(cx=-300.0, cz=300.0):
 
 
 def cell_control_room(cx=0.0, cz=-650.0):
-    """v39 puzzle room "Cell Control Room" (co-op or solo, no timer). Anchors used by server/PuzzleTypes/*:
-    CircuitTile|r|c (3x4 floor grid) + CircuitSource + CircuitSink, Pedestal|1..4 + SpecimenClues, CorePanel|1..2 +
-    CoreLever + Core, SymbolScreen|1..2, HintTerminal, ResetTerminal, RoomBounds, PuzzleSpawn."""
-    W, D = 76.0, 60.0
+    """v61 puzzle room "Restart the Cell" (co-op or solo, no timer), map folder PuzzleRoom_CellControl.
+    The room is the inside of a cell: membrane walls, cytoplasm floor, the nucleus at the north is the goal.
+    Anchors used by server/PuzzleTypes/*: CircuitTile|r|c (4 x 5) + CircuitSource (mitochondrion) + CircuitSink,
+    Pedestal|1..4 + SpecimenClues, CorePanel|1..4 + CoreLever + Core, SymbolScreen|1..2, StepLamp|1..3 (3 = floor ring),
+    HintTerminal, ResetTerminal, RoomBounds, PuzzleSpawn."""
+    W, D, H = 76.0, 60.0, 18.0
+    deco = random.Random(61)   # own RNG: the shared rng feeds the arenas built after this room
+    MEMB, HEAD = (196, 112, 150), (232, 170, 196)
     with G.Group("PuzzleRoom_CellControl"):
-        # v59 (owner: weak, unclear room): an indoor control room inside a cell. Ceiling + lamps, panelled walls with
-        # round windows onto the cytoplasm, and one floor pad per station so the three puzzles read at a glance.
-        box("PuzzleFloor", (W, 2, D), (cx, Y - 1, cz), (62, 70, 88), "SmoothPlastic")
-        box("PuzzleCeiling", (W + 1.2, 0.6, D + 1.2), (cx, Y + 12.9, cz), (44, 50, 64), "SmoothPlastic")
-        for lx in (-24, 0, 24):   # ceiling lamps: the arcade's dusk lighting made the room too dark to read
-            for lz in (-14, 10):
-                box("PuzzleLamp", (10, 0.3, 4), (cx + lx, Y + 12.45, cz + lz), (255, 246, 226), "Neon", collide=False,
-                    shadow=False, light=(1.6, 30, (255, 246, 226)))
-        WALL, DADO = (92, 112, 140), (46, 54, 72)
+        box("PuzzleFloor", (W, 2, D), (cx, Y - 1, cz), (96, 150, 160), "SmoothPlastic")
+        box("PuzzleCeiling", (W + 1.2, 0.6, D + 1.2), (cx, Y + H + 0.9, cz), (120, 70, 104), "SmoothPlastic")
+        for lx in (-24, 0, 24):
+            for lz in (-16, 10):
+                disc("PuzzleLamp", cx + lx, Y + H + 0.5, cz + lz, 7, 0.3, (240, 228, 236), "SmoothPlastic", collide=False,
+                     shadow=False, light=(0.9, 30, (255, 240, 236)))
+        # membrane walls with a row of phospholipid heads along the floor and the ceiling
         for sx, sz, sw, sd in ((0, -D / 2, W, 1.2), (-W / 2, 0, 1.2, D), (W / 2, 0, 1.2, D)):
-            box("PuzzleWall", (sw, 12, sd), (cx + sx, Y + 6, cz + sz), WALL, "SmoothPlastic")
-            box("PuzzleDado", (sw + 0.3 if sd < 2 else sw, 3, sd + 0.3 if sw < 2 else sd), (cx + sx, Y + 1.5, cz + sz), DADO,
-                "SmoothPlastic", collide=False)
-            box("PuzzleTrim", (sw + 0.2, 0.4, sd + 0.2), (cx + sx, Y + 12.1, cz + sz), (120, 255, 200), "Neon", collide=False,
-                shadow=False)
-        for side in (-1, 1):   # round windows onto the cytoplasm on both side walls
-            for wz in (-14, 12):
-                disc_x = cx + side * (W / 2 - 0.4)
-                G.part("CellWindow", (0.3, 6, 6), (disc_x, Y + 7, cz + wz), (240, 150, 210), "Glass", shape="Cylinder",
-                       transp=0.35, collide=False, shadow=False)
-                G.part("CellWindowRing", (0.4, 7, 7), (disc_x + side * 0.1, Y + 7, cz + wz), DADO, "Metal", shape="Cylinder",
-                       collide=False, shadow=False)
-        for sx in (-1, 1):   # south wall with a wide doorway
-            box("PuzzleWall", (W / 2 - 8, 12, 1.2), (cx + sx * (W / 4 + 4), Y + 6, cz + D / 2), WALL, "SmoothPlastic")
-        # station pads: circuit (west), specimens (east), core (north centre)
-        box("StationPadCircuit", (30, 0.1, 22), (cx - 21, Y + 0.05, cz), (36, 42, 58), "SmoothPlastic", collide=False,
-            shadow=False)
-        box("StationPadSpecimens", (30, 0.1, 14), (cx + 21.75, Y + 0.05, cz - 4), (40, 62, 70), "SmoothPlastic", collide=False,
-            shadow=False)
-        G.disc("StationPadCore", cx, Y + 0.05, cz - 19, 22, 0.1, (38, 40, 70), "SmoothPlastic", collide=False, shadow=False)
-        G.disc("StationRingCore", cx, Y + 0.04, cz - 19, 23, 0.08, (150, 120, 255), "Neon", collide=False, shadow=False)
+            box("PuzzleWall", (sw, H, sd), (cx + sx, Y + H / 2, cz + sz), MEMB, "SmoothPlastic")
+        for sx in (-1, 1):
+            box("PuzzleWall", (W / 2 - 8, H, 1.2), (cx + sx * (W / 4 + 4), Y + H / 2, cz + D / 2), MEMB, "SmoothPlastic")
+        for hy in (0.9, H - 0.9):
+            for i in range(int(W / 3) + 1):
+                x = cx - W / 2 + i * 3
+                if hy < 2:   # the goal wall keeps its top clear for the board and the lamps
+                    ball("LipidHead", x, Y + hy, cz - D / 2 + 1, 1.8, HEAD, "SmoothPlastic", collide=False, shadow=False)
+                if abs(x - cx) > 8:
+                    ball("LipidHead", x, Y + hy, cz + D / 2 - 1, 1.8, HEAD, "SmoothPlastic", collide=False, shadow=False)
+            for i in range(1, int(D / 3)):
+                for side in (-1, 1):
+                    ball("LipidHead", cx + side * (W / 2 - 1), Y + hy, cz - D / 2 + i * 3, 1.8, HEAD, "SmoothPlastic",
+                         collide=False, shadow=False)
+        # cytoplasm life: ribosome dots and rough ER folds along the side walls
+        for _ in range(40):
+            x, z = cx + deco.uniform(-W / 2 + 3, W / 2 - 3), cz + deco.uniform(-D / 2 + 3, D / 2 - 3)
+            if abs(x - cx) < 12 or abs(z - cz) < 13:
+                continue
+            ball("Ribosome", x, Y + 0.3, z, deco.uniform(0.8, 1.4), (120, 90, 170), "SmoothPlastic", collide=False,
+                 shadow=False)
+        for side in (-1, 1):
+            for k in range(5):
+                box("RoughER", (1.2, 6, 4.6), (cx + side * (W / 2 - 2.2), Y + 6 + (k % 2) * 3, cz + 14 + k * 2.6),
+                    (120, 170, 230), "SmoothPlastic", rot=(0, 0, side * 8), collide=False)
+                for q in range(3):
+                    ball("ERRibosome", cx + side * (W / 2 - 3), Y + 4.5 + (k % 2) * 3 + q * 1.8, cz + 14 + k * 2.6, 0.7,
+                         (120, 90, 170), "SmoothPlastic", collide=False, shadow=False)
         G.part("RoomBounds", (W, 30, D), (cx, Y + 14, cz), (0, 0, 0), "SmoothPlastic", transp=1, collide=False, shadow=False)
         G.part("PuzzleSpawn", (8, 1, 8), (cx, Y + 0.5, cz + D / 2 - 6), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
-        sign("PuzzleTitle", "🧩 غرفة التحكم بالخلية\nCell Control Room", (cx, Y + 10, cz - D / 2 + 0.7), (26, 4.4, 0.4), "Back",
-             bg=(24, 80, 56))
-        # 1) energy circuit: 3 x 4 floor tiles, source on the west, device on the east (west half of the room)
-        for r in range(3):
-            for c in range(4):
-                G.part("CircuitTile|%d|%d" % (r + 1, c + 1), (5.4, 0.4, 5.4), (cx - 30 + c * 6, Y + 0.2, cz - 6 + r * 6),
-                       (70, 78, 96), "SmoothPlastic")
-        box("CircuitSource", (3, 3, 3), (cx - 35, Y + 1.5, cz), (255, 200, 60), "Neon")
-        G.part("CircuitSink", (3, 4, 3), (cx - 7.5, Y + 2, cz), (80, 90, 110), "SmoothPlastic")
-        G.part("SymbolScreen|1", (8, 5, 0.4), (cx - 21, Y + 8, cz - D / 2 + 0.7), (16, 20, 30), "SmoothPlastic",
-               text=dict(face="Back", text="⚡ ؟", color=(255, 255, 255), bg=(16, 20, 30), bg_t=0.0))
-        # 2) specimen detective: four pedestals + the clue board (east half)
+        # goal wall: objective, three step lamps, the two code screens
+        sign("PuzzleTitle", "🎯 شغّلوا نواة الخلية", (cx, Y + H - 1.6, cz - D / 2 + 0.7), (30, 2.8, 0.4), "Back",
+             bg=(70, 40, 110))
+        for i, ox in enumerate((-22, 22)):
+            G.part("SymbolScreen|%d" % (i + 1), (10, 5, 0.4), (cx + ox, Y + 9, cz - D / 2 + 0.7), (16, 20, 30),
+                   "SmoothPlastic", text=dict(face="Back", text="؟ ؟", color=(255, 255, 255), bg=(16, 20, 30), bg_t=0.0))
+            # each station's progress lamp sits under its screen; the third lamp is the ring round the nucleus
+            G.part("StepLamp|%d" % (i + 1), (10, 1.2, 0.4), (cx + ox, Y + 5.6, cz - D / 2 + 0.75), (70, 74, 90),
+                   "SmoothPlastic")
+        # 1) energy: a 4 x 5 pipe floor from the mitochondrion (west) to the receiver (east)
+        G.disc("StationPadCircuit", cx - 18, Y + 0.05, cz, 34, 0.1, (150, 200, 205), "SmoothPlastic", collide=False,
+               shadow=False)
+        for r in range(4):
+            for c in range(5):
+                G.part("CircuitTile|%d|%d" % (r + 1, c + 1), (5.4, 0.4, 5.4), (cx - 30 + c * 6, Y + 0.2, cz - 9 + r * 6),
+                       (90, 104, 124), "SmoothPlastic")
+        G.part("CircuitSource", (6, 3.4, 3.4), (cx - 35.5, Y + 1.7, cz), (255, 150, 60), "Neon", shape="Cylinder")
+        G.part("CircuitSink", (3, 4, 3), (cx - 0.5, Y + 2, cz), (80, 90, 110), "SmoothPlastic")
+        # 2) microscope: four specimen stages and the field guide on the east wall
+        G.disc("StationPadSpecimens", cx + 22, Y + 0.05, cz - 2, 30, 0.1, (150, 200, 205), "SmoothPlastic", collide=False,
+               shadow=False)
         for i in range(4):
-            vcyl("Pedestal|%d" % (i + 1), cx + 12 + i * 6.5, Y, Y + 3, cz - 4, 3.6, (200, 206, 214), "Marble")
-        G.part("SpecimenClues", (0.4, 9, 22), (cx + W / 2 - 0.8, Y + 6, cz - 4), (16, 20, 30), "SmoothPlastic",
+            px = cx + 12.5 + i * 6.5
+            vcyl("Pedestal|%d" % (i + 1), px, Y, Y + 3, cz - 2, 3.6, (226, 230, 236), "SmoothPlastic")
+            G.disc("StageLight", px, Y + 3.05, cz - 2, 2.6, 0.1, (255, 250, 220), "Neon", collide=False, shadow=False)
+        G.part("SpecimenClues", (0.4, 11, 24), (cx + W / 2 - 0.8, Y + 7, cz - 2), (16, 20, 30), "SmoothPlastic",
                text=dict(face="Left", text="🔍", color=(255, 255, 255), bg=(16, 20, 30), bg_t=0.0))
-        G.part("SymbolScreen|2", (8, 5, 0.4), (cx + 21, Y + 8, cz - D / 2 + 0.7), (16, 20, 30), "SmoothPlastic",
-               text=dict(face="Back", text="🔬 ؟", color=(255, 255, 255), bg=(16, 20, 30), bg_t=0.0))
-        # 3) core activation (north centre)
-        ball("Core", cx, Y + 6, cz - 21, 7, (90, 100, 130), "Glass", transp=0.2, shadow=False)
-        vcyl("CoreStand", cx, Y, Y + 2.6, cz - 21, 5, (60, 64, 80), "Metal")
-        for i, ox in enumerate((-7, 7)):
-            G.part("CorePanel|%d" % (i + 1), (4, 4, 1.2), (cx + ox, Y + 2, cz - 13), (40, 50, 70), "SmoothPlastic")
-        G.part("CoreLever", (1.6, 4, 1.6), (cx, Y + 2, cz - 12), (250, 140, 60), "SmoothPlastic")
+        G.disc("StepLamp|3", cx, Y + 0.06, cz - 22, 18, 0.1, (70, 74, 90), "SmoothPlastic", collide=False, shadow=False)
+        ball("NucleusEnvelope", cx, Y + 7.5, cz - 22, 14, (170, 130, 230), "Glass", transp=0.55, collide=False, shadow=False)
+        ball("Core", cx, Y + 7.5, cz - 22, 7, (90, 100, 130), "Glass", transp=0.2, shadow=False)
+        vcyl("CoreStand", cx, Y, Y + 1, cz - 22, 8, (120, 90, 170), "SmoothPlastic")
+        for q in range(8):
+            ang = math.radians(q * 45)
+            ball("NuclearPore", cx + math.sin(ang) * 6.9, Y + 7.5 + math.cos(ang) * 6.9 * 0.3, cz - 22 + math.cos(ang) * 6.9,
+                 1.2, (90, 60, 140), "SmoothPlastic", collide=False, shadow=False)
+        for i, ox in enumerate((-9, -3, 3, 9)):
+            G.part("CorePanel|%d" % (i + 1), (4.6, 4.6, 1.2), (cx + ox, Y + 2.6, cz - 11), (40, 50, 70), "SmoothPlastic")
+        G.part("CoreLever", (1.6, 4, 1.6), (cx + 15, Y + 2, cz - 11), (250, 140, 60), "SmoothPlastic")
         # help desks by the door
         G.part("HintTerminal", (2.6, 4.4, 1.6), (cx - 8, Y + 2.2, cz + D / 2 - 10), (60, 140, 220), "SmoothPlastic",
                text=dict(face="Back", text="💡\nتلميح", color=(255, 255, 255), bg=(60, 140, 220), bg_t=0.0))

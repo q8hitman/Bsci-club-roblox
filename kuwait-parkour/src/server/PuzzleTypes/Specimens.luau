@@ -1,16 +1,135 @@
--- Specimen Detective: four fantasy creatures on pedestals (Pedestal|1..4). The clue board describes each by TWO
--- features (colour + number of eyes); colours repeat in pairs and so do eye counts, so only the combination
--- identifies a creature: you have to look, not guess. Tap a pedestal to cycle its name tag; all four right = solved.
--- Every reset shuffles colours, eyes, spikes and which name belongs where.
+-- Microscope (v61, was "Specimen Detective" with made-up creatures): four real cells on the microscope stages
+-- (Pedestal|1..4), picked from six types. The field guide on the wall (SpecimenClues) describes each type by what you
+-- can see (shape, nucleus, chloroplasts...), so the players learn to recognise a cell by its shape. Tap a stage to
+-- cycle its name tag; all four right = solved. Every reset picks new cells and shuffles the stages.
 local Specimens = {}
 Specimens.__index = Specimens
 
-local NAMES = { "غلوبق", "بلوبزي", "سبايكلت", "موسي", "زيبي", "نوفا" }
-local COLORS = {
-	{ "أحمر", Color3.fromRGB(230, 80, 80) },
-	{ "أزرق", Color3.fromRGB(80, 140, 230) },
-	{ "أخضر", Color3.fromRGB(90, 200, 110) },
-	{ "بنفسجي", Color3.fromRGB(170, 110, 230) },
+local function piece(m, shape, size, cf, color, mat, transp)
+	local p = Instance.new("Part")
+	p.Shape = shape
+	p.Size = size
+	p.Anchored, p.CanCollide, p.CanQuery = true, false, false
+	p.CastShadow = false
+	p.CFrame = cf
+	p.Color = color
+	p.Material = mat or Enum.Material.SmoothPlastic
+	p.Transparency = transp or 0
+	p.TopSurface, p.BottomSurface = Enum.SurfaceType.Smooth, Enum.SurfaceType.Smooth
+	p.Parent = m
+	return p
+end
+
+local BALL, CYL, BLOCK = Enum.PartType.Ball, Enum.PartType.Cylinder, Enum.PartType.Block
+local NEON, GLASS = Enum.Material.Neon, Enum.Material.Glass
+
+-- each builder draws the cell around c (a CFrame at the centre above the stage, facing the room)
+local CELLS = {
+	{
+		name = "بكتيريا عصوية",
+		clue = "شكل عصا وفيها سوط",
+		build = function(m, c)
+			local col = Color3.fromRGB(120, 190, 110)
+			piece(m, CYL, Vector3.new(3.6, 1.8, 1.8), c, col)
+			piece(m, BALL, Vector3.new(1.8, 1.8, 1.8), c * CFrame.new(-1.8, 0, 0), col)
+			piece(m, BALL, Vector3.new(1.8, 1.8, 1.8), c * CFrame.new(1.8, 0, 0), col)
+			for k = 0, 2 do -- the flagellum: a short zigzag tail
+				piece(
+					m,
+					BLOCK,
+					Vector3.new(1.1, 0.18, 0.18),
+					c
+						* CFrame.new(3 + k, (k % 2 == 0) and 0.2 or -0.2, 0)
+						* CFrame.Angles(0, 0, (k % 2 == 0) and 0.4 or -0.4),
+					Color3.fromRGB(90, 140, 80)
+				)
+			end
+		end,
+	},
+	{
+		name = "بكتيريا كروية",
+		clue = "كرات صغيرة مربوطة بسلسلة",
+		build = function(m, c)
+			for k = 0, 3 do
+				local a = (k - 1.5) * 0.45
+				piece(
+					m,
+					BALL,
+					Vector3.new(1.3, 1.3, 1.3),
+					c * CFrame.new(math.sin(a) * 3, math.cos(a) * 1.2 - 0.6, 0),
+					Color3.fromRGB(160, 110, 210)
+				)
+			end
+		end,
+	},
+	{
+		name = "كرية دم حمراء",
+		clue = "قرص أحمر مقعّر، بدون نواة",
+		build = function(m, c)
+			local disc = c * CFrame.Angles(0, math.pi / 2, 0)
+			piece(m, CYL, Vector3.new(0.9, 3.6, 3.6), disc, Color3.fromRGB(210, 50, 60))
+			for _, s in ipairs({ -1, 1 }) do -- the dimple on both faces
+				piece(m, CYL, Vector3.new(0.2, 1.8, 1.8), disc * CFrame.new(s * 0.4, 0, 0), Color3.fromRGB(160, 30, 40))
+			end
+		end,
+	},
+	{
+		name = "خلية نباتية",
+		clue = "جدار مربّع وبلاستيدات خضراء",
+		build = function(m, c)
+			piece(m, BLOCK, Vector3.new(3.4, 3.4, 3.4), c, Color3.fromRGB(90, 170, 80), GLASS, 0.45)
+			piece(
+				m,
+				BLOCK,
+				Vector3.new(1.8, 1.8, 1.8),
+				c * CFrame.new(0.3, 0.2, 0),
+				Color3.fromRGB(170, 220, 240),
+				GLASS,
+				0.3
+			)
+			piece(m, BALL, Vector3.new(0.9, 0.9, 0.9), c * CFrame.new(-1, -0.9, 0.8), Color3.fromRGB(140, 90, 60))
+			for k = 0, 5 do
+				local a = k * math.pi / 3
+				piece(
+					m,
+					BALL,
+					Vector3.new(0.6, 0.6, 0.6),
+					c * CFrame.new(math.cos(a) * 1.35, math.sin(a) * 1.35, 1.2),
+					Color3.fromRGB(40, 140, 50)
+				)
+			end
+		end,
+	},
+	{
+		name = "خلية عصبية",
+		clue = "جسم صغير وتفرّعات طويلة",
+		build = function(m, c)
+			local col = Color3.fromRGB(240, 190, 90)
+			piece(m, BALL, Vector3.new(1.8, 1.8, 1.8), c * CFrame.new(-1, 0.4, 0), col)
+			piece(m, BLOCK, Vector3.new(3.6, 0.3, 0.3), c * CFrame.new(1, -0.3, 0) * CFrame.Angles(0, 0, -0.35), col) -- axon
+			for k = 0, 4 do -- dendrites
+				local a = math.pi / 2 + (k - 2) * 0.55
+				piece(
+					m,
+					BLOCK,
+					Vector3.new(1.6, 0.2, 0.2),
+					c * CFrame.new(-1 + math.cos(a) * 1.5, 0.4 + math.sin(a) * 1.5, 0) * CFrame.Angles(0, 0, a),
+					col
+				)
+			end
+			piece(m, BALL, Vector3.new(0.6, 0.6, 0.6), c * CFrame.new(-1, 0.4, 0.75), Color3.fromRGB(150, 90, 40))
+		end,
+	},
+	{
+		name = "خميرة",
+		clue = "فطر يتكاثر بالتبرعم: خلية صغيرة طالعة منها",
+		build = function(m, c)
+			local col = Color3.fromRGB(235, 215, 170)
+			piece(m, BALL, Vector3.new(2.8, 2.8, 2.8), c, col)
+			piece(m, BALL, Vector3.new(1.3, 1.3, 1.3), c * CFrame.new(1.6, 1.1, 0), col)
+			piece(m, BALL, Vector3.new(0.8, 0.8, 0.8), c * CFrame.new(-0.3, 0, 1.1), Color3.fromRGB(170, 140, 100))
+		end,
+	},
 }
 
 function Specimens.new(room, cfg, index)
@@ -23,8 +142,8 @@ function Specimens.new(room, cfg, index)
 		if part then
 			local tag = Instance.new("BillboardGui")
 			tag.Name = "NameTag"
-			tag.Size = UDim2.fromScale(5.2, 1.3) -- in studs: shrinks with distance, so neighbours never overlap
-			tag.StudsOffset = Vector3.new(0, 6.6, 0)
+			tag.Size = UDim2.fromScale(5.6, 1.3) -- in studs: shrinks with distance, so neighbours never overlap
+			tag.StudsOffset = Vector3.new(0, 7, 0)
 			tag.AlwaysOnTop = false
 			tag.MaxDistance = 80
 			local label = Instance.new("TextLabel")
@@ -51,7 +170,7 @@ function Specimens.new(room, cfg, index)
 	return self
 end
 
-function Specimens:buildCreature(ped, color, eyes, spikes)
+function Specimens:buildCell(ped, cell)
 	if ped.model then
 		ped.model:Destroy()
 	end
@@ -62,86 +181,44 @@ function Specimens:buildCreature(ped, color, eyes, spikes)
 	local height = math.abs(up.X) * ped.part.Size.X
 		+ math.abs(up.Y) * ped.part.Size.Y
 		+ math.abs(up.Z) * ped.part.Size.Z
-	local top = ped.part.Position + Vector3.new(0, height / 2 + 1.8, 0)
-	local body = Instance.new("Part")
-	body.Shape = Enum.PartType.Ball
-	body.Size = Vector3.new(3.4, 3.4, 3.4)
-	body.Anchored, body.CanCollide = true, false
-	body.Color, body.Material = color, Enum.Material.SmoothPlastic
-	body.CFrame = CFrame.new(top)
-	body.Parent = m
-	for e = 1, eyes do
-		local x = (e - (eyes + 1) / 2) * 0.95
-		local eye = Instance.new("Part")
-		eye.Shape = Enum.PartType.Ball
-		eye.Size = Vector3.new(0.8, 0.8, 0.8)
-		eye.Anchored, eye.CanCollide = true, false
-		eye.Color = Color3.new(1, 1, 1)
-		eye.CFrame = CFrame.new(top + Vector3.new(x, 0.6, 1.45))
-		eye.Parent = m
-		local pupil = eye:Clone()
-		pupil.Size = Vector3.new(0.35, 0.35, 0.35)
-		pupil.Color = Color3.new(0.05, 0.05, 0.05)
-		pupil.CFrame = CFrame.new(top + Vector3.new(x, 0.6, 1.8))
-		pupil.Parent = m
-	end
-	if spikes then
-		for k = 0, 5 do
-			local a = k * math.pi / 3
-			local sp = Instance.new("Part")
-			sp.Size = Vector3.new(0.4, 1.4, 0.4)
-			sp.Anchored, sp.CanCollide = true, false
-			sp.Color = color:Lerp(Color3.new(1, 1, 1), 0.4)
-			sp.CFrame = CFrame.new(top + Vector3.new(math.cos(a) * 1.2, 1.6, math.sin(a) * 1.2))
-				* CFrame.Angles(math.sin(a) * 0.5, 0, -math.cos(a) * 0.5)
-			sp.Parent = m
-		end
-	end
+	local top = ped.part.Position + Vector3.new(0, height / 2 + 2.4, 0)
+	cell.build(m, CFrame.new(top))
+	-- a soft light under the cell, like a microscope stage lamp
+	local glow =
+		piece(m, BALL, Vector3.new(0.2, 0.2, 0.2), CFrame.new(top - Vector3.new(0, 2, 0)), Color3.new(1, 1, 1), NEON, 1)
+	local light = Instance.new("PointLight")
+	light.Range, light.Brightness = 7, 1.2
+	light.Parent = glow
 	m.Parent = self.room.folder
 	ped.model = m
 end
 
 function Specimens:reset()
 	self.solved, self.dirty = false, false
-	-- two colours x two eye counts = four unique combinations
-	local pal = table.clone(COLORS)
-	local c1 = table.remove(pal, math.random(1, #pal))
-	local c2 = table.remove(pal, math.random(1, #pal))
-	local e1 = math.random(1, 3)
-	local e2 = e1 % 3 + 1
-	local combos = { { c1, e1 }, { c1, e2 }, { c2, e1 }, { c2, e2 } }
-	local namePool = table.clone(NAMES)
+	local pool = table.clone(CELLS)
+	self.cells = {}
 	self.names = {}
 	for i = 1, 4 do
-		self.names[i] = table.remove(namePool, math.random(1, #namePool))
+		self.cells[i] = table.remove(pool, math.random(1, #pool))
+		self.names[i] = self.cells[i].name
 	end
-	-- creature i on pedestal i gets combo order shuffled; truth[i] = index into self.names
+	-- the stages get the four cells in a shuffled order; truth[stage] = index into self.names
 	local order = { 1, 2, 3, 4 }
 	for i = 4, 2, -1 do
 		local j = math.random(1, i)
 		order[i], order[j] = order[j], order[i]
 	end
 	self.truth = {}
-	local clues = { "🔍 ملف العيّنات" }
+	local clues = { "🔬 دليل الخلايا" }
 	for nameIdx = 1, 4 do
-		local combo = combos[nameIdx]
 		local pedIdx = order[nameIdx]
 		self.truth[pedIdx] = nameIdx
 		local ped = self.peds[pedIdx]
 		if ped and ped.part then
-			self:buildCreature(ped, combo[1][2], combo[2], math.random() < 0.5)
+			self:buildCell(ped, self.cells[nameIdx])
 		end
-		table.insert(
-			clues,
-			("%s: %s، %d %s"):format(
-				self.names[nameIdx],
-				combo[1][1],
-				combo[2],
-				combo[2] == 1 and "عين" or "عيون"
-			)
-		)
+		table.insert(clues, ("%s: %s"):format(self.cells[nameIdx].name, self.cells[nameIdx].clue))
 	end
-	table.insert(clues, "(الأشواك ما لها دخل 😉)")
 	self.room.setScreen(self.board, table.concat(clues, "\n"))
 	for _, ped in ipairs(self.peds) do
 		ped.pick = 0
@@ -174,14 +251,16 @@ function Specimens:check()
 			end
 		end
 		self.room.reveal(self.cfg.symbolSlot)
-		self.room.tell("🔬 كل العيّنات صح! الرمز طلع على الشاشة")
+		self.room.tell(
+			"🔬 عرفتوا كل الخلايا! طلع حرفين من شيفرة DNA على شاشة 🔬"
+		)
 		self.room.changed()
 	end
 end
 
 function Specimens:hint(level)
 	if level == 1 then
-		return "كل وصف فيه صفتين: اللون وعدد العيون. لازم الثنتين يطابقون، لون وحده ما يكفي"
+		return "قارن شكل كل خلية بالوصف على لوحة «دليل الخلايا» اللي على الجدار اليمين"
 	elseif level == 2 then
 		for i, ped in ipairs(self.peds) do
 			if ped.pick ~= self.truth[i] then

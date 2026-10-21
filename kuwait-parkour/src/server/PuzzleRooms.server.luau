@@ -12,7 +12,10 @@ local mapFolder = workspace:WaitForChild("Map")
 local typesFolder = script.Parent:WaitForChild("PuzzleTypes")
 local defsFolder = script.Parent:WaitForChild("PuzzleRoomDefs")
 
-local SYMBOLS = { "🔺", "⭐", "🌙", "💧", "🍀", "🔷" }
+-- v61: the code pieces are DNA bases (was random emoji with no meaning); each slot holds two bases
+local BASES = { "A", "T", "G", "C" }
+local ICONS = { "⚡", "🔬" }
+local LAMP_OFF, LAMP_ON = Color3.fromRGB(70, 74, 90), Color3.fromRGB(70, 200, 120)
 local REWARD_COOLDOWN = 15 * 60
 local EMPTY_RESET = 60
 
@@ -114,7 +117,19 @@ local function startRoom(def)
 		end
 	end
 
+	-- the three lamps on the goal wall light up as steps are solved, so progress reads from across the room
+	function room.lamps()
+		for i, st in ipairs(room.steps) do
+			local lamp = folder:FindFirstChild("StepLamp|" .. i)
+			if lamp then
+				lamp.Color = st.solved and LAMP_ON or LAMP_OFF
+				lamp.Material = st.solved and Enum.Material.Neon or Enum.Material.SmoothPlastic
+			end
+		end
+	end
+
 	function room.changed()
+		room.lamps()
 		if room.solved then
 			return
 		end
@@ -141,11 +156,10 @@ local function startRoom(def)
 	function room.reset()
 		room.solved = false
 		table.clear(room.hintLevel)
-		-- fresh, distinct symbols for every symbol slot
-		local pool = table.clone(SYMBOLS)
+		-- a fresh random DNA strand, two bases per slot
 		for slot = 1, def.symbolSlots or 2 do
-			room.symbols[slot] = table.remove(pool, math.random(1, #pool))
-			setScreen(folder:FindFirstChild("SymbolScreen|" .. slot), (slot == 1 and "⚡ " or "🔬 ") .. "؟")
+			room.symbols[slot] = { BASES[math.random(1, 4)], BASES[math.random(1, 4)] }
+			setScreen(folder:FindFirstChild("SymbolScreen|" .. slot), ICONS[slot] .. "  ؟ ؟")
 		end
 		local core = folder:FindFirstChild("Core")
 		if core then
@@ -155,13 +169,12 @@ local function startRoom(def)
 		for _, st in ipairs(room.steps) do
 			st:reset()
 		end
+		room.lamps()
 	end
 
 	function room.reveal(slot)
-		setScreen(
-			folder:FindFirstChild("SymbolScreen|" .. slot),
-			(slot == 1 and "⚡ " or "🔬 ") .. room.symbols[slot]
-		)
+		local b = room.symbols[slot]
+		setScreen(folder:FindFirstChild("SymbolScreen|" .. slot), ("%s  %s %s"):format(ICONS[slot], b[1], b[2]))
 	end
 
 	-- hint terminal: next hint for the first unsolved step (3 levels each), 4 s cooldown
@@ -198,6 +211,22 @@ local function startRoom(def)
 
 	room.reset()
 
+	-- whoever walks in gets the goal once, in one line
+	task.spawn(function()
+		local seen = {}
+		while true do
+			task.wait(1)
+			local now = {}
+			for _, p in ipairs(room.playersInside()) do
+				now[p] = true
+				if not seen[p] and def.objective then
+					notifyPlayer(p, def.objective)
+				end
+			end
+			seen = now
+		end
+	end)
+
 	-- an empty room resets itself after a minute, so the next visitors always start clean
 	task.spawn(function()
 		local emptySince = nil
@@ -221,10 +250,69 @@ local function startRoom(def)
 	return room
 end
 
+local rooms = {}
+
+-- Studio-only QA hook (like Labs54QA): ServerStorage.PuzzleQA:Invoke(id, op, step) runs the same check paths a
+-- player's taps run. op "state" | "solve" (puts the right answer in place for one step and checks it) | "wrong"
+-- (pulls the lever with wrong bases) | "reset".
+if game:GetService("RunService"):IsStudio() then
+	local qa = Instance.new("BindableFunction")
+	qa.Name = "PuzzleQA"
+	qa.OnInvoke = function(id, op, step)
+		local room = rooms[id]
+		if not room then
+			return "no room " .. tostring(id)
+		end
+		local st = room.steps[step or 0]
+		if op == "solve" and st then
+			if st.tiles then
+				for t in pairs(st.onPath) do
+					t.rot = t.goalRots[1]
+				end
+				st:draw()
+				st:check()
+			elseif st.truth then
+				for i, ped in ipairs(st.peds) do
+					ped.pick = st.truth[i]
+				end
+				st:refreshTags()
+				st:check()
+			else
+				for i, panel in ipairs(st.panels) do
+					panel.pick = table.find(BASES, st:need(i)) or 0
+				end
+				st:refresh()
+				st:activate()
+			end
+		elseif op == "wrong" and st and st.panels then
+			for i, panel in ipairs(st.panels) do
+				panel.pick = table.find(BASES, st:need(i) or "A") % 4 + 1
+			end
+			st:activate()
+		elseif op == "reset" then
+			room.reset()
+		end
+		local out = { solved = room.solved, screens = {}, lamps = {}, steps = {} }
+		for i, s in ipairs(room.steps) do
+			out.steps[i] = s.solved
+			local lamp = room.folder:FindFirstChild("StepLamp|" .. i)
+			out.lamps[i] = lamp and lamp.Material.Name
+		end
+		for slot = 1, 2 do
+			local scr = room.folder:FindFirstChild("SymbolScreen|" .. slot)
+			local l = scr and scr:FindFirstChildWhichIsA("TextLabel", true)
+			out.screens[slot] = l and l.Text
+		end
+		return out
+	end
+	qa.Parent = game:GetService("ServerStorage")
+end
+
 for _, m in ipairs(defsFolder:GetChildren()) do
 	if m:IsA("ModuleScript") then
 		local ok, err = pcall(function()
-			startRoom(require(m))
+			local def = require(m)
+			rooms[def.id] = startRoom(def)
 		end)
 		if not ok then
 			warn("puzzle room failed: " .. m.Name .. ": " .. tostring(err))
