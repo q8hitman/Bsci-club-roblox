@@ -379,25 +379,12 @@ end)
 local autoTarget = 2
 local autoDrift = false
 local function autopilot(s, track)
-	local pt = track.points[autoTarget]
-	if math.sqrt((pt[1] - s.x) ^ 2 + (pt[2] - s.z) ^ 2) < 16 then
-		autoTarget = autoTarget % #track.points + 1
-		pt = track.points[autoTarget]
-	end
-	local delta = math.atan2(pt[1] - s.x, pt[2] - s.z) - s.heading
-	delta = math.atan2(math.sin(delta), math.cos(delta))
-	if not autoDrift and math.abs(delta) > 0.55 and s.speed > 25 then
-		autoDrift = true
-	elseif autoDrift and math.abs(delta) < 0.12 then
-		autoDrift = false
-	end
-	return {
-		throttle = 1,
-		brake = 0,
-		steer = math.abs(delta) > 0.06 and (delta > 0 and 1 or -1) or 0,
-		boost = false,
-		drift = autoDrift,
-	}
+	-- same driving logic as the bots (RacerMath.botInput) on a copy, with its own look-ahead state
+	local probe = table.clone(s)
+	probe.botTarget, probe.botDrift = autoTarget, autoDrift
+	local intent = M.botInput(probe, track)
+	autoTarget, autoDrift = probe.botTarget, probe.botDrift
+	return intent
 end
 
 -- a heading increase turns the kart to the LEFT of the chase camera, so "right" is steer -1

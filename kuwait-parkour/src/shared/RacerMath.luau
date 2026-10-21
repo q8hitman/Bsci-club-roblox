@@ -275,16 +275,23 @@ function M.step(s, raw, dt, track)
 end
 -- v60 bots drive like a decent player: look 16 studs ahead, steer proportionally, drift long bends (so they earn
 -- mini-turbos too) and never brake; their pace comes from topSpeed (36/38/40, eased +-6 % by the server)
+-- v61 bots drive like a decent player on the dense v61 centrelines: aim ~30 studs ahead, read the bend ~50 studs
+-- ahead to drift the long ones (so they earn mini-turbos too), never brake; pace comes from topSpeed
 function M.botInput(s, track)
-	local target = track.points[s.botTarget]
-	if distance(s.x, s.z, target[1], target[2]) < 16 then
-		s.botTarget = s.botTarget % #track.points + 1
-		target = track.points[s.botTarget]
+	local pts = track.points
+	local n = #pts
+	local target = pts[s.botTarget]
+	while distance(s.x, s.z, target[1], target[2]) < 30 do
+		s.botTarget = s.botTarget % n + 1
+		target = pts[s.botTarget]
 	end
 	local delta = angle(math.atan2(target[1] - s.x, target[2] - s.z) - s.heading)
-	if not s.botDrift and math.abs(delta) > 0.55 and s.speed > 25 then
+	local far = pts[(s.botTarget + 2) % n + 1]
+	local farA = pts[(s.botTarget + 6) % n + 1]
+	local bend = angle(math.atan2(farA[1] - far[1], farA[2] - far[2]) - s.heading)
+	if not s.botDrift and math.abs(bend) > 0.6 and s.speed > 25 then
 		s.botDrift = true
-	elseif s.botDrift and math.abs(delta) < 0.12 then
+	elseif s.botDrift and math.abs(bend) < 0.15 then
 		s.botDrift = false
 	end
 	return {

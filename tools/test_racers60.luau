@@ -29,7 +29,8 @@ assert(still.heading == h, "no turning at standstill")
 -- drift: starts only at speed while steering, charges three tiers, pays a mini-turbo on release
 local d = M.start(track, 0)
 run(d, { throttle = 1 }, 30)
-d.x, d.z = 0, -90 -- centre of the first straight
+local d0 = M.start(track, 0)
+d.x, d.z, d.heading = d0.x, d0.z, d0.heading -- back on the start straight
 run(d, { throttle = 1, steer = 1 }, 4)
 M.step(d, { throttle = 1, steer = 1, drift = true }, 0.05, track)
 assert(d.drift == 1, "drift starts toward the steering side")
@@ -95,8 +96,10 @@ assert(math.abs(b.x - a.x) >= 4.99, "pushed apart to 5 studs")
 assert(M.road(track2, a.x, a.z).excess < 1e-6 and M.road(track2, b.x, b.z).excess < 1e-6, "both stay on the road")
 print("PASS racers60 contact")
 -- a kart rubbing the wall at a shallow angle recovers its speed (v60 Studio finding: it stayed pinned at ~26)
-local rub = M.start(track, 0)
-rub.x, rub.z, rub.heading, rub.speed = -120, 40, math.pi + 0.25, 30 -- west straight, heading -z, nosed toward the outer wall
+local rub = M.start(track, 0) -- start straight, 8 studs to the side, nosed 0.25 rad toward that wall
+local hd = rub.heading
+rub.x, rub.z = rub.x - math.cos(hd) * 8, rub.z + math.sin(hd) * 8
+rub.heading, rub.speed = hd - 0.25, 30
 local hits = 0
 for _ = 1, 40 do
 	M.step(rub, { throttle = 1 }, 0.05, track)

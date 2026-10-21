@@ -9,27 +9,16 @@ local args = process.args
 local track = D.get(args[1] or "cell")
 local useDrift = args[2] ~= "nodrift"
 local s = M.start(track, 4)
-local target = 2
 local plan = {} -- per tick { left, right, drift }
 local function angle(a)
 	return (a + math.pi) % (2 * math.pi) - math.pi
 end
-local drifting = false
-for _ = 1, 3000 do
-	local pt = track.points[target]
-	if math.sqrt((pt[1] - s.x) ^ 2 + (pt[2] - s.z) ^ 2) < 16 then
-		target = target % #track.points + 1
-		pt = track.points[target]
-	end
-	local delta = angle(math.atan2(pt[1] - s.x, pt[2] - s.z) - s.heading)
-	local steer = math.abs(delta) > 0.06 and (delta > 0 and 1 or -1) or 0
-	if useDrift then
-		if not drifting and math.abs(delta) > 0.55 and s.speed > 25 then
-			drifting = true
-		elseif drifting and math.abs(delta) < 0.12 then
-			drifting = false
-		end
-	end
+local probe = { botTarget = 2, botDrift = false }
+for _ = 1, 4000 do
+	probe.x, probe.z, probe.heading, probe.speed = s.x, s.z, s.heading, s.speed
+	local bot = M.botInput(probe, track)
+	local steer = math.abs(bot.steer) > 0.15 and (bot.steer > 0 and 1 or -1) or 0
+	local drifting = useDrift and bot.drift
 	local input = { throttle = 1, steer = steer, drift = drifting }
 	table.insert(plan, { left = steer > 0, right = steer < 0, drift = drifting })
 	M.step(s, input, 0.05, track)
