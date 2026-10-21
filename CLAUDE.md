@@ -255,3 +255,8 @@ Portals are parts named `Portal|<Kind>`. `destinations` lives in `src/server/Mai
 - CampusTerrain FLAT includes the museum. arcade59.py gateways (scripted parts stay at the folder root!).
 - Racers: steering sign, wall slide, petri-dish tracks. Game Show: glyph audit (no U+2794 / Unicode 12+ emoji).
 - Hot swap: scratchpad swap.sh builds client/server/shared(/map) rbxm into Studio content/bsc; delete it after.
+
+## v60 (2026-10-21, local only, NOT published). Micro Racers kart overhaul: docs/DEVELOPMENT_HANDOFF.md section 0000
+- RacerMath is shared by server, client prediction and bots: keep it deterministic (no os.clock / random).
+- Client sends one intent per 0.05 s tick with seq; server queues + acks. Studio-only RacerAutopilot / QA_Kart.
+- Tests: tools/test_racers60.luau; Studio minimized = black 3D captures (restore the window).

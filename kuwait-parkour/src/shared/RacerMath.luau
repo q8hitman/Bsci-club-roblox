@@ -19,6 +19,7 @@ function M.input(raw)
 		brake = clamp(raw.brake, 0, 1),
 		steer = clamp(raw.steer, -1, 1),
 		boost = raw.boost == true,
+		drift = raw.drift == true,
 	}
 end
 local function segment(x, z, a, b, width)
@@ -45,6 +46,27 @@ function M.road(track, x, z)
 		end
 	end
 	return best
+end
+-- v60 kart contact: two karts closer than 5 studs are pushed apart along the line between them (half each),
+-- then kept inside the road corridor. No spin-out and no speed is taken; bumping just shoves.
+function M.separate(a, b, track)
+	local dx, dz = b.x - a.x, b.z - a.z
+	local d = math.sqrt(dx * dx + dz * dz)
+	if d < 1e-3 or d >= 5 then
+		return false
+	end
+	local push = (5 - d) / 2
+	local nx, nz = dx / d, dz / d
+	a.x, a.z = a.x - nx * push, a.z - nz * push
+	b.x, b.z = b.x + nx * push, b.z + nz * push
+	for _, s in ipairs({ a, b }) do
+		local road = M.road(track, s.x, s.z)
+		if road.excess > 0 then
+			local ex, ez = s.x - road.x, s.z - road.z
+			s.x, s.z = road.x + ex / road.d * road.limit, road.z + ez / road.d * road.limit
+		end
+	end
+	return true
 end
 function M.start(track, offset)
 	local a, b = track.points[1], track.points[2]
@@ -77,8 +99,41 @@ function M.recover(s, track)
 	s.x, s.z = a[1], a[2]
 	s.heading = math.atan2(b[1] - a[1], b[2] - a[2])
 	s.speed = 0
+	s.drift, s.driftCharge, s.driftTier, s.steerV = 0, 0, 0, 0
 	s.botTarget = i % #track.points + 1
 end
+-- v60 arcade handling (shared by the server, the driver's client prediction and the bots; deterministic):
+-- eased acceleration, smoothed speed-sensitive steering, a hold-to-drift with three charge tiers that pays out a
+-- mini-turbo, gentle wall slides, and an automatic recovery when a kart is stuck.
+M.TUNING = {
+	top = 42, -- studs/s on throttle
+	boost = 60, -- manual boost pad / button
+	turbo = 54, -- drift mini-turbo
+	accel = 1.15, -- ease toward top speed (per second)
+	push = 7, -- extra launch from standstill (studs/s^2)
+	coast = 5, -- slow down when off the throttle
+	brake = 60,
+	yaw = 2.3, -- rad/s at full lock
+	steerRate = 9, -- how fast the wheel follows the stick (per second)
+	driftMin = 20, -- speed needed to start a drift
+	driftYaw = 1.25, -- full inward drift turns ~1.25x a normal full-lock turn (v60 Studio test: 1.45 hit the inner wall)
+	tiers = { 0.45, 0.9, 1.5 }, -- seconds of inward drifting for blue / orange / purple sparks (MK ratios scaled to
+	-- our ~50-stud bends: the v60 Studio test never reached 0.8 s before the bend ended)
+	turboTime = { 0.45, 0.8, 1.2 },
+	wallKeep = 0.96, -- speed kept per step against a barrier
+}
+local T = M.TUNING
+
+-- ends a drift; returns true when it paid out a mini-turbo (the caller lifts the speed)
+local function endDrift(s, pay)
+	local paid = s.drift ~= 0 and pay and (s.driftTier or 0) > 0
+	if paid then
+		s.turboUntil = s.time + T.turboTime[s.driftTier]
+	end
+	s.drift, s.driftCharge, s.driftTier = 0, 0, 0
+	return paid
+end
+
 function M.step(s, raw, dt, track)
 	if s.done then
 		return
@@ -86,32 +141,101 @@ function M.step(s, raw, dt, track)
 	dt = clamp(dt, 0, 0.1)
 	local input = M.input(raw)
 	s.time += dt
+	s.drift = s.drift or 0
+	s.steerV = s.steerV or 0
+	s.turboUntil = s.turboUntil or 0
 	if input.boost and s.time >= s.boostReadyAt then
 		s.boostUntil = s.time + 1.6
 		s.boostReadyAt = s.time + 10
 	end
-	local maxSpeed = s.time < s.boostUntil and 60 or (s.topSpeed or 42) -- v59: bots get a lower topSpeed
-	if s.time < s.slowUntil then
-		maxSpeed = 18
+	-- speed: eased toward the cap, launch push from standstill, gentle coast, firm brake
+	local top = s.topSpeed or T.top -- v59: bots get a lower topSpeed
+	local maxSpeed = top
+	if s.time < s.boostUntil then
+		maxSpeed = T.boost
+	elseif s.time < s.turboUntil then
+		maxSpeed = math.max(top, T.turbo)
 	end
-	s.speed = math.clamp(s.speed + (input.throttle * 32 - 2 - s.speed * 0.08 - input.brake * 65) * dt, 0, maxSpeed)
-	s.heading = angle(s.heading + input.steer * (1.9 - 0.5 * s.speed / 60) * dt)
-	local x, z = s.x + math.sin(s.heading) * s.speed * dt, s.z + math.cos(s.heading) * s.speed * dt
+	if s.time < s.slowUntil then
+		maxSpeed = math.min(maxSpeed, 22)
+	end
+	local v = s.speed
+	if input.throttle > 0 or s.time < s.boostUntil or s.time < s.turboUntil then
+		local want = s.time < s.boostUntil and 1 or math.max(input.throttle, s.time < s.turboUntil and 1 or 0)
+		v += ((maxSpeed - v) * T.accel + T.push * math.max(0, 1 - v / math.max(maxSpeed, 1))) * want * dt
+	else
+		v -= (T.coast + v * 0.12) * dt
+	end
+	v -= input.brake * T.brake * dt
+	if v > maxSpeed then -- over the cap (a boost ended, or a slowdown): ease down instead of snapping
+		v = math.max(maxSpeed, v - 30 * dt)
+	end
+	v = math.clamp(v, 0, T.boost)
+	-- steering: the wheel follows the stick smoothly; turn rate grows with speed, then eases off near the top
+	s.steerV += math.clamp(input.steer - s.steerV, -T.steerRate * dt, T.steerRate * dt)
+	local grip = math.min(1, v / 12) * (1 - 0.3 * math.min(v, T.boost) / T.boost)
+	-- drift: hold the drift input while steering at speed; the kart turns tighter toward the drift side, the stick
+	-- widens or tightens the arc, and the charge pays out a mini-turbo when the drift is released
+	if s.drift == 0 and input.drift and math.abs(s.steerV) > 0.3 and v >= T.driftMin then
+		s.drift, s.driftCharge, s.driftTier = s.steerV > 0 and 1 or -1, 0, 0
+	elseif s.drift ~= 0 and (not input.drift or v < T.driftMin - 6) then
+		if endDrift(s, input.drift == false and v >= T.driftMin - 6) then
+			v = math.max(v, T.turbo - 6)
+		end
+	end
+	local yaw
+	if s.drift ~= 0 then
+		yaw = s.drift * T.yaw * T.driftYaw * grip * (0.5 + 0.5 * s.steerV * s.drift) -- stick: outward 0 .. inward 1
+		v *= 0.997
+		-- steering into the drift charges 2.5x faster than holding it wide: the skill is in the line
+		s.driftCharge += dt * (s.steerV * s.drift >= 0.5 and 1 or 0.4)
+		local tier = 0
+		for i, need in ipairs(T.tiers) do
+			if s.driftCharge >= need then
+				tier = i
+			end
+		end
+		s.driftTier = tier
+	else
+		yaw = s.steerV * T.yaw * grip
+	end
+	s.yawRate = yaw
+	s.heading = angle(s.heading + yaw * dt)
+	local x, z = s.x + math.sin(s.heading) * v * dt, s.z + math.cos(s.heading) * v * dt
 	local road = M.road(track, x, z)
+	s.wall = false
 	if road.excess > 0 then
 		local dx, dz = x - road.x, z - road.z
-		x, z = road.x + dx / road.d * road.limit, road.z + dz / road.d * road.limit
-		-- v59: slide along the barrier instead of sticking to it (x0.55 per step pinned cars at ~2 studs/s):
-		-- lose some speed and turn the heading toward the wall's tangent
+		-- step 0.3 off the barrier, so a kart that is now running along it is free on the next tick
+		x, z = road.x + dx / road.d * (road.limit - 0.3), road.z + dz / road.d * (road.limit - 0.3)
+		-- slide along the barrier: keep most of the speed and turn the heading toward the wall's tangent
 		local tx, tz = -dz / road.d, dx / road.d
 		if tx * math.sin(s.heading) + tz * math.cos(s.heading) < 0 then
 			tx, tz = -tx, -tz
 		end
 		local along = math.atan2(tx, tz)
-		s.heading = angle(s.heading + angle(along - s.heading) * 0.35)
-		s.speed *= 0.93
+		local diff = angle(along - s.heading)
+		-- a glancing touch lines the kart up with the wall at once (v60 Studio: 35 % per tick kept a kart rubbing
+		-- the wall at ~26 studs/s); a head-on hit turns it gradually
+		s.heading = angle(s.heading + diff * (math.abs(diff) < 0.35 and 1 or 0.35))
+		v *= T.wallKeep
+		s.wall = true
+		if s.drift ~= 0 and math.abs(diff) >= 0.35 then
+			endDrift(s, false) -- a head-on hit ends the drift without a payout (no spin-out); a glancing touch keeps it
+		end
 	end
+	s.speed = v
 	s.x, s.z = x, z
+	-- stuck (e.g. nose in a corner) for 3 s while trying to drive: back to the last checkpoint
+	if input.throttle > 0 and v < 2 then
+		s.stuckFor = (s.stuckFor or 0) + dt
+		if s.stuckFor > 3 then
+			s.stuckFor = 0
+			M.recover(s, track)
+		end
+	else
+		s.stuckFor = 0
+	end
 	for _, p in ipairs(track.pickups) do
 		if s.time >= (s.pickups[p.id] or 0) and distance(x, z, p.x, p.z) < 5 then
 			s.pickups[p.id] = s.time + 8
@@ -128,8 +252,8 @@ function M.step(s, raw, dt, track)
 			if s.shieldUntil > s.time then
 				s.shieldUntil = 0
 			else
-				s.speed *= 0.4
-				s.slowUntil = s.time + 0.8
+				s.speed *= 0.6 -- v60: a stumble, not a stop
+				s.slowUntil = s.time + 0.6
 			end
 		end
 	end
@@ -149,18 +273,26 @@ function M.step(s, raw, dt, track)
 		end
 	end
 end
+-- v60 bots drive like a decent player: look 16 studs ahead, steer proportionally, drift long bends (so they earn
+-- mini-turbos too) and never brake; their pace comes from topSpeed (36/38/40, eased +-6 % by the server)
 function M.botInput(s, track)
 	local target = track.points[s.botTarget]
-	if distance(s.x, s.z, target[1], target[2]) < 13 then
+	if distance(s.x, s.z, target[1], target[2]) < 16 then
 		s.botTarget = s.botTarget % #track.points + 1
 		target = track.points[s.botTarget]
 	end
 	local delta = angle(math.atan2(target[1] - s.x, target[2] - s.z) - s.heading)
+	if not s.botDrift and math.abs(delta) > 0.55 and s.speed > 25 then
+		s.botDrift = true
+	elseif s.botDrift and math.abs(delta) < 0.12 then
+		s.botDrift = false
+	end
 	return {
-		throttle = math.abs(delta) < 1.2 and 1 or 0.2,
-		brake = math.abs(delta) > 0.65 and s.speed > 22 and 1 or 0,
+		throttle = 1,
+		brake = 0,
 		steer = math.clamp(delta * 2.4, -1, 1),
 		boost = false,
+		drift = s.botDrift == true,
 	}
 end
 function M.progress(s, track)

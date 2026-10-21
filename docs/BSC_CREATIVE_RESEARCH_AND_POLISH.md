@@ -148,6 +148,21 @@
 | إضاءة: نيون أقل، وظلال على الأشياء الكبيرة بس | Roblox Creator Hub (performance) | مختبر الليزر واستوديو المسابقات |
 
 ---
+
+## H. بحث سباق الكارت (v60)
+
+البحث من مقالات ووثائق بس، **ما لعبت Mario Kart ولا غيرها بنفسي.**
+
+| السؤال | اللي تعلمته | وين انطبّق |
+|---|---|---|
+| ليش القيادة ممتعة؟ | التسارع يتدرّج، واللف يقل مع السرعة العالية، والانجراف يشحن تيربو، والجدار ما يوقفك | `RacerMath` (مستويات انجراف وتيربو، انزلاق مع الجدار) |
+| أرقام الانجراف | ماريو كارت: الانجراف للداخل يشحن 2.5 مرة أسرع، والألوان أزرق ثم برتقالي ثم بنفسجي | صغّرت الأرقام لأن منعطفاتنا قصيرة: 0.45 / 0.9 / 1.5 ثانية |
+| الفيزياء | سيارات Roblox الفيزيائية فيها مشاكل ملكية الشبكة وغش. Server Authority الجديد يفرض إعدادات على كل اللعبة | محاكاة حتمية + توقع عند اللاعب + مطابقة (أسلوب Gambetta) |
+| الكاميرا | تلحق بنعومة، وتطالع قدّام، والزاوية تتسع مع السرعة | كاميرا v60 |
+| الخصوم | يقربون السباق بحدود، مو غش واضح | ±6% بس، ويسوقون مثل لاعب زين |
+| الجوال | الأولاد يرتاحون مع أزرار كبيرة وتسارع تلقائي | أزرار اللمس تطلع على الجوال بس |
+
+---
 **المصادر الرئيسية:**
 - [Roblox Performance](https://create.roblox.com/docs/performance-optimization/improve)
 - [Studio MCP](https://create.roblox.com/docs/studio/mcp)
@@ -160,6 +175,10 @@
 - [DevForum: raycast vehicle](https://devforum.roblox.com/t/raycast-vehicle/1906980)
 - [Roblox Creator Hub: improve performance](https://create.roblox.com/docs/performance-optimization/improve)
 - [Sherlocked: how escape rooms are designed](https://www.sherlocked.nl/blog/how-escape-rooms-are-designed)
+- [Gabriel Gambetta: client-side prediction and server reconciliation](https://www.gabrielgambetta.com/client-side-prediction-server-reconciliation.html)
+- [Roblox Creator Hub: Server Authority](https://create.roblox.com/docs/projects/server-authority.md)
+- [Roblox Creator Hub: UnreliableRemoteEvent](https://create.roblox.com/docs/reference/engine/classes/UnreliableRemoteEvent)
+- [Game Developer: rubber banding as a design requirement](https://www.gamedeveloper.com/design/rubber-banding-as-a-design-requirement)
 - [Luau Execution](https://create.roblox.com/docs/cloud/reference/features/luau-execution)
 - [Blender plugin](https://create.roblox.com/docs/art/modeling/roblox-blender-plugin)
 - [DevForum checkpoints](https://devforum.roblox.com/t/2514154)

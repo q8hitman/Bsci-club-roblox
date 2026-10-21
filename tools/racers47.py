@@ -99,6 +99,18 @@ def track(d,index):
                 a=mid+outer*math.pi/2+k*.16
                 deco("Curb",(3.2,.25,2.2),(ox+p[0]+math.sin(a)*(w/2-1),y+.08,oz+p[1]+math.cos(a)*(w/2-1)),
                      CURB_R if k%2 else CURB_W,rot=(0,math.degrees(a),0))
+            # v60: tyre stacks behind the barrier on the outside of the bend, a club flag on every other bend
+            for k in (-1,1):
+                a=mid+outer*math.pi/2+k*.22
+                tx,tz=ox+p[0]+math.sin(a)*(w/2+3.2),oz+p[1]+math.cos(a)*(w/2+3.2)
+                for h in range(3):
+                    G.part("TyreStack",(.9,2.2,2.2),(tx,y+.45+h*.9,tz),(28,30,34) if h!=1 else CURB_R,"SmoothPlastic",
+                           shape="Cylinder",rot=(0,0,90),collide=False,shadow=False)
+            if i%2==0:
+                a=mid+outer*math.pi/2
+                fx,fz=ox+p[0]+math.sin(a)*(w/2+7),oz+p[1]+math.cos(a)*(w/2+7)
+                G.vcyl("FlagPole",fx,y,y+14,fz,.4,(220,222,226),"Metal",collide=False)
+                deco("Flag",(.15,3,5),(fx,y+12.3,fz+2.6),(24,120,80) if (i//2)%2 else color,"Fabric")
         # start / finish: chequered line + a real arch (the last checkpoint is the finish, not "point 5")
         a,b=pts[0],pts[1]
         yaw=math.degrees(math.atan2(b[0]-a[0],b[1]-a[1]))
@@ -108,6 +120,25 @@ def track(d,index):
                 deco("StartChequer",(2,.07,2),(ox+a[0]+hx*(k*2+1)+(r*2-1)*math.sin(math.radians(yaw)),y+.04,
                      oz+a[1]+hz*(k*2+1)+(r*2-1)*math.cos(math.radians(yaw))),
                      (20,20,24) if (k+r)%2 else (240,240,240),rot=(0,yaw,0))
+        # v60 start gantry: StartLight_1..3 are lit by Racers.client during the countdown (red, red, red, green)
+        for sd in (-1,1):
+            G.vcyl("GantryPost",ox+a[0]+hx*sd*(w/2+1.2),y,y+11,oz+a[1]+hz*sd*(w/2+1.2),1.0,(60,64,74),"Metal",collide=False)
+        G.box("GantryBeam",(w+3.4,1.4,1.4),(ox+a[0],y+11,oz+a[1]),(60,64,74),"Metal",rot=(0,yaw,0),collide=False)
+        for k in (1,2,3):
+            G.part("StartLight_%d"%k,(1.6,1.6,1.6),(ox+a[0]+hx*(k-2)*2.6,y+9.6,oz+a[1]+hz*(k-2)*2.6),(50,20,20),
+                   "SmoothPlastic",shape="Ball",collide=False,shadow=False)
+        # grandstand on the outside of the start straight, facing the track
+        gx,gz=ox+a[0]-hx*(w/2+12)+math.sin(math.radians(yaw))*30,oz+a[1]-hz*(w/2+12)+math.cos(math.radians(yaw))*30
+        for t_ in range(3):
+            G.box("Grandstand",(5,1.2+t_*1.4,34),(gx-hx*t_*4.2,y+(1.2+t_*1.4)/2,gz-hz*t_*4.2),
+                  (70,76,90) if t_%2==0 else (90,96,110),"Concrete",rot=(0,yaw,0),collide=False)
+            for q in range(6):
+                fan=((240,180,80),(90,190,240),(230,110,140),(140,220,140))[(q+t_)%4]
+                off=-14+q*5.6
+                G.box("Fan",(1,1.6,1),(gx-hx*t_*4.2+math.sin(math.radians(yaw))*off,y+2+t_*1.4,
+                      gz-hz*t_*4.2+math.cos(math.radians(yaw))*off),fan,"SmoothPlastic",collide=False,shadow=False)
+        G.box("GrandstandRoof",(16,.5,36),(gx-hx*4.2,y+9,gz-hz*4.2),(236,238,242),"SmoothPlastic",rot=(0,yaw,0),
+              collide=False)
         for i,g in enumerate(d['gates'],1):
             p=pts[g-1]
             nxt=pts[g%len(pts)]
@@ -142,6 +173,56 @@ def _seg_dist(x,z,a,b):
     return math.hypot(x-(a[0]+dx*t),z-(a[1]+dz*t))
 
 
+def kart(x,y,z):
+    """v60 original lab go-kart (front = +Z, ground = y). Racers.client animates parts by name:
+    Body/Paint* = car colour, Liquid = accent, Wheel_<FL|FR|RL|RR>[_Hub] spin (front ones steer), SteeringWheel turns,
+    Exhaust_L/R carry the turbo flames. Chibi proportions: big wheels (rear 1.3x front), low rounded tub, a big-headed
+    scientist driver, a glass bioreactor flask as the engine."""
+    DARK_=(40,44,52); GREY=(214,218,224); RUBBER=(30,32,38)
+    def d(name,size,pos,col,mat="SmoothPlastic",**kw):
+        deco(name,size,(x+pos[0],y+pos[1],z+pos[2]),col,mat,**kw)
+    def cyl(name,size,pos,col,mat="SmoothPlastic",rot=(0,0,0),**kw):
+        G.part(name,size,(x+pos[0],y+pos[1],z+pos[2]),col,mat,shape="Cylinder",rot=rot,collide=False,shadow=False,**kw)
+    def ball(name,dia,pos,col,mat="SmoothPlastic",**kw):
+        G.part(name,(dia,dia,dia),(x+pos[0],y+pos[1],z+pos[2]),col,mat,shape="Ball",collide=False,shadow=False,**kw)
+    # chassis: low tub, rounded side pods, ball nose, bumper, floor pan
+    d("Floor",(4.6,.3,7.4),(0,.55,0),DARK_)
+    d("Body",(3.8,.9,6.4),(0,1.15,0),TEAL)
+    for sx in (-1,1):
+        cyl("PaintPod",(6.0,1.5,1.5),(sx*2.0,1.1,.1),TEAL,rot=(0,90,0))
+    ball("PaintNose",2.5,(0,1.15,3.3),TEAL)
+    cyl("Bumper",(5.4,.8,.8),(0,.8,4.35),GREY)
+    G.box("Plate",(2.2,.7,.1),(x,y+1.55,z+4.55),DARK_,collide=False,shadow=False,
+          text=dict(face="Back",text="BSC",color=(255,255,255),bg=DARK_,bg_t=0.0))
+    d("Dash",(3.4,.7,.6),(0,2.0,1.4),DARK_)
+    cyl("SteeringColumn",(1.2,.3,.3),(0,2.45,1.0),DARK_,rot=(0,90,0))
+    cyl("SteeringWheel",(.25,1.5,1.5),(0,2.9,.45),DARK_,rot=(0,90,0))
+    # seat + scientist driver (lab coat, big head, helmet in the car colour, goggles)
+    d("Seat",(2.4,.6,2.2),(0,1.75,-.9),DARK_)
+    d("SeatBack",(2.4,2.2,.5),(0,2.65,-2.05),DARK_)
+    d("Coat",(1.9,1.7,1.3),(0,2.85,-1.1),(244,246,248))
+    for sx in (-1,1):
+        d("Arm",(.45,.45,1.5),(sx*.8,3.05,-.2),(244,246,248))
+    ball("Head",1.7,(0,4.3,-1.05),(234,192,160))
+    ball("PaintHelmet",1.86,(0,4.55,-1.2),TEAL)
+    d("Goggles",(1.75,.38,.25),(0,4.4,-.25),(70,180,230),"Glass",transp=.15)
+    # rear: engine block, glass bioreactor with coloured medium, twin exhausts, spoiler
+    d("Engine",(3.0,1.2,1.6),(0,1.6,-3.0),(120,126,136),"Metal")
+    cyl("Flask",(2.2,1.7,1.7),(0,2.95,-3.1),(200,235,245),"Glass",rot=(0,0,90),transp=.35)
+    cyl("Liquid",(1.5,1.35,1.35),(0,2.8,-3.1),YELLOW,rot=(0,0,90))
+    ball("FlaskCap",.8,(0,4.15,-3.1),GREY,"Metal")
+    for sx,tag in ((-1,"L"),(1,"R")):
+        cyl("Exhaust_"+tag,(1.6,.6,.6),(sx*1.0,1.4,-4.0),(90,94,104),"Metal",rot=(0,90,0))
+        d("SpoilerPost",(.3,1.4,.3),(sx*1.6,3.2,-3.9),DARK_)
+    d("PaintSpoiler",(5.0,.25,1.3),(0,3.95,-4.0),TEAL)
+    # wheels: cylinders spin about their own X axis; hubs ride with them
+    for tag,sx,zz,dia,w in (("FL",-1,2.7,2.0,1.1),("FR",1,2.7,2.0,1.1),("RL",-1,-2.6,2.6,1.4),("RR",1,-2.6,2.6,1.4)):
+        px=sx*(2.75 if tag[0]=="F" else 2.95)
+        cyl("Wheel_"+tag,(w,dia,dia),(px,dia/2,zz),RUBBER)
+        cyl("Wheel_"+tag+"_Hub",(w+.06,dia*.5,dia*.5),(px,dia/2,zz),GREY,"Metal")
+        d("Wheel_"+tag+"_Spoke",(w+.1,dia*.62,.25),(px,dia/2,zz),GREY,"Metal")
+
+
 def build():
     with G.Group("Racers47"):
         # Entrance fits inside the existing Arcade floor; the racing lobby is outside random-round selection.
@@ -156,14 +237,7 @@ def build():
             G.sign("RaceRules","سباق مركبات في عالم مجهري خيالي\n3 لفات • وجّه وسرّع وفرمل\nالدرع يحمي من عائق واحد • السرعة مؤقتة",(-7400,309,-6026),(48,11,.5),"Back",bg=DARK)
             G.part("RaceConsole",(10,4,4),(-7400,302,-6014),TEAL,"Metal")
         with G.Group("VehicleTemplate","Model"):
-            x,y,z=-7400,250,-6000
-            deco("Body",(5.5,1.1,7),(x,y+1.3,z),TEAL,"Metal")
-            deco("Nose",(4,1,2),(x,y+1.4,z+3.5),YELLOW)
-            G.ball("CellCockpit",x,y+2.6,z,3.4,(133,216,225),"Glass",transp=.35,collide=False,shadow=False)
-            G.ball("DriverNucleus",x,y+2.6,z,1.3,(54,69,91),collide=False,shadow=False)
-            for side in (-1,1):
-                for dz in (-2.1,2.1):
-                    G.part("Wheel",(1,1.8,1.8),(x+side*3,y+.9,z+dz),(29,34,44),"Rubber" if "Rubber" in G.MAT else "SmoothPlastic",shape="Cylinder",collide=False,shadow=False)
+            kart(-7400,250,-6000)
         for i,d in enumerate(TRACKS): track(d,i)
 
 

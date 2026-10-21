@@ -108,6 +108,12 @@ local function snapshot(room, kind)
 			shield = s.shieldUntil > s.time,
 			boost = s.boostUntil > s.time,
 			boostReady = math.max(0, s.boostReadyAt - s.time),
+			drift = s.drift or 0, -- v60 visuals: drift side, spark tier, wheel angle, lean, mini-turbo, wall bump
+			tier = s.driftTier or 0,
+			steer = s.steerV or 0,
+			yaw = s.yawRate or 0,
+			turbo = (s.turboUntil or 0) > s.time,
+			wall = s.wall == true,
 		})
 	end
 	return {
@@ -128,6 +134,8 @@ local function send(room, kind)
 		if s.room == room and p.Parent then
 			local personal = table.clone(data)
 			personal.you = s.car.id
+			personal.me = s.car.state -- v60: full state + ack for client prediction / reconciliation
+			personal.ack = s.car.ack or 0
 			event:FireClient(p, personal)
 		end
 	end
@@ -188,6 +196,8 @@ local function join(p, id)
 		input = {},
 		lastPacket = os.clock(),
 		seq = 0,
+		ack = 0,
+		queue = {},
 	}
 	table.insert(room.cars, car)
 	s.room, s.car, s.mode = room, car, "race"
@@ -236,6 +246,7 @@ request.OnServerInvoke = function(p, action, arg)
 		s.recoveredAt = now
 		M.recover(s.car.state, s.room.track)
 		s.car.input = {}
+		table.clear(s.car.queue)
 		return { ok = true }
 	end
 	return { error = "هذا الطلب غير متاح" }
@@ -248,12 +259,14 @@ input.OnServerEvent:Connect(function(p, raceId, seq, intent)
 	if type(seq) ~= "number" or seq ~= seq or seq % 1 ~= 0 or seq <= s.car.seq or seq > 1e9 then
 		return
 	end
-	local now = os.clock()
-	if now - s.car.lastPacket < 0.035 then
-		return
+	-- v60: one intent per 0.05 s simulation tick, queued and consumed one per tick, so sending faster never makes a
+	-- kart faster; the acknowledged seq lets the driver's client replay what the server has not applied yet
+	s.car.seq, s.car.lastPacket = seq, os.clock()
+	local q = s.car.queue
+	table.insert(q, { seq = seq, input = M.input(intent) })
+	while #q > 8 do
+		table.remove(q, 1)
 	end
-	s.car.seq, s.car.lastPacket = seq, now
-	s.car.input = M.input(intent)
 end)
 local function prompt(part, name, text, fn)
 	local p = Instance.new("ProximityPrompt")
@@ -319,10 +332,28 @@ Run.Heartbeat:Connect(function(dt)
 					{ id = "bot" .. i, name = "متسابق آلي " .. i, bot = true, state = grid(room.track, i) }
 				)
 				-- v59: bots at 35/37/39 (players 42) so a clean driver can win; they used to lap at full speed
-				room.cars[#room.cars].state.topSpeed = 33 + 2 * math.min(i - 1, 3)
+				room.cars[#room.cars].state.topSpeed = 34 + 2 * math.min(i - 1, 3) -- v60: 36/38/40, eased +-6 % by the gap
 			end
 			room.phase = "running"
 			room.started = workspace:GetServerTimeNow()
+		end
+	end
+	-- v60 fair AI: bots ease their top speed by at most 6 % toward the best human (never a teleport or a sudden surge)
+	for _, room in pairs(rooms) do
+		if room.phase == "running" then
+			local best = -math.huge
+			for _, c in ipairs(room.cars) do
+				if not c.bot and not c.departed then
+					best = math.max(best, M.progress(c.state, room.track))
+				end
+			end
+			for _, c in ipairs(room.cars) do
+				if c.bot and best > -math.huge then
+					c.baseTop = c.baseTop or c.state.topSpeed or 38
+					local gap = M.progress(c.state, room.track) - best
+					c.state.topSpeed = c.baseTop * (1 - 0.06 * math.clamp(gap / 3, -1, 1))
+				end
+			end
 		end
 	end
 	while accumulated >= 0.05 do
@@ -333,6 +364,10 @@ Run.Heartbeat:Connect(function(dt)
 				for _, car in ipairs(room.cars) do
 					if not car.departed then
 						if not car.state.done then
+							if not car.bot and car.queue and #car.queue > 0 then
+								local nextInput = table.remove(car.queue, 1)
+								car.input, car.ack = nextInput.input, nextInput.seq
+							end
 							local intent = car.bot and M.botInput(car.state, room.track)
 								or (os.clock() - car.lastPacket > 0.7 and { brake = 1 } or car.input)
 							M.step(car.state, intent, 0.05, room.track)
@@ -346,6 +381,15 @@ Run.Heartbeat:Connect(function(dt)
 							else
 								unfinished += 1
 							end
+						end
+					end
+				end
+				for i = 1, #room.cars do -- v60 kart contact (RacerMath.separate)
+					local a = room.cars[i]
+					for j = i + 1, #room.cars do
+						local b = room.cars[j]
+						if not a.departed and not b.departed and not a.state.done and not b.state.done then
+							M.separate(a.state, b.state, room.track)
 						end
 					end
 				end

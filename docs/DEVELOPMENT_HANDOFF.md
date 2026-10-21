@@ -1,4 +1,4 @@
-# BSC Island: development handoff (v59, 2026-10-21)
+# BSC Island: development handoff (v60, 2026-10-21)
 
 For whoever continues: Claude Code, Codex, or a person. **Continue this project. Do not restart or redesign it.**
 
@@ -7,8 +7,20 @@ For whoever continues: Claude Code, Codex, or a person. **Continue this project.
 |---|---|
 | Repo | `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full` (GitHub `q8hitman/Bsci-club-roblox`) |
 | Branch | `dev/v54-labs-cartride`, created from `dev/v53-release-push` at `6aac766`. Neither branch is merged into `main`. |
-| Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v59.rbxlx` (not published). v58 and every older build and backup are untouched. |
+| Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v60.rbxlx` (not published). v59 and every older build and backup are untouched. |
 | Studio | Session `KuwaitParkour_v53.rbxlx`, hot-swapped to the v54 code. It is unsaved; the file on disk is newer. |
+
+## 0000. v60: Micro Racers as an arcade kart racer
+| Area | What changed | Evidence |
+|---|---|---|
+| Architecture | Kept the deterministic `RacerMath` (server-authoritative, 20 Hz). Client-side prediction + reconciliation: one intent per 0.05 s tick with a seq, the server queues and applies one per tick and returns `ack` + the driver's full state; the client replays unacknowledged inputs and hides small corrections (0.1 s decay, snap > 6 studs). Remote karts drawn 0.12 s in the past. No Roblox physics / VehicleSeat / network ownership. | Cell 53.5 s in Studio vs 53.4 s planned offline with the same inputs |
+| Handling | Eased acceleration, coast, speed-sensitive smoothed steering; hold-to-drift (Space / Shift / R1 / touch) with tiers 0.45 / 0.9 / 1.5 s (inward steering charges 2.5x) -> mini-turbo 0.45 / 0.8 / 1.2 s; glancing wall touches line the kart up (no rubbing), head-on hits end a drift without a spin-out; auto-recover after 3 s stuck; kart contact pushes apart (`RacerMath.separate`) | `tools/test_racers60.luau` (incl. two bugs it caught: turbo speed overwritten, divide by zero) |
+| Bots | Drive like a decent player (look-ahead, drift long bends), top 36/38/40 eased +-6 % toward the best human | Cell: you 53.6, bots 56.0 / 59.0 / 59.1 |
+| Kart | `racers47.kart()`: original part-built lab kart (big wheels, rounded tub, scientist driver, steering wheel, bioreactor flask, spoiler, exhausts); client spins wheels, steers front wheels + steering wheel, leans the body, swings it out in drifts, sparks per tier, turbo flames, 4 colour variants | Screenshots |
+| Camera / HUD | Spring follow with look-ahead, speed FOV 70-86, small shakes, near/far (C), clip-safe, nearby karts fade; HUD: position/lap card, progress strip, top-4 board, 3-2-1 + start-light gantry, final-lap banner, context hints; touch buttons only on touch (auto-accelerate) | Screenshots incl. touch layout |
+| Track | Start-light gantry (`StartLight_1..3`), grandstand, tyre stacks on every bend, club flags | Screenshots |
+| QA | Studio-only: workspace attribute `RacerAutopilot` (closed-loop QA driver) and player attribute `QA_Kart`; `tools/studio_tests/racer_keyplan60.luau` plans keyboard runs | Helix 73.7 s, 30 drifts, 20 turbos, 60 fps; 2-client `Racers47` PASS; real keys: W/A/D/Space and gamepad R2 |
+**Not verified:** a real phone (touch layout only checked by forcing it visible), a physical gamepad stick, races with several real people over a real network.
 
 ## 000. v59: the owner's v58 playtest (9 screenshots) fixed
 | Owner issue | Cause found | Fix | Studio evidence |
@@ -211,6 +223,6 @@ Smaller items:
 ## 9. Exact prompt to start Codex
 From the repo root:
 ```
-"C:\Users\User\AppData\Local\OpenAI\Codex\bin\896a0166b774037a\codex.exe" exec -C "C:\Users\User\Desktop\KuwaitParkour\BSC_project_full" "Continue BSC Island development. Read docs/DEVELOPMENT_HANDOFF.md first, then CLAUDE.md and BSC_RESUME.md. Work on branch dev/v54-labs-cartride from the latest commit. Follow section 5 (next steps) in order, respect section 6 (owner decisions) and ask before anything in section 7. Build with the commands in section 2, never overwrite older .rbxlx builds (next build is KuwaitParkour_v60.rbxlx), commit after each verified milestone, and never publish."
+"C:\Users\User\AppData\Local\OpenAI\Codex\bin\896a0166b774037a\codex.exe" exec -C "C:\Users\User\Desktop\KuwaitParkour\BSC_project_full" "Continue BSC Island development. Read docs/DEVELOPMENT_HANDOFF.md first, then CLAUDE.md and BSC_RESUME.md. Work on branch dev/v54-labs-cartride from the latest commit. Follow section 5 (next steps) in order, respect section 6 (owner decisions) and ask before anything in section 7. Build with the commands in section 2, never overwrite older .rbxlx builds (next build is KuwaitParkour_v61.rbxlx), commit after each verified milestone, and never publish."
 ```
 Or paste the same text into the existing Codex thread `01a14bdc-a4d3-7360-a7e5-eacb9a8c4924` in the Codex app.
