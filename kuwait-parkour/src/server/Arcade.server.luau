@@ -24,8 +24,12 @@ end
 local announce = Instance.new("RemoteEvent")
 announce.Name = "ArcadeAnnounce"
 announce.Parent = ReplicatedStorage
+-- v53 results screen (ArcadeResults.client): ranked players, the viewer's own rank and rewards
+local resultsEvent = Instance.new("RemoteEvent")
+resultsEvent.Name = "ArcadeResults"
+resultsEvent.Parent = ReplicatedStorage
 
-local INTERMISSION, RESULTS = 12, 5
+local INTERMISSION, RESULTS = 12, 7 -- v53: 7 s so the results screen can be read
 local MIN_PLAYERS = RunService:IsStudio() and 1 or 1 -- solo rounds are allowed: the arcade should never feel dead
 local MUTATIONS = {
 	{ id = "none", ar = "بدون طفرة", weight = 2 },
@@ -133,7 +137,7 @@ local function playRound(players)
 	end
 	lastGame = game_
 	local mut = pickMutation()
-	local ctx = { arena = game_.arena, alive = {}, score = {}, running = false, conns = {}, tier = tier }
+	local ctx = { arena = game_.arena, alive = {}, score = {}, outAt = {}, running = false, conns = {}, tier = tier }
 	local passportDeparted = {}
 	function ctx.connect(c)
 		table.insert(ctx.conns, c)
@@ -201,6 +205,7 @@ local function playRound(players)
 			local fell = root and kill and root.Position.Y < kill.Position.Y + 3
 			if not p.Parent or not hum or hum.Health <= 0 or fell then
 				ctx.alive[p] = nil
+				ctx.outAt[p] = os.clock() -- v53: elimination order for the results screen
 				if p.Parent then
 					announce:FireClient(p, "💥 طحت! تفرّج على الباقين", "out")
 					p:SetAttribute("Mutation", nil)
@@ -282,18 +287,57 @@ local function playRound(players)
 	for _, c in ipairs(ctx.conns) do
 		c:Disconnect()
 	end
+	-- v53: the results card (ArcadeResults.client) replaced the old "winner" announcement toast.
+	-- Ranked table. score games: by score; survival: survivors first, then whoever lasted longest; co-op: team
+	local isWinner = {}
+	for _, p in ipairs(winners) do
+		isWinner[p] = true
+	end
+	local rows = {}
 	for _, p in ipairs(players) do
 		if p.Parent then
-			announce:FireClient(
-				p,
-				#names > 0
-						and ("👑 الفائز: " .. table.concat(names, "، ") .. ("  (+10 💰 +%d 🧪)"):format(
-							2 + tier
-						))
-					or "ما فاز أحد هالمرة 😅",
-				"result"
-			)
+			table.insert(rows, {
+				player = p,
+				name = p.DisplayName,
+				score = ctx.score[p] or 0,
+				alive = ctx.alive[p] == true,
+				outAt = ctx.outAt[p] or math.huge,
+				winner = isWinner[p] == true,
+			})
 		end
+	end
+	table.sort(rows, function(a, b)
+		if a.winner ~= b.winner then
+			return a.winner
+		end
+		if game_.mode == "survive" then
+			return a.outAt > b.outAt
+		end
+		return a.score > b.score
+	end)
+	local list = {}
+	for i, r in ipairs(rows) do
+		list[i] = { name = r.name, score = r.score, alive = r.alive, winner = r.winner }
+	end
+	for i, r in ipairs(rows) do
+		resultsEvent:FireClient(r.player, {
+			title = game_.ar,
+			mode = game_.mode,
+			teamDone = ctx.teamDone == true,
+			list = list,
+			rank = i,
+			coins = 2 + (r.winner and 10 or 0),
+			research = (
+				(
+						Profiles.state[r.player]
+						and Profiles.state[r.player].upgrades
+						and Profiles.state[r.player].upgrades.mito
+					)
+					and 2
+				or 1
+			) + (r.winner and (2 + tier) or 0),
+			nextIn = RESULTS + INTERMISSION,
+		})
 	end
 	lastWinnersText = #names > 0 and table.concat(names, "، ") or "لا أحد"
 	setBoard(
