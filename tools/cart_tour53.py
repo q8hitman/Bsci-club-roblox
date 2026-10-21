@@ -89,6 +89,35 @@ VARIANT = {
 }
 
 
+# v59 (owner: "less predictable track geometry"): each specialty gets its own track signature on top of the shared
+# five-leg layout. b1/b2: S-bend slaloms after the bridge and before the drop (angle, radius) - every (a, -2a, a)
+# S keeps the line, so legs still end at the edge; c: leg C profile ("hills", n, h) / ("camel", [h..]) uneven humps /
+# ("drop", depth) a dramatic but safe dive and climb; d: after the mesa, S-bends or ("helix", deg, R, dy) a scenic spiral.
+SIG = {
+    "micro": dict(b1=[(24, 200)], b2=[(18, 260), (18, 260)], c=("hills", 3, 16), d=[(30, 140)]),
+    "biochem": dict(b1=[(30, 100), (30, 100), (30, 100)], b2=[(20, 200)], c=("camel", [10, 22, 14]),
+                    d=("helix", 360, 60, 24)),
+    "animal": dict(b1=[(16, 320)], b2=[(28, 160), (28, 160)], c=("drop", 34), d=[(36, 120)]),
+    "plant": dict(b1=[(22, 220), (22, 220)], b2=[(32, 130)], c=("hills", 4, 14), d=("helix", 360, 70, -18)),
+    "molecular": dict(b1=[(26, 150)], b2=[(26, 130), (26, 130), (26, 130)], c=("camel", [8, 16, 24, 12]),
+                      d=[(20, 240)]),
+    "forensic": dict(b1=[(34, 100), (34, 100)], b2=[(14, 320)], c=("drop", 28), d=("helix", 360, 55, 20)),
+    "agri": dict(b1=[(12, 400)], b2=[(20, 240), (20, 240)], c=("hills", 4, 10), d=[(28, 150), (28, 150)]),
+    "biotech": dict(b1=[(30, 130), (30, 130)], b2=[(24, 180)], c=("drop", 40), d=("helix", 360, 65, 28)),
+}
+
+
+def zadv(bends):
+    """distance an S-bend list advances along the leg"""
+    return sum(4 * R * math.sin(math.radians(a)) for a, R in bends)
+
+
+def slalom(t, bends, w):
+    """right-left S-bends; the side alternates so the rider feels right, left, right..."""
+    for i, (a, R) in enumerate(bends):
+        s_bend(t, w if i % 2 == 0 else -w, a, R)
+
+
 def to_edge(t):
     """distance from here to the valley edge (z = +-LEGZ) in the direction the turtle is heading along z"""
     hz = math.cos(math.radians(t.yaw))
@@ -124,12 +153,15 @@ def stage_path(t, key, s):
     t.marks[key + ":overlook"] = t.last_center
     i_leg = len(t.pts)
     # ---- B: the highline
+    sig = SIG[key]
+    # the bridge gives way when the slaloms are long, so the descent after them always has >= ~330 studs
+    bridge = max(300.0, min(520.0, 2 * LEGZ - zadv(sig["b1"]) - zadv(sig["b2"]) - 160 - 330))
     i0 = len(t.pts)
-    t.straight(520, dy=8)
+    t.straight(bridge, dy=8)
     t.marks[key + ":bridge"] = (i0, len(t.pts))
-    s_bend(t, west(t))
-    t.straight(300)
-    s_bend(t, -west(t))
+    slalom(t, sig["b1"], west(t))
+    t.straight(160)
+    slalom(t, sig["b2"], -west(t))
     t.straight(to_edge(t), dy=mid + 10 - t.p[1])
     hairpin()
     # ---- C: the slot canyon, then rolling hills
@@ -137,9 +169,19 @@ def stage_path(t, key, s):
     i0 = len(t.pts)
     t.straight(380, flags=["k"])
     t.marks[key + ":canyon"] = (i0, len(t.pts))
-    for _ in range(hills):
-        t.straight(120, dy=hill_h)
-        t.straight(120, dy=-hill_h)
+    prof = sig["c"]
+    if prof[0] == "camel":          # uneven humps: the rhythm never settles
+        for h in prof[1]:
+            t.straight(120, dy=h)
+            t.straight(120, dy=-h)
+    elif prof[0] == "drop":         # a dramatic but safe dive into a dip and back out
+        t.straight(160, dy=-prof[1])
+        t.straight(200)
+        t.straight(160, dy=prof[1])
+    else:
+        for _ in range(prof[1]):
+            t.straight(120, dy=prof[2])
+            t.straight(120, dy=-prof[2])
     t.straight(to_edge(t))
     hairpin()
     # ---- D: hero set piece, mesa tunnel, S-bend, climb
@@ -150,7 +192,11 @@ def stage_path(t, key, s):
     i0 = len(t.pts)
     t.straight(160, flags=["m"])
     t.marks[key + ":mesa"] = (i0, len(t.pts))
-    s_bend(t, west(t))
+    if sig["d"][0] == "helix":      # a scenic spiral: one full turn that climbs or dips, the leg carries on in line
+        t.straight(40)
+        t.turn(sig["d"][1] * west(t), sig["d"][2], dy=sig["d"][3])
+    else:
+        slalom(t, sig["d"], west(t))
     t.straight(to_edge(t), dy=mid - t.p[1])
     t.marks[key + ":leg"] = (i_leg, len(t.pts))
     hairpin()
