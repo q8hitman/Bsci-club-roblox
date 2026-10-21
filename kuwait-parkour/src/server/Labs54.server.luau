@@ -57,6 +57,14 @@ local NAMES = {
 	eyepiece = "عدسة المجهر",
 	meyepiece = "عدسة المجهر",
 	ppe = "معاطف المختبر والنظارات",
+	bag = "كيس فراولة",
+	xbuffer = "محلول الاستخلاص (صابون + ملح)",
+	ethanol = "إيثانول مثلّج",
+	rod = "عود زجاجي",
+	board = "لوح الهرس",
+	funnel = "قمع وورقة ترشيح",
+	mash = "الكيس",
+	testtube = "أنبوب الاختبار",
 }
 local ACTION = {
 	burner = "ثبّت بالحرارة",
@@ -74,6 +82,8 @@ local ACTION = {
 	eyepiece = "شوف بالمجهر",
 	meyepiece = "شوف بالمجهر",
 	ppe = "البس المعطف والنظارة",
+	mash = "اهرس (اضغط مطوّل)",
+	testtube = "صب / لف",
 }
 
 local function toast(player, text, tone)
@@ -869,6 +879,152 @@ EXP.micro = {
 	end,
 }
 
+-- DNA extraction from strawberries: buffer + mash (soap opens the membranes, salt clumps the DNA), filter, layer
+-- ice-cold ethanol (DNA is not soluble in it, so it comes out as white threads), then wind it onto a glass rod.
+local function visible(part, transp)
+	if part then
+		part.Transparency = transp
+	end
+end
+EXP.dna = {
+	reset = function(b)
+		visible(b.items.bag:FindFirstChild("Liquid|bag"), 1)
+		for _, name in ipairs({ "Liquid|filtrate", "Liquid|ethanol", "Liquid|dna" }) do
+			local p = b.parts[name]
+			if p then
+				p.Transparency = 1
+				p:SetAttribute("Base", p:GetAttribute("Base") or p.CFrame)
+				p.CFrame = p:GetAttribute("Base")
+			end
+		end
+		b.st = { mashed = 0 }
+	end,
+	slot = function(b, player, sid, held)
+		local st = b.st
+		if sid == "board" then
+			if held == "bag" then
+				return "place"
+			elseif held == "xbuffer" then
+				if b.at.bag ~= "board" then
+					return toast(player, "🍓 حط كيس الفراولة على لوح الهرس أول")
+				end
+				st.buffer = true
+				drip(player, b.slots.board, Color3.fromRGB(200, 230, 250))
+				visible(b.items.bag:FindFirstChild("Liquid|bag"), 0.5)
+				return toast(
+					player,
+					"🧴 محلول الاستخلاص: الصابون يكسر أغشية الخلايا الدهنية، والملح يساعد الـ DNA يتجمّع",
+					"good"
+				)
+			end
+		elseif sid == "funnel" then
+			if held ~= "bag" then
+				return
+			end
+			if st.mashed < 2 then
+				return toast(player, "🍓 اهرس الفراولة مع المحلول زين أول")
+			end
+			drip(player, b.slots.funnel, Color3.fromRGB(230, 90, 120))
+			visible(b.items.bag:FindFirstChild("Liquid|bag"), 1)
+			dropCarried(player, true)
+			local f = b.parts["Liquid|filtrate"]
+			f.Transparency = 0.15
+			tween(f, 2, { Size = Vector3.new(1.4, f.Size.Y, f.Size.Z), CFrame = f.CFrame + Vector3.new(0, 0.7, 0) })
+			st.filtered = true
+			return toast(
+				player,
+				"🧻 الترشيح: الورق يحجز بقايا الثمرة، والسائل فيه الـ DNA ينزل للأنبوب",
+				"good"
+			)
+		end
+	end,
+	use = function(b, player, uid, held)
+		local st = b.st
+		if uid == "mash" then
+			if b.at.bag ~= "board" or not st.buffer then
+				return toast(
+					player,
+					"🍓 الكيس على اللوح + محلول الاستخلاص، وبعدين اهرس"
+				)
+			end
+			st.mashed += 1
+			local liq = b.items.bag:FindFirstChild("Liquid|bag")
+			visible(liq, st.mashed >= 2 and 0.05 or 0.25)
+			return toast(
+				player,
+				st.mashed >= 2
+						and "✅ انهرست زين: الخلايا انفتحت والـ DNA طلع بالمحلول. صبّه بالقمع"
+					or "👐 كمّل هرس…",
+				st.mashed >= 2 and "good" or "info"
+			)
+		elseif uid == "testtube" then
+			if held == "ethanol" then
+				if not st.filtered then
+					return toast(
+						player,
+						"🧪 الأنبوب لازم يكون فيه السائل المرشّح أول"
+					)
+				end
+				if st.layered then
+					return
+				end
+				st.layered = true
+				drip(player, b.uses.testtube, Color3.fromRGB(235, 245, 255))
+				local e = b.parts["Liquid|ethanol"]
+				e.Transparency = 0.5
+				tween(e, 1.5, { Size = Vector3.new(1.1, e.Size.Y, e.Size.Z) })
+				toast(
+					player,
+					"❄️ صبيت الإيثانول البارد على الجدار ببطء… راقب الحد بين الطبقتين",
+					"info"
+				)
+				task.delay(3, function()
+					if b.st == st then
+						local d = b.parts["Liquid|dna"]
+						d.Transparency = 0.15
+						tween(d, 2, { Size = Vector3.new(0.9, 1.2, 0.9) })
+						st.dna = true
+						toast(
+							player,
+							"🧬 خيوط بيضا! هذا الـ DNA: ما يذوب بالإيثانول فيترسّب. لفّه بالعود الزجاجي",
+							"good"
+						)
+					end
+				end)
+				return
+			elseif held == "rod" then
+				if not st.dna then
+					return toast(player, "⏳ انتظر الـ DNA يطلع بين الطبقتين أول")
+				end
+				if st.done then
+					return
+				end
+				st.done = true
+				local d = b.parts["Liquid|dna"]
+				tween(d, 1.5, { CFrame = d.CFrame + Vector3.new(0, 2.6, 0), Size = Vector3.new(0.6, 0.9, 0.6) })
+				local gained = reward(player, "dna")
+				toast(
+					player,
+					("✅ لفّيت الـ DNA! خلايا الفراولة فيها 8 نسخ من كل كروموسوم، عشان كذا الـ DNA وايد • +%d 🧪"):format(
+						gained
+					),
+					"good"
+				)
+				task.delay(4, function()
+					if b.owner == player then
+						b.finish()
+					end
+				end)
+				return
+			end
+			return toast(
+				player,
+				"🧪 الأنبوب: صب الإيثانول المثلّج، وبعدين لف الـ DNA بالعود"
+			)
+		end
+	end,
+}
+
 -- ------------------------------------------------------------------ bench ownership + prompts
 local handlers = {} -- "<kind>|item|<id>" / "|slot|" / "|use|" / "ppe" -> prompt handler (also used by the QA hook)
 local function bind(key, p, handler)
@@ -964,7 +1120,7 @@ for _, model in ipairs(mapFolder:GetDescendants()) do
 				end)
 			end
 			for uid, part in pairs(b.uses) do
-				local p = prompt(part, ACTION[uid] or "استخدم", NAMES[uid] or uid)
+				local p = prompt(part, ACTION[uid] or "استخدم", NAMES[uid] or uid, uid == "mash" and 1.5 or 0)
 				bind(b.kind .. "|use|" .. uid, p, function(player)
 					if not claim(player, b) then
 						return

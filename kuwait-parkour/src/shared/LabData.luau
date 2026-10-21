@@ -117,7 +117,7 @@ LabData.GRAM_ANSWERS = {
 }
 
 -- research points per success, and per-experiment cooldown (seconds)
-LabData.REWARD = { microscope = 4, gel = 4, pcr = 8, gram = 6 }
+LabData.REWARD = { microscope = 4, gel = 4, pcr = 8, gram = 6, dna = 6 }
 LabData.COOLDOWN = 6
 
 -- projects bought on the lab computer with research points; every one has a real effect in the game

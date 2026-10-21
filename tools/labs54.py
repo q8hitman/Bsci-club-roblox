@@ -23,12 +23,15 @@ GLASS = (210, 232, 245)
 TOP = 3.8   # bench top surface (local y)
 
 
+OX = [0.0]   # x shift for a bench built away from the west wall (v56: the DNA bench)
+
+
 def at(x, y, z):
-    return (LX + x, LY + y, LZ + z)
+    return (LX + x + OX[0], LY + y, LZ + z)
 
 
 def r(name, x0, x1, y0, y1, z0, z1, col, mat="SmoothPlastic", **kw):
-    C5.rect(name, LX + min(x0, x1), LX + max(x0, x1), LY + min(y0, y1), LY + max(y0, y1), LZ + min(z0, z1),
+    C5.rect(name, LX + OX[0] + min(x0, x1), LX + OX[0] + max(x0, x1), LY + min(y0, y1), LY + max(y0, y1), LZ + min(z0, z1),
             LZ + max(z0, z1), col, mat, **kw)
 
 
@@ -39,7 +42,7 @@ def part(name, size, pos, col, mat="SmoothPlastic", **kw):
 
 def vc(name, x, y0, y1, z, d, col, mat="SmoothPlastic", **kw):
     kw.setdefault("collide", False)
-    vcyl(name, LX + x, LY + y0, LY + y1, LZ + z, d, col, mat, **kw)
+    vcyl(name, LX + OX[0] + x, LY + y0, LY + y1, LZ + z, d, col, mat, **kw)
 
 
 def slot(name, x, y, z, sx=1.6, sz=1.6):
@@ -214,6 +217,46 @@ def micro_bench(cz, samples):
         part("AtlasScreen", (0.1, 1.6, 2.0), (-37.45, TOP + 1.2, cz - 9.3), (70, 200, 240), "Neon", transp=0.2, shadow=False)
 
 
+def dna_bench(cz):
+    """v56 DNA extraction from strawberries: mash with extraction buffer, filter, layer ice-cold ethanol, spool the DNA.
+    Built 22 studs east of the wall benches (OX), in the space the old menu stations used to take."""
+    OX[0] = 22.0
+    try:
+        with G.Group("Bench|dna", "Model"):
+            bench(cz, "🍓 استخلاص الـ DNA • DNA extraction")
+            # mashing board, funnel + filter over a test tube in a rack
+            r("MashBoard", -41, -37, TOP, TOP + 0.3, cz - 8.5, cz - 4.5, (240, 236, 226), "SmoothPlastic", collide=False)
+            slot("board", -39, TOP + 0.3, cz - 6.5, 3.4, 3.4)
+            part("Use|mash", (0.2, 0.2, 0.2), (-39, TOP + 2.2, cz - 6.5), (0, 0, 0), transp=1, shadow=False)
+            r("TubeRack", -40, -38, TOP, TOP + 1.2, cz - 0.8, cz + 0.8, (90, 200, 240), "SmoothPlastic", collide=False)
+            vc("Use|testtube", -39, TOP + 0.4, TOP + 4.2, cz, 0.9, (225, 240, 248), "Glass", transp=0.55)
+            part("Liquid|filtrate", (0.05, 0.75, 0.75), (-39, TOP + 0.5, cz), (230, 90, 120), "SmoothPlastic", shape="Cylinder",
+                 rot=(0, 0, 90), transp=1)
+            part("Liquid|ethanol", (0.05, 0.75, 0.75), (-39, TOP + 2.0, cz), (230, 240, 250), "Glass", shape="Cylinder",
+                 rot=(0, 0, 90), transp=1)
+            part("Liquid|dna", (0.6, 0.6, 0.6), (-39, TOP + 2.2, cz), (250, 250, 246), "SmoothPlastic", shape="Ball", transp=1)
+            vc("Funnel", -39, TOP + 4.6, TOP + 5.6, cz, 2.4, (230, 236, 240), "Glass", transp=0.4)
+            vc("FunnelStem", -39, TOP + 4.0, TOP + 4.7, cz, 0.4, (230, 236, 240), "Glass", transp=0.4)
+            r("FunnelStand", -40.8, -40.5, TOP, TOP + 6, cz - 0.15, cz + 0.15, (90, 96, 104), "Metal", collide=False)
+            r("FunnelArm", -40.8, -39, TOP + 5.2, TOP + 5.4, cz - 0.15, cz + 0.15, (90, 96, 104), "Metal", collide=False)
+            slot("funnel", -39, TOP + 5.7, cz, 2.0, 2.0)
+            # shelf: the bag of strawberries, extraction buffer (soap + salt), ice-cold ethanol, a glass rod
+            with G.Group("Item|bag", "Model"):
+                part("Handle", (2.2, 0.5, 2.6), (-43, TOP + 0.25, cz + 6), (240, 244, 248), "Glass", transp=0.5)
+                for q in range(4):
+                    ball("Strawberry", LX + OX[0] - 43.6 + (q % 2) * 1.1, LY + TOP + 0.45, LZ + cz + 5.4 + (q // 2) * 1.1, 0.8,
+                         (220, 40, 60), "SmoothPlastic", collide=False)
+                part("Liquid|bag", (2.0, 0.3, 2.4), (-43, TOP + 0.2, cz + 6), (230, 90, 120), "SmoothPlastic", transp=1)
+            bottle("xbuffer", -43.0, cz + 1.0, (200, 230, 250), cap=(60, 160, 230))
+            vc("IceBath", -43, TOP, TOP + 1.0, cz - 3.5, 2.6, (90, 170, 230), "SmoothPlastic")
+            vc("IceBathIce", -43, TOP + 1.0, TOP + 1.1, cz - 3.5, 2.4, (230, 246, 255), "Ice")
+            bottle("ethanol", -43.0, cz - 3.5, (235, 245, 255), cap=(220, 60, 60), h=2.0, d=0.8)
+            with G.Group("Item|rod", "Model"):
+                part("Handle", (0.25, 4.5, 0.25), (-43, TOP + 0.2, cz - 8), (225, 240, 248), "Glass", rot=(0, 0, 90), transp=0.2)
+    finally:
+        OX[0] = 0.0
+
+
 def ppe_rack(x, z):
     """lab coats and goggles by the entrance: the first stop for every experiment"""
     with G.Group("PPERack", "Model"):
@@ -239,3 +282,4 @@ def build():
     micro_bench(36, [("blood", (200, 90, 110)), ("elodea", (90, 170, 80)), ("cheek", (200, 170, 220)),
                      ("staph", (140, 70, 190))])
     ppe_rack(-18, 44)
+    dna_bench(-8)
