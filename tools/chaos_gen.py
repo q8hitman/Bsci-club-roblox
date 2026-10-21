@@ -188,17 +188,37 @@ def cell_control_room(cx=0.0, cz=-650.0):
     CoreLever + Core, SymbolScreen|1..2, HintTerminal, ResetTerminal, RoomBounds, PuzzleSpawn."""
     W, D = 76.0, 60.0
     with G.Group("PuzzleRoom_CellControl"):
-        box("PuzzleFloor", (W, 2, D), (cx, Y - 1, cz), (96, 108, 132), "SmoothPlastic")
+        # v59 (owner: weak, unclear room): an indoor control room inside a cell. Ceiling + lamps, panelled walls with
+        # round windows onto the cytoplasm, and one floor pad per station so the three puzzles read at a glance.
+        box("PuzzleFloor", (W, 2, D), (cx, Y - 1, cz), (62, 70, 88), "SmoothPlastic")
+        box("PuzzleCeiling", (W + 1.2, 0.6, D + 1.2), (cx, Y + 12.9, cz), (44, 50, 64), "SmoothPlastic")
         for lx in (-24, 0, 24):   # ceiling lamps: the arcade's dusk lighting made the room too dark to read
             for lz in (-14, 10):
-                box("PuzzleLamp", (10, 0.4, 4), (cx + lx, Y + 13, cz + lz), (255, 246, 226), "Neon", collide=False, shadow=False,
-                    light=(1.2, 30, (255, 246, 226)))
+                box("PuzzleLamp", (10, 0.3, 4), (cx + lx, Y + 12.45, cz + lz), (255, 246, 226), "Neon", collide=False,
+                    shadow=False, light=(1.6, 30, (255, 246, 226)))
+        WALL, DADO = (92, 112, 140), (46, 54, 72)
         for sx, sz, sw, sd in ((0, -D / 2, W, 1.2), (-W / 2, 0, 1.2, D), (W / 2, 0, 1.2, D)):
-            box("PuzzleWall", (sw, 12, sd), (cx + sx, Y + 6, cz + sz), (110, 140, 170), "SmoothPlastic")
+            box("PuzzleWall", (sw, 12, sd), (cx + sx, Y + 6, cz + sz), WALL, "SmoothPlastic")
+            box("PuzzleDado", (sw + 0.3 if sd < 2 else sw, 3, sd + 0.3 if sw < 2 else sd), (cx + sx, Y + 1.5, cz + sz), DADO,
+                "SmoothPlastic", collide=False)
             box("PuzzleTrim", (sw + 0.2, 0.4, sd + 0.2), (cx + sx, Y + 12.1, cz + sz), (120, 255, 200), "Neon", collide=False,
                 shadow=False)
+        for side in (-1, 1):   # round windows onto the cytoplasm on both side walls
+            for wz in (-14, 12):
+                disc_x = cx + side * (W / 2 - 0.4)
+                G.part("CellWindow", (0.3, 6, 6), (disc_x, Y + 7, cz + wz), (240, 150, 210), "Glass", shape="Cylinder",
+                       transp=0.35, collide=False, shadow=False)
+                G.part("CellWindowRing", (0.4, 7, 7), (disc_x + side * 0.1, Y + 7, cz + wz), DADO, "Metal", shape="Cylinder",
+                       collide=False, shadow=False)
         for sx in (-1, 1):   # south wall with a wide doorway
-            box("PuzzleWall", (W / 2 - 8, 12, 1.2), (cx + sx * (W / 4 + 4), Y + 6, cz + D / 2), (110, 140, 170), "SmoothPlastic")
+            box("PuzzleWall", (W / 2 - 8, 12, 1.2), (cx + sx * (W / 4 + 4), Y + 6, cz + D / 2), WALL, "SmoothPlastic")
+        # station pads: circuit (west), specimens (east), core (north centre)
+        box("StationPadCircuit", (30, 0.1, 22), (cx - 21, Y + 0.05, cz), (36, 42, 58), "SmoothPlastic", collide=False,
+            shadow=False)
+        box("StationPadSpecimens", (30, 0.1, 14), (cx + 21.75, Y + 0.05, cz - 4), (40, 62, 70), "SmoothPlastic", collide=False,
+            shadow=False)
+        G.disc("StationPadCore", cx, Y + 0.05, cz - 19, 22, 0.1, (38, 40, 70), "SmoothPlastic", collide=False, shadow=False)
+        G.disc("StationRingCore", cx, Y + 0.04, cz - 19, 23, 0.08, (150, 120, 255), "Neon", collide=False, shadow=False)
         G.part("RoomBounds", (W, 30, D), (cx, Y + 14, cz), (0, 0, 0), "SmoothPlastic", transp=1, collide=False, shadow=False)
         G.part("PuzzleSpawn", (8, 1, 8), (cx, Y + 0.5, cz + D / 2 - 6), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
         sign("PuzzleTitle", "🧩 غرفة التحكم بالخلية\nCell Control Room", (cx, Y + 10, cz - D / 2 + 0.7), (26, 4.4, 0.4), "Back",
@@ -226,9 +246,9 @@ def cell_control_room(cx=0.0, cz=-650.0):
             G.part("CorePanel|%d" % (i + 1), (4, 4, 1.2), (cx + ox, Y + 2, cz - 13), (40, 50, 70), "SmoothPlastic")
         G.part("CoreLever", (1.6, 4, 1.6), (cx, Y + 2, cz - 12), (250, 140, 60), "SmoothPlastic")
         # help desks by the door
-        G.part("HintTerminal", (3, 4, 2), (cx - 8, Y + 2, cz + D / 2 - 10), (60, 140, 220), "SmoothPlastic",
+        G.part("HintTerminal", (2.6, 4.4, 1.6), (cx - 8, Y + 2.2, cz + D / 2 - 10), (60, 140, 220), "SmoothPlastic",
                text=dict(face="Back", text="💡\nتلميح", color=(255, 255, 255), bg=(60, 140, 220), bg_t=0.0))
-        G.part("ResetTerminal", (3, 4, 2), (cx + 8, Y + 2, cz + D / 2 - 10), (200, 90, 90), "SmoothPlastic",
+        G.part("ResetTerminal", (2.6, 4.4, 1.6), (cx + 8, Y + 2.2, cz + D / 2 - 10), (200, 90, 90), "SmoothPlastic",
                text=dict(face="Back", text="🔄\nإعادة", color=(255, 255, 255), bg=(200, 90, 90), bg_t=0.0))
         G.part("Portal|Arcade", (8, 10, 0.6), (cx, Y + 5.2, cz + D / 2 + 3), (120, 255, 200), "Neon", transp=0.45,
                collide=False, shadow=False)
