@@ -42,7 +42,7 @@ GROUND = {
     "agri": ((140, 104, 66), "Ground"), "biotech": ((226, 236, 240), "SmoothPlastic"),
 }
 EVENT = {"micro": 1, "plant": 2, "forensic": 3}
-ROCK = (150, 128, 104)
+ROCK = (198, 168, 128)   # Kuwait desert sandstone
 BONE = (236, 230, 214)
 
 
@@ -200,19 +200,19 @@ def ridge(xm, next_col):
         top = GROUND_Y + rng.uniform(120, 175)
         x0, x1 = xm - RIDGE_T / 2 - rng.uniform(0, 8), xm + RIDGE_T / 2 + rng.uniform(0, 8)
         if z1 < -14 or z > 14:
-            rect("Ridge", x0, x1, GROUND_Y - 4, top, z, z1, ROCK, "Rock")
+            rect("Ridge", x0, x1, GROUND_Y - 4, top, z, z1, ROCK, "Sandstone")
         else:
             for za, zb in ((z, -14), (14, z1)):
                 if zb - za > 0.5:
-                    rect("Ridge", x0, x1, GROUND_Y - 4, top, za, zb, ROCK, "Rock")
-            rect("Ridge", x0, x1, 22, top, -14, 14, ROCK, "Rock")
+                    rect("Ridge", x0, x1, GROUND_Y - 4, top, za, zb, ROCK, "Sandstone")
+            rect("Ridge", x0, x1, 22, top, -14, 14, ROCK, "Sandstone")
         z = z1
     # a stepped crest so the skyline is not one flat line
     for q in range(10):
         zz = rng.uniform(-CELLZ, CELLZ)
         if abs(zz) > 40:
             box("RidgeCrag", (RIDGE_T * 0.7, rng.uniform(20, 50), rng.uniform(30, 60)), (xm, GROUND_Y + 170, zz),
-                (138, 118, 96), "Rock", rot=(0, rng.uniform(-20, 20), rng.uniform(-8, 8)), collide=False)
+                (184, 152, 114), "Sandstone", rot=(0, rng.uniform(-20, 20), rng.uniform(-8, 8)), collide=False)
 
 
 def draw_tunnels(t, stage_cols):
@@ -261,10 +261,10 @@ def valleys(t):
                 w = rng.uniform(90, 160)
                 x1 = max(x - w, west)
                 top = GROUND_Y + rng.uniform(150, 200)
-                rect("Cliff", x1, x, GROUND_Y - 4, top, s_ * CELLZ, s_ * (CELLZ + 40), ROCK, "Rock")
+                rect("Cliff", x1, x, GROUND_Y - 4, top, s_ * CELLZ, s_ * (CELLZ + 40), ROCK, "Sandstone")
                 x = x1
         for xe in (east, west):
-            rect("Cliff", xe - 20, xe + 20, GROUND_Y - 4, GROUND_Y + 190, -CELLZ - 40, CELLZ + 40, ROCK, "Rock")
+            rect("Cliff", xe - 20, xe + 20, GROUND_Y - 4, GROUND_Y + 190, -CELLZ - 40, CELLZ + 40, ROCK, "Sandstone")
         for xm in t.ridges:
             ridge(xm, None)
         draw_tunnels(t, CR.SPEC_TRACK_COL)

@@ -133,12 +133,12 @@ local function button(name, text, pos, color)
 	m.MinSize = Vector2.new(44, 44)
 	return b
 end
-local exitBtn = button("ExitBtn", "خروج", UDim2.fromScale(0.91, 0.25), Color3.fromRGB(150, 50, 60))
-local camBtn = button("CamBtn", "🎥", UDim2.fromScale(0.09, 0.51), Color3.fromRGB(70, 70, 110))
-local hornBtn = button("HornBtn", "🔔", UDim2.fromScale(0.91, 0.38), Color3.fromRGB(195, 140, 40))
-local fasterBtn = button("FasterBtn", "＋", UDim2.fromScale(0.91, 0.51), Color3.fromRGB(60, 140, 200))
-local slowerBtn = button("SlowerBtn", "－", UDim2.fromScale(0.91, 0.64), Color3.fromRGB(90, 100, 130))
-local goBtn = button("GoBtn", "▶", UDim2.fromScale(0.91, 0.78), Color3.fromRGB(50, 170, 90))
+local exitBtn = button("ExitBtn", "خروج", UDim2.fromScale(0.91, 0.2), Color3.fromRGB(150, 50, 60))
+local camBtn = button("CamBtn", "🎥", UDim2.fromScale(0.82, 0.31), Color3.fromRGB(70, 70, 110))
+local hornBtn = button("HornBtn", "🔔", UDim2.fromScale(0.91, 0.31), Color3.fromRGB(195, 140, 40))
+local fasterBtn = button("FasterBtn", "＋", UDim2.fromScale(0.91, 0.42), Color3.fromRGB(60, 140, 200))
+local slowerBtn = button("SlowerBtn", "－", UDim2.fromScale(0.91, 0.53), Color3.fromRGB(90, 100, 130))
+local goBtn = button("GoBtn", "▶", UDim2.fromScale(0.91, 0.65), Color3.fromRGB(50, 170, 90))
 
 -- v53 progress: "stage 3/8 • name • 42%" over a bar with one tick per stage
 local progress = Instance.new("Frame")
@@ -600,7 +600,7 @@ RunService.RenderStepped:Connect(function(dt)
 		-- chase camera: behind and above the train, looking down the line; eased so bends stay smooth
 		local cam = workspace.CurrentCamera
 		local look = frameAt(math.min(r.d + 40, total)).Position
-		local want = CFrame.lookAt(frame.Position - dir * 24 + Vector3.yAxis * 10, look)
+		local want = CFrame.lookAt(frame.Position - dir * 52 + Vector3.yAxis * 18, look)
 		cam.CFrame = cam.CFrame:Lerp(want, 1 - math.exp(-dt * 4))
 	end
 	local stateText = STATE_TEXT[r.state] or ""
