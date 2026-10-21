@@ -81,6 +81,14 @@ def s_bend(t, w, ang=24.0, R=200.0):
     t.turn(ang * w, R)
 
 
+# v56 pacing per world (so the eight valleys do not repeat one rhythm): turns in the opening spiral, number of hills
+# in leg C and their height
+VARIANT = {
+    "micro": (1, 3, 16), "biochem": (2, 2, 14), "animal": (1, 4, 24), "plant": (1, 4, 14),
+    "molecular": (3, 2, 12), "forensic": (1, 2, 10), "agri": (1, 4, 10), "biotech": (2, 3, 18),
+}
+
+
 def to_edge(t):
     """distance from here to the valley edge (z = +-LEGZ) in the direction the turtle is heading along z"""
     hz = math.cos(math.radians(t.yaw))
@@ -106,8 +114,9 @@ def stage_path(t, key, s):
     t.straight(40)
     t.turn(90 * s, R1)
     # ---- A: spiral climb, then up to the overlook
+    spirals, hills, hill_h = VARIANT[key]
     t.straight(40)
-    t.turn(360 * west(t), 55, dy=50)
+    t.turn(360 * spirals * west(t), 55, dy=40 * spirals + 10)
     t.marks[key + ":spiralA"] = t.last_center
     t.straight(to_edge(t), dy=h_top - t.p[1])
     t.marks[key + ":view"] = tuple(t.p)
@@ -128,9 +137,9 @@ def stage_path(t, key, s):
     i0 = len(t.pts)
     t.straight(380, flags=["k"])
     t.marks[key + ":canyon"] = (i0, len(t.pts))
-    for _ in range(3):
-        t.straight(120, dy=18)
-        t.straight(120, dy=-18)
+    for _ in range(hills):
+        t.straight(120, dy=hill_h)
+        t.straight(120, dy=-hill_h)
     t.straight(to_edge(t))
     hairpin()
     # ---- D: hero set piece, mesa tunnel, S-bend, climb
