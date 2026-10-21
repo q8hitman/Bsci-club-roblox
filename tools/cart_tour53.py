@@ -24,13 +24,22 @@ box, vcyl, disc, ball, sign = G.box, G.vcyl, G.disc, G.ball, G.sign
 
 def rect(name, x0, x1, y0, y1, z0, z1, *a, **k):
     """C5.rect with each pair sorted: the mirrored (-z) side passes its bounds high-to-low, which made negative sizes"""
-    C5.rect(name, min(x0, x1), max(x0, x1), min(y0, y1), max(y0, y1), min(z0, z1), max(z0, z1), *a, **k)
+    x0, x1, y0, y1, z0, z1 = min(x0, x1), max(x0, x1), min(y0, y1), max(y0, y1), min(z0, z1), max(z0, z1)
+    # v56: Roblox parts stop at 2048 studs; the enormous valleys need floors and walls longer than that -> tile
+    if x1 - x0 > 2000 or z1 - z0 > 2000:
+        nx, nz = int((x1 - x0) // 2000) + 1, int((z1 - z0) // 2000) + 1
+        for i in range(nx):
+            for j in range(nz):
+                C5.rect(name, x0 + (x1 - x0) * i / nx, x0 + (x1 - x0) * (i + 1) / nx, y0, y1,
+                        z0 + (z1 - z0) * j / nz, z0 + (z1 - z0) * (j + 1) / nz, *a, **k)
+        return
+    C5.rect(name, x0, x1, y0, y1, z0, z1, *a, **k)
 rng = random.Random(53)
 
 GROUND_Y = -14.0        # stage valley floor (the track runs at y -4 .. +44)
 STATION_GROUND = -2.4   # the station cell floor = the station deck top
-CELLZ = 780.0           # half width of every valley (v54: grand valleys)
-LEGZ = 560.0            # how far each leg runs out from the centre line (hairpin centres)
+CELLZ = 1120.0          # half width of every valley (v56: enormous valleys)
+LEGZ = 900.0            # how far each leg runs out from the centre line (hairpin centres)
 TUNNEL_L = 160.0
 RIDGE_T = 44.0
 CR.STEP = 8.0           # longer track, fewer points: the client interpolates between them
@@ -72,35 +81,59 @@ def s_bend(t, w, ang=24.0, R=200.0):
     t.turn(ang * w, R)
 
 
+def to_edge(t):
+    """distance from here to the valley edge (z = +-LEGZ) in the direction the turtle is heading along z"""
+    hz = math.cos(math.radians(t.yaw))
+    return abs((LEGZ if hz > 0 else -LEGZ) - t.p[2])
+
+
 def stage_path(t, key, s):
-    """v54 grand valley: four long legs across the valley (|z| up to LEGZ) joined by three hairpins.
-    A: spiral climb + rise to the overlook | B: high bridge over the river, S-bend, the big drop, low run
-    C: the hero set piece (straight ':low'), a tunnel through a mesa, S-bend, climb | D: double spiral down, exit.
-    The last straight is computed so the path closes exactly on z = 0 at the exit tunnel."""
+    """v56 enormous valley: five legs across the valley (|z| up to LEGZ) joined by four hairpins.
+    A (half): spiral climb + rise to the overlook | B: the highline, a long bridge over the river with two S-bends
+    C: drop into a slot canyon (':canyon'), then rolling hills | D: the hero set piece (':low'), a tunnel through a
+    mesa, an S-bend, a climb | E (half): double spiral down around the stage tower, home to z = 0 at the exit tunnel.
+    Leg remainders are measured to the edge in the heading direction, so every leg ends exactly at the edge."""
     h_top, low = PATH[key]
-    h_top += 56   # the overlook bridge is high above the valley floor
-    mid = 40.0
-    R1, RH = 120.0, 140.0
+    h_top += 76   # the highline is far above the valley floor
+    mid = 50.0
+    R1, RH = 130.0, 150.0
+    hp = [0]
+
+    def hairpin(flags=()):
+        t.turn(180 * (-s if hp[0] % 2 == 0 else s), RH, flags=flags)
+        hp[0] += 1
+
     t.straight(40)
     t.turn(90 * s, R1)
-    # ---- leg A: spiral climb, then up to the overlook
+    # ---- A: spiral climb, then up to the overlook
     t.straight(40)
-    t.turn(360 * west(t), 50, dy=45)
+    t.turn(360 * west(t), 55, dy=50)
     t.marks[key + ":spiralA"] = t.last_center
-    t.straight(LEGZ - abs(t.p[2]), dy=h_top - 45)
+    t.straight(to_edge(t), dy=h_top - t.p[1])
     t.marks[key + ":view"] = tuple(t.p)
-    t.turn(-180 * s, RH, flags=["e%d" % EVENT[key]] if key in ("micro",) else ())
+    hairpin(["e%d" % EVENT[key]] if key in ("micro",) else ())
     t.marks[key + ":overlook"] = t.last_center
     i_leg = len(t.pts)
-    # ---- leg B: the high bridge over the river, an S-bend, the big drop, a low run
+    # ---- B: the highline
     i0 = len(t.pts)
-    t.straight(360, dy=5)
+    t.straight(520, dy=8)
     t.marks[key + ":bridge"] = (i0, len(t.pts))
     s_bend(t, west(t))
-    t.straight(300, dy=low - (t.p[1]))
-    t.straight(max(40.0, LEGZ - abs(t.p[2])))
-    t.turn(180 * s, RH)
-    # ---- leg C: hero set piece, mesa tunnel, S-bend, climb
+    t.straight(300)
+    s_bend(t, -west(t))
+    t.straight(to_edge(t), dy=mid + 10 - t.p[1])
+    hairpin()
+    # ---- C: the slot canyon, then rolling hills
+    t.straight(260, dy=low - t.p[1])
+    i0 = len(t.pts)
+    t.straight(380, flags=["k"])
+    t.marks[key + ":canyon"] = (i0, len(t.pts))
+    for _ in range(3):
+        t.straight(120, dy=18)
+        t.straight(120, dy=-18)
+    t.straight(to_edge(t))
+    hairpin()
+    # ---- D: hero set piece, mesa tunnel, S-bend, climb
     t.straight(120)
     i0 = len(t.pts)
     t.straight(280, flags=["e%d" % EVENT[key]] if key in ("plant", "forensic") else ())
@@ -109,15 +142,15 @@ def stage_path(t, key, s):
     t.straight(160, flags=["m"])
     t.marks[key + ":mesa"] = (i0, len(t.pts))
     s_bend(t, west(t))
-    t.straight(max(40.0, LEGZ - abs(t.p[2])), dy=mid - t.p[1])
+    t.straight(to_edge(t), dy=mid - t.p[1])
     t.marks[key + ":leg"] = (i_leg, len(t.pts))
-    t.turn(-180 * s, RH)
-    # ---- leg D: a double spiral down around the stage's tower, then home to z = 0
+    hairpin()
+    # ---- E: double spiral down around the stage tower, then home to z = 0
     t.straight(60)
-    t.turn(720 * west(t), 46, dy=-(t.p[1]))
+    t.turn(720 * west(t), 50, dy=-(t.p[1]))
     t.marks["dna" if key == "molecular" else key + ":tower"] = t.last_center
     t.straight(max(10.0, abs(t.p[2]) - R1))
-    t.turn(90 * s, R1)
+    t.turn(90 * s * (1 if hp[0] % 2 else -1), R1)
     t.straight(40)
 
 
@@ -236,6 +269,22 @@ def cell_ranges(t):
     return [(edges[i], edges[i + 1]) for i in range(len(edges) - 1)]
 
 
+STRATA = [(205, 176, 136), (188, 156, 118), (214, 188, 150)]   # canyon rock layers (v56)
+
+
+def canyon_wall_x(x1, x, s_, top):
+    """a long side wall facing the valley (+-z), built as three stepped rock layers with a crag on top"""
+    h0, h1 = GROUND_Y + (top - GROUND_Y) * 0.42, GROUND_Y + (top - GROUND_Y) * 0.74
+    cx, L = (x1 + x) / 2, x - x1 + 2
+    for tier, (ya, yb, setback) in enumerate(((GROUND_Y - 4, h0, 0), (h0, h1, 12), (h1, top, 26))):
+        zf = s_ * (CELLZ + setback)
+        box("Cliff", (L, yb - ya, 44), (cx, (ya + yb) / 2, zf + s_ * 22), STRATA[tier], "Sandstone",
+            rot=(0, rng.uniform(-2.5, 2.5), 0))
+    box("CliffCrag", (rng.uniform(24, 46), rng.uniform(16, 34), rng.uniform(20, 34)),
+        (cx + rng.uniform(-20, 20), top + 6, s_ * (CELLZ + 34)), STRATA[rng.randrange(3)], "Sandstone",
+        rot=(rng.uniform(-10, 10), rng.uniform(0, 90), rng.uniform(-10, 10)), collide=False)
+
+
 def ridge(xm, next_col):
     """a rock ridge across the valley at x = xm with the tunnel through it"""
     z = -CELLZ - 20
@@ -243,14 +292,18 @@ def ridge(xm, next_col):
         w = rng.uniform(36, 60)
         z1 = min(z + w, CELLZ + 20)
         top = GROUND_Y + rng.uniform(210, 270)   # v54: taller than the highest bridge
-        x0, x1 = xm - RIDGE_T / 2 - rng.uniform(0, 8), xm + RIDGE_T / 2 + rng.uniform(0, 8)
-        if z1 < -14 or z > 14:
-            rect("Ridge", x0, x1, GROUND_Y - 4, top, z, z1, ROCK, "Sandstone")
-        else:
-            for za, zb in ((z, -14), (14, z1)):
-                if zb - za > 0.5:
-                    rect("Ridge", x0, x1, GROUND_Y - 4, top, za, zb, ROCK, "Sandstone")
-            rect("Ridge", x0, x1, 22, top, -14, 14, ROCK, "Sandstone")
+        # v56: three layers narrowing upward (a weathered ridge, not a slab), tunnel opening kept at the bottom
+        h0, h1 = GROUND_Y + (top - GROUND_Y) * 0.42, GROUND_Y + (top - GROUND_Y) * 0.74
+        for tier, (ya, yb, half) in enumerate(((GROUND_Y - 4, h0, RIDGE_T / 2 + 14), (h0, h1, RIDGE_T / 2 + 4),
+                                               (h1, top, RIDGE_T / 2 - 6))):
+            x0, x1 = xm - half - rng.uniform(0, 6), xm + half + rng.uniform(0, 6)
+            if z1 < -14 or z > 14 or ya >= 22:
+                rect("Ridge", x0, x1, ya, yb, z, z1, STRATA[tier], "Sandstone")
+            else:
+                for za, zb in ((z, -14), (14, z1)):
+                    if zb - za > 0.5:
+                        rect("Ridge", x0, x1, ya, yb, za, zb, STRATA[tier], "Sandstone")
+                rect("Ridge", x0, x1, 22, yb, -14, 14, STRATA[tier], "Sandstone")
         z = z1
     # a stepped crest so the skyline is not one flat line
     for q in range(10):
@@ -306,7 +359,7 @@ def valleys(t):
                 w = rng.uniform(90, 160)
                 x1 = max(x - w, west)
                 top = GROUND_Y + rng.uniform(230, 290)
-                rect("Cliff", x1, x, GROUND_Y - 4, top, s_ * CELLZ, s_ * (CELLZ + 40), ROCK, "Sandstone")
+                canyon_wall_x(x1, x, s_, top)
                 x = x1
         for xe in (east, west):
             rect("Cliff", xe - 20, xe + 20, GROUND_Y - 4, GROUND_Y + 280, -CELLZ - 40, CELLZ + 40, ROCK, "Sandstone")
@@ -362,7 +415,7 @@ def apply_captions(t):
 
 
 CELL = [0.0, 0.0]   # x range (hi, lo) of the valley being decorated (set by scenery())
-DENSITY = 1.6       # v54 valleys are ~2.5x larger (kept below that for the part budget)
+DENSITY = 2.6       # v56 valleys stream on the client, so density is limited per valley, not by the whole map
 
 
 def place(clear, cx, cz, R, r, tries=60):
@@ -381,8 +434,10 @@ def sc(clear, cx, n, r, fn):
     discs = []
     x = lo + 200
     while x < hi - 100:
-        for z in (-520, -170, 170, 520):
+        z = -CELLZ + 220
+        while z < CELLZ - 150:
             discs.append((x, z, 250))
+            z += 350
         x += 330
     CR.scatter(clear, discs, max(1, round(n * DENSITY)), r, fn)
 
@@ -1011,17 +1066,49 @@ TRACK = []
 EDGES = []
 
 
+VALLEY_PARTS = {}   # k -> [part record]: v56 the eight valleys stream on the client (CartScenery.client)
+SERVER_KEEP = ("Portal|", "CartFinishPoint", "FinishDeck", "CartStart", "CartSpawnPoint")
+
+
+def route_parts(t):
+    """swap the low-level part writer: valley parts become records for Shared/CartScenery/V<k>; the station cell,
+    portals and the finish deck stay real parts in the Map (the server needs them)."""
+    base = C5._base_part
+    ox = CR.CART_OFFSET[0]
+    edges = list(t.ridges)
+
+    def rec(name, size, pos, color, mat="Plastic", shape="Block", rot=(0, 0, 0), transp=0.0, collide=True, cls="Part",
+            text=None, extra="", shadow=True, light=None):
+        lx = pos[0] - ox
+        k = 0
+        for i, e in enumerate(edges):
+            if lx <= e:
+                k = i + 1
+        if k == 0 or cls != "Part" or extra or name.startswith(SERVER_KEEP):
+            return base(name, size, pos, color, mat, shape=shape, rot=rot, transp=transp, collide=collide, cls=cls,
+                        text=text, extra=extra, shadow=shadow, light=light)
+        VALLEY_PARTS.setdefault(k, []).append((name, size, pos, color, mat, shape, rot, transp, collide, text, shadow,
+                                               light))
+
+    C5._base_part = rec
+    return base
+
+
 def build():
     t = build_track()
     bad = CR.check(t)
-    with G.Group("CartRide"):
-        draw_track(t)
-        cells = valleys(t)
-        scenery(t, cells)
-        apply_captions(t)
-        terrain_plan(t, cells)
-        CR.stations(t)
-        station_hall(t)
+    base = route_parts(t)
+    try:
+        with G.Group("CartRide"):
+            draw_track(t)
+            cells = valleys(t)
+            scenery(t, cells)
+            apply_captions(t)
+            terrain_plan(t, cells)
+            CR.stations(t)
+            station_hall(t)
+    finally:
+        C5._base_part = base
     TRACK[:] = t.pts
     EDGES[:] = t.ridges
     zs = [abs(p[2]) for p in t.pts]
@@ -1058,3 +1145,43 @@ def write_modules(shared_dir):
         f.write("-- edges = world x where stage k begins (the ride heads to -X), zones = index into Shared/Zones for its look.\n")
         f.write("return {\n\tedges = { %s },\n" % ", ".join("%.1f" % (x + ox) for x in EDGES))
         f.write("\tzones = { %s },\n}\n" % ", ".join(str(CR.SECTION_ZONE[k]) for k in CR.SECTION_KEYS))
+    write_scenery(os.path.join(shared_dir, "CartScenery"))
+
+
+def write_scenery(folder):
+    """v56: one ModuleScript per valley returning a string, one line per part, fields separated by tabs:
+    name shape(B/S/C) sx sy sz x y z rx ry rz(deg) colour(hex) material(enum value) transp flags(c=collide,s=shadow)
+    face textHex bgHex bgT text light(b;range;hex). CartScenery.client builds a valley when the rider gets close."""
+    import os
+    os.makedirs(folder, exist_ok=True)
+    for old in os.listdir(folder):
+        if old.endswith(".luau"):
+            os.remove(os.path.join(folder, old))
+    shapes = {"Block": "B", "Ball": "S", "Cylinder": "C"}
+
+    def hx(c):
+        return "%02x%02x%02x" % (int(c[0]), int(c[1]), int(c[2]))
+
+    total = 0
+    for k, recs in sorted(VALLEY_PARTS.items()):
+        lines = []
+        for (name, size, pos, color, mat, shape, rot, transp, collide, text, shadow, light) in recs:
+            f = [name.replace("\t", " "), shapes.get(shape, "B"), "%.2f" % size[0], "%.2f" % size[1], "%.2f" % size[2],
+                 "%.2f" % pos[0], "%.2f" % pos[1], "%.2f" % pos[2], "%.1f" % rot[0], "%.1f" % rot[1], "%.1f" % rot[2],
+                 hx(color), str(G.MAT[mat]), "%.2f" % transp, ("c" if collide else "") + ("s" if shadow else "")]
+            if text:
+                f += [text["face"], hx(text.get("color", (255, 255, 255))), hx(text.get("bg") or (0, 0, 0)),
+                      "%.2f" % text.get("bg_t", 1.0), G.bidi_lines(text["text"]).replace("\n", "\\n").replace("\t", " ")]
+            else:
+                f += ["", "", "", "", ""]
+            f.append("%.2f;%.1f;%s" % (light[0], light[1], hx(light[2])) if light else "")
+            lines.append("\t".join(f))
+        body = "\n".join(lines)
+        assert "]==]" not in body
+        with open(os.path.join(folder, "V%d.luau" % k), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write("-- Generated by tools/cart_tour53.py: valley %d of the Specialties Cart Ride (%d parts), built on\n"
+                     "-- the client by CartScenery.client when a rider is near. Do not edit by hand.\n" % (k, len(recs)))
+            fh.write("return [==[\n%s\n]==]\n" % body)
+        total += len(recs)
+    print("cart scenery: %d client-side parts in %d valleys (%s)" % (
+        total, len(VALLEY_PARTS), ", ".join(str(len(v)) for _, v in sorted(VALLEY_PARTS.items()))))

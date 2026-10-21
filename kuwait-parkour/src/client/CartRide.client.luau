@@ -15,7 +15,7 @@ local mapFolder = workspace:WaitForChild("Map")
 local remote = ReplicatedStorage:WaitForChild("CartRide")
 
 local SPEEDS = { 15, 25, 35, 45, 60, 75, 90, 120 } -- cruise steps (studs/s); motion is kinematic, so all are safe
-local START_LEVEL = 4 -- v54: 45 studs/s, about 18 minutes for the whole 48k-stud ride
+local START_LEVEL = 4 -- 45 studs/s: about 32 minutes for the whole 84k-stud ride (v56); ＋ for faster
 local ACCEL, DECEL = 14, 20 -- gentle: no jolts when starting, pausing or arriving
 local LATERAL = 70 -- comfort limit for v^2 / radius in bends
 local SEAT_HEIGHT = 2.0
@@ -449,26 +449,29 @@ UserInputService.InputBegan:Connect(function(input, processed)
 end)
 
 -- ------------------------------------------------------------------ v53 ride events (local to the rider)
-local scene = mapFolder:FindFirstChild("CartRide", true)
-local evtParts = { [1] = {}, [3] = {} }
-if scene then
-	for _, p in ipairs(scene:GetDescendants()) do
-		if p:IsA("BasePart") then
-			if p.Name == "CartEvt1_Colony" then
-				table.insert(evtParts[1], { part = p, size = p.Size })
-			elseif p.Name == "CartEvt3_UV" then
-				table.insert(evtParts[3], { part = p })
+-- v56: the valleys are built on this client by CartScenery.client (workspace.CartScenery); event props live there
+local function eventParts(name)
+	local out = {}
+	local sceneRoot = workspace:FindFirstChild("CartScenery")
+	if sceneRoot then
+		for _, p in ipairs(sceneRoot:GetDescendants()) do
+			if p.Name == name and p:IsA("BasePart") then
+				table.insert(out, p)
 			end
 		end
 	end
+	return out
 end
 
 local function resetEvents()
-	for _, e in ipairs(evtParts[1]) do
-		e.part.Size = e.size * 0.12
+	for _, p in ipairs(eventParts("CartEvt1_Colony")) do
+		local full = p:GetAttribute("FullSize")
+		if full then
+			p.Size = full * 0.12
+		end
 	end
-	for _, e in ipairs(evtParts[3]) do
-		e.part.Transparency = 1
+	for _, p in ipairs(eventParts("CartEvt3_UV")) do
+		p.Transparency = 1
 	end
 end
 
@@ -513,18 +516,21 @@ runEvent = function(r, ev)
 			"🦠 شوف! المستعمرات البكتيرية تكبر قدامك (كل خلية تنقسم لثنتين)",
 			5
 		)
-		for _, e in ipairs(evtParts[1]) do
-			TweenService
-				:Create(e.part, TweenInfo.new(9, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = e.size })
-				:Play()
+		for _, p in ipairs(eventParts("CartEvt1_Colony")) do
+			local full = p:GetAttribute("FullSize")
+			if full then
+				TweenService
+					:Create(p, TweenInfo.new(9, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = full })
+					:Play()
+			end
 		end
 	elseif ev == 2 then
 		say("🌼 عاصفة لقاح! حبوب اللقاح تنتقل بالهوا من زهرة لزهرة", 5)
 		pollenStorm(r)
 	elseif ev == 3 then
 		say("🔦 شغّلنا ضوء UV: البصمات المخفية بانت على الجدران!", 5)
-		for _, e in ipairs(evtParts[3]) do
-			TweenService:Create(e.part, TweenInfo.new(1.5), { Transparency = 0.15 }):Play()
+		for _, p in ipairs(eventParts("CartEvt3_UV")) do
+			TweenService:Create(p, TweenInfo.new(1.5), { Transparency = 0.15 }):Play()
 		end
 	end
 end
