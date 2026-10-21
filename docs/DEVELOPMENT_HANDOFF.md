@@ -1,4 +1,4 @@
-# BSC Island: development handoff (v61, 2026-10-22)
+# BSC Island: development handoff (v62, 2026-10-22)
 
 For whoever continues: Claude Code, Codex, or a person. **Continue this project. Do not restart or redesign it.**
 
@@ -7,8 +7,16 @@ For whoever continues: Claude Code, Codex, or a person. **Continue this project.
 |---|---|
 | Repo | `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full` (GitHub `q8hitman/Bsci-club-roblox`) |
 | Branch | `dev/v54-labs-cartride`, created from `dev/v53-release-push` at `6aac766`. Neither branch is merged into `main`. |
-| Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v61.rbxlx` (not published). v60 and every older build and backup are untouched. |
+| Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v62.rbxlx` (not published). v61 and every older build and backup are untouched. |
 | Studio | Session `KuwaitParkour_v53.rbxlx`, hot-swapped to the v54 code. It is unsaved; the file on disk is newer. |
+
+## 000000. v62: Cell Train fixed and taught on screen, Specialties Train themes + theory sculptures
+| Area | What changed | Evidence |
+|---|---|---|
+| Cell Train | Template = one Model per car (Loco, Car1..4); each car is placed on the rails along its own axle chord (the rigid model swung the rear cars off the track). Real track (bed, 2 rails, sleepers, piers on the outer loop only). Map shows only names (BillboardGui on `CellName|<id>`); `Shared/CellStops.luau` explains each of the 15 stops on a fading card while the train waits 4.5 s; nucleus stops placed by geometry | Axles 0.00 studs off the line over 400 samples; screenshots of the card and the tags |
+| Specialties Train | `WALLS` in cart_tour53: each valley has its own cliffs, ridge faces, canyon and scree. `tools/cart_concepts62.py`: 4 theory sculptures per valley at eye level with on-screen captions. Molecular text boards -> glowing base pairs | Generator 0 underground / 0 big intruders; screenshots from the rider position (micro, molecular, plant); ride started and moving |
+| Audit | `docs/FINAL_VERSION_AUDIT_v62.md` (Arabic): what is missing before the final version | Studio tour of all 14 destinations |
+**Not verified:** the cell train nucleus detour while riding (geometry is generic), the full 32 min Specialties ride, phone, multiplayer.
 
 ## 00000. v61: the owner's notes on stages, race track, lab, minigames, questions, puzzles
 | Area | What changed | Evidence |

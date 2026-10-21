@@ -265,3 +265,8 @@ Portals are parts named `Portal|<Kind>`. `destinations` lives in `src/server/Mai
 - Cart: FINALE per valley in cart_tour53 (spiral / beside / through), clearance envelope checks every build.
 - Race tracks: tools/racetrack61.py (fillet corners). Puzzle room "Restart the Cell" + ServerStorage.PuzzleQA (Studio).
 - Lab Rush is real science now; arenas themed. Shared QuestionHistory (server) for every quiz mode.
+
+## v62 (2026-10-22, local only, NOT published). Same branch. docs/DEVELOPMENT_HANDOFF.md section 000000
+- Cell Train: per-car placement (TrainTemplate/Loco,Car1..4), lessons in Shared/CellStops (map = names only).
+- Specialties Train: WALLS theme per valley + tools/cart_concepts62.py theory sculptures. Final audit: docs/FINAL_VERSION_AUDIT_v62.md.
+- Tycoons come after the final version (owner).
