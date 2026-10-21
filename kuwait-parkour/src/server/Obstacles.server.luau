@@ -16,6 +16,7 @@ local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CollectionService = game:GetService("CollectionService")
 local mapFolder = workspace:WaitForChild("Map")
 
 -- tiny sound cues for puzzle feedback (played by Feedback.client)
@@ -436,7 +437,13 @@ for _, inst in ipairs(mapFolder:GetDescendants()) do
 		local args = string.split(inst.Name, "|")
 		local kind = args[1]
 		if kind == "Move" then
-			makeMove(inst, args)
+			-- v59: a server tween never carried the player standing on it. MovingPlatforms.client moves the platform
+			-- from the shared server clock and carries the local character; the server copy stays still.
+			local o = nums(args[2])
+			inst:SetAttribute("MoveOffset", Vector3.new(o[1] or 0, o[2] or 0, o[3] or 0))
+			inst:SetAttribute("MovePeriod", tonumber(args[3]) or 4)
+			inst:SetAttribute("MovePhase", tonumber(args[4]) or 0)
+			CollectionService:AddTag(inst, "BSCMover")
 		elseif kind == "KillMove" then
 			makeMove(inst, args)
 			makeKill(inst)

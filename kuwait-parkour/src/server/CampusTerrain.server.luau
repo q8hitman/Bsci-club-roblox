@@ -6,7 +6,8 @@ local T = workspace.Terrain
 local CELL = 10
 local RADIUS = 700
 -- flat areas: the campus inside its hedges, and the wider strip with the road + parking in front
-local FLAT = { { -184, 184, -170, 280 }, { -262, 262, -350, -170 } }
+-- v59: + the museum grounds (tools/museum46.py lawn x 150..430, z -220..100); the dunes used to bury the museum
+local FLAT = { { -184, 184, -170, 280 }, { -262, 262, -350, -170 }, { 146, 434, -226, 104 } }
 
 local function rectDist(r, x, z)
 	local dx = math.max(r[1] - x, 0, x - r[2])
@@ -15,7 +16,11 @@ local function rectDist(r, x, z)
 end
 
 local function outside(x, z)
-	return math.min(rectDist(FLAT[1], x, z), rectDist(FLAT[2], x, z))
+	local d = math.huge
+	for _, r in ipairs(FLAT) do
+		d = math.min(d, rectDist(r, x, z))
+	end
+	return d
 end
 
 task.wait(2) -- let the map finish loading first

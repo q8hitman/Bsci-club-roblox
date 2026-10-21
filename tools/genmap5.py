@@ -47,6 +47,10 @@ G.part = _offset_part
 
 
 def rect(name, x0, x1, y0, y1, z0, z1, col, mat="SmoothPlastic", **kw):
+    # v59: sort the bounds; mirrored callers (s_ = -1) gave 134 Mullion + 15 Ribbon parts negative sizes = no glass
+    x0, x1 = min(x0, x1), max(x0, x1)
+    y0, y1 = min(y0, y1), max(y0, y1)
+    z0, z1 = min(z0, z1), max(z0, z1)
     box(name, (x1 - x0, y1 - y0, z1 - z0), ((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2), col, mat, **kw)
 
 
@@ -681,9 +685,13 @@ def outdoors():
     # red first-floor bridge between the buildings (y 24)
     z0, z1 = -30.0, 20.0 + NB_SHIFT
     rect("BridgeFloor", -50, -30, 23, 24.4, z0, z1, RED_TILE, "Brick")
+    # v59: concrete soffit + edge fascias, so from below it reads as a glazed bridge, not a brick roof
+    rect("BridgeSoffit", -50.4, -29.6, 22.4, 23.0, z0, z1, (226, 220, 206), "Concrete")
     rect("BridgeRoof", -50, -30, 36, 37, z0, z1, (226, 220, 206), "Concrete")
     for x in (-50, -30):
-        rect("BridgeGlass", x - 0.25, x + 0.25, 24.4, 36, z0, z1, GLASS, "Glass", transp=0.55)
+        # v59: owner saw "no glass": 0.55 Glass read as empty from outside; a clearer tint + a sill rail
+        rect("BridgeGlass", x - 0.25, x + 0.25, 24.4, 36, z0, z1, (150, 200, 215), "Glass", transp=0.38)
+        rect("BridgeSill", x - 0.45, x + 0.45, 24.4, 25.2, z0, z1, (88, 92, 98), "Metal")
         for z in range(int(z0), int(z1) + 1, 8):
             box("Mull", (0.6, 11.6, 0.6), (x, 30.2, z), (88, 92, 98), "SmoothPlastic", collide=False)
     for z in range(-24, int(z1), 36):
