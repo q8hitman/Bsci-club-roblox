@@ -108,6 +108,8 @@ local lastAction = {}
 -- v57 resume: the client reports each valley it reaches; the server keeps the highest one (Profiles s.cart), but only
 -- while that player really rides, and only as fast as a train can go (70 s per valley at least)
 local Profiles = require(script.Parent.Profiles)
+local Analytics = require(script.Parent.Analytics)
+local VALLEYS = { "Microbiology", "Biochemistry", "Animal", "Plant", "Molecular", "Forensic", "Agriculture", "Biotech" }
 remote.OnServerEvent:Connect(function(player, action, arg)
 	if typeof(action) ~= "string" then
 		return
@@ -126,6 +128,8 @@ remote.OnServerEvent:Connect(function(player, action, arg)
 		end
 		local from = rideFrom[player] or { t = os.clock(), valley = 1 }
 		rideFrom[player] = from
+		from.session = from.session or Analytics.newSession()
+		Analytics.funnel(player, "CartRide", from.session, k, VALLEYS[k] or tostring(k))
 		if k > (s.cart or 0) and os.clock() - from.t >= (k - from.valley) * 70 then
 			s.cart = k
 			player:SetAttribute("CartBest", k)

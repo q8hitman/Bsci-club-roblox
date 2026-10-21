@@ -1,6 +1,7 @@
 -- Server-only bridge from verified gameplay to the cosmetic evidence ledger. No grant-XP remote exists.
 local Profiles = require(script.Parent.Profiles)
 local State = require(script.Parent.PassportState)
+local Analytics = require(script.Parent.Analytics)
 local Service = {}
 function Service.refresh(player)
 	local s = Profiles.state[player]
@@ -54,6 +55,10 @@ function Service.refresh(player)
 		done += ok and 1 or 0
 	end
 	player:SetAttribute("FirstDay", flags)
+	Analytics.onboarding(player, 1, "Joined")
+	for i = 1, done do
+		Analytics.onboarding(player, i + 1, ("FirstDay %d/4"):format(i))
+	end
 	if done == #steps and Profiles.award then
 		Profiles.award(player, "firstday")
 	end

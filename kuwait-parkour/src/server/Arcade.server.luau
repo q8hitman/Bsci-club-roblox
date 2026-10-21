@@ -184,7 +184,12 @@ local function closeVote()
 	return chosen
 end
 
-voteEvent.OnServerEvent:Connect(function(player, index)
+voteEvent.OnServerEvent:Connect(function(player, index, flag)
+	-- v57 opt-out (research: Epic Minigames): spectators stay in the lobby and are not pulled into rounds
+	if index == "spectate" then
+		player:SetAttribute("ArcadeSpectate", flag == true or nil)
+		return
+	end
 	if vote and typeof(index) == "number" and vote.options[index] and inLobby(player) then
 		vote.ballots[player] = index
 		publishVotes()
@@ -458,7 +463,7 @@ task.spawn(function()
 	while true do
 		local here = {}
 		for _, p in ipairs(Players:GetPlayers()) do
-			if inLobby(p) then
+			if inLobby(p) and not p:GetAttribute("ArcadeSpectate") then
 				table.insert(here, p)
 			end
 		end
@@ -491,7 +496,7 @@ task.spawn(function()
 			local voted = closeVote()
 			here = {}
 			for _, p in ipairs(Players:GetPlayers()) do
-				if inLobby(p) then
+				if inLobby(p) and not p:GetAttribute("ArcadeSpectate") then
 					table.insert(here, p)
 				end
 			end

@@ -272,12 +272,12 @@ def env6(j, z0, z1, g):
             for q in range(5):
                 disc("Golgi", -30, g + 4 + q * 2.4, z + 20, 18 - q * 1.2, 1.4, (250, 210, 120), "SmoothPlastic", collide=False)
     elif j == 5:    # genetics
-        for z in range(int(z0) + 10, int(z1), 5):
+        for z in range(int(z0) + 10, int(z1), 10):   # v57: every 10 studs (was 5): half the Neon beads, same helix
             a = z * 0.22
             for s in (-1, 1):
-                ball("A", s * 58 + math.cos(a) * 7, g + 16 + 18 * math.sin(z * 0.02), z, 3.2, (255, 110, 190), "Neon",
+                ball("A", s * 58 + math.cos(a) * 7, g + 16 + 18 * math.sin(z * 0.02), z, 4.0, (255, 110, 190), "Neon",
                      collide=False, shadow=False)
-                ball("B", s * 58 - math.cos(a) * 7, g + 16 + 18 * math.sin(z * 0.02), z, 3.2, (80, 220, 255), "Neon",
+                ball("B", s * 58 - math.cos(a) * 7, g + 16 + 18 * math.sin(z * 0.02), z, 4.0, (80, 220, 255), "Neon",
                      collide=False, shadow=False)
         for z in range(int(z0) + 40, int(z1), 120):
             for q in range(4):

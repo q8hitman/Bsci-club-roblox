@@ -60,6 +60,38 @@ for i = 1, 3 do
 	buttons[i] = b
 end
 
+-- v57 watch-only toggle (always available near the arcade, not just during the vote)
+local watchGui = Instance.new("ScreenGui")
+watchGui.Name = "ArcadeWatch"
+watchGui.ResetOnSpawn = false
+watchGui.DisplayOrder = 14
+watchGui.Enabled = false
+watchGui.Parent = player:WaitForChild("PlayerGui")
+local watchBtn = Instance.new("TextButton")
+watchBtn.Name = "WatchBtn"
+watchBtn.AnchorPoint = Vector2.new(1, 0.5)
+watchBtn.Position = UDim2.new(1, -12, 0.62, 0)
+watchBtn.Size = UDim2.fromOffset(150, 38)
+watchBtn.BackgroundColor3 = Color3.fromRGB(40, 46, 66)
+watchBtn.TextColor3 = Color3.new(1, 1, 1)
+watchBtn.TextScaled = true
+watchBtn.Font = Enum.Font.GothamBold
+watchBtn.Parent = watchGui
+Instance.new("UICorner", watchBtn).CornerRadius = UDim.new(0.3, 0)
+watchBtn.Activated:Connect(function()
+	voteEvent:FireServer("spectate", not player:GetAttribute("ArcadeSpectate"))
+	if _G.BSCPlay then
+		_G.BSCPlay("click")
+	end
+end)
+local function refreshWatch()
+	local watching = player:GetAttribute("ArcadeSpectate") == true
+	watchBtn.Text = watching and "🎮 ألعب معاهم" or "👀 أتفرج بس"
+	watchBtn.BackgroundColor3 = watching and Color3.fromRGB(40, 150, 100) or Color3.fromRGB(40, 46, 66)
+end
+player:GetAttributeChangedSignal("ArcadeSpectate"):Connect(refreshWatch)
+refreshWatch()
+
 local function nearArcade()
 	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 	return root and (Vector3.new(root.Position.X, 0, root.Position.Z) - Vector3.new(-6000, 0, -6000)).Magnitude < 420
@@ -91,5 +123,6 @@ workspace:GetAttributeChangedSignal("ArcadeVotes"):Connect(refresh)
 workspace:GetAttributeChangedSignal("ArcadePhase"):Connect(refresh)
 while true do
 	refresh()
+	watchGui.Enabled = nearArcade() and true or false
 	task.wait(1)
 end
