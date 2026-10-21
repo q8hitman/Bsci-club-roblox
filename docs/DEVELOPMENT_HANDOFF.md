@@ -7,7 +7,7 @@ For whoever continues: Claude Code, Codex, or a person. **Continue this project.
 |---|---|
 | Repo | `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full` (GitHub `q8hitman/Bsci-club-roblox`) |
 | Branch | `dev/v53-release-push`, created from `dev/v52-world-structure` at `7172e2e` |
-| Commits | `b48b181` Grand Tour → `30708f7` HUD/camera/cliffs → `2417726` Cell Train → `07c875e` Gram stain → `b83c473` First Day (`git log --oneline -8`) |
+| Commits | v53 work runs from `b48b181` (Grand Tour) through `5b1b762` (cart props). Run `git log --oneline 7172e2e..HEAD` for the full list. |
 | Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v53.rbxlx` (not published). v52 and every older build and backup are untouched. |
 | Studio | One session titled `KuwaitParkour_v53.rbxlx`. Its scripts and map were hot-swapped to the latest code; **unsaved and not needed**, because the file on disk is newer. |
 
@@ -32,7 +32,21 @@ tools/lune/lune.exe run tools/test_passport45.luau      # also test_museum46, te
 | **Cart Ride Grand Tour**:<br>• 8 open valleys, ridges, tunnels, a hero set piece per world, 17,000-stud track (~8 min at default speed)<br>• progress bar, downhill speed feel<br>• events: colony growth, pollen storm, UV fingerprints<br>• 🎥 chase camera; gamepad R2/L2/X/Y | genmap 0 clashes, 14/14 landmarks, selene OK | **Full ride**:<br>• real ▶ click, all 8 stages<br>• colony and pollen events seen<br>• end card, «رجوع لكلية العلوم» returned to the campus<br>• camera restored, 0 script errors | no | Device-emulator layout only; buttons moved off the jump button |
 | **Cell Train**:<br>• double-membrane mitochondria with cristae<br>• nucleus envelope, pores and chromatin<br>• RER joined to the nucleus<br>• curved cis→trans Golgi; smaller lysosomes<br>• microtubule secretion route<br>• `CellLife.client`: vesicles carried by kinesin, drifting mitochondria and cytosol | selene OK | Ride ran; organelles and moving vesicles captured; 0 script errors | no | no |
 | **Gram stain** as a real procedure:<br>• reagent rack<br>• decolorizer timing band<br>• the server decides what the slide looks like; the answer stays server-side | selene OK | **Real clicks**:<br>• a wrong pick explains itself<br>• E. coli done right: +6 RP<br>• Bacillus over-decolorized: pink, rejected with the reason | no | no |
+| **Gel electrophoresis** as a procedure:<br>• load the ladder and the sample<br>• place the + electrode<br>• run the gel and size the band against the ladder; positions come only from the server (`gelRun`) | selene OK | **Real clicks**:<br>• the wrong electrode is explained<br>• 150 bp read correctly from the ladder: +4 RP | no | no |
+| **PCR**:<br>• primer choice by base pairing<br>• thermocycler with a doubling copy counter | selene OK | **Real clicks**:<br>• a wrong primer is explained<br>• the right primer opens the cycler (the timing part is unchanged since v50) | no | no |
+| **Arcade results screen**:<br>• ranked players (score, or survival order)<br>• your rank, rewards and a next-round countdown<br>• replaces the old winner message | selene OK | Solo ATP Rush round (no-winner case) | **2 clients, a real Petri Floor round:** ranks 1/2, +12/+2 coins | no |
 | **First Day at the College**:<br>• 4 optional steps (HQ, Arcade, Lab, train) with travel buttons<br>• `firstday` achievement (+50 coins, title) | Lune tests all PASS | Card shows `0000`; a real click on the HQ step travelled there and ticked it (`1000`) | no | Layout checked in the emulator only |
+
+**Multiplayer (`StudioTestService` with 2 clients), passed.** Fixtures are in `tools/studio_tests/v53.*` and `arcade53.*`:
+- Each player gets their own cart, both carts move about 250 studs, and each client sees the other's cart moving.
+- Both players run the Gram stain at the same time: +6 each, the answer stays hidden, and `gramView` works only once.
+- The First Day lab step ticks for each player separately.
+- A Petri Floor round ranks both players correctly.
+
+**Regression check:**
+- All 14 World Menu destinations land on solid floor.
+- Script errors after the tour: 0 (only "saving disabled", which is expected in Studio).
+- The obby has all checkpoints 0..100, none floating; generator violations: 0.
 
 Smaller items:
 - **Cart terrain:** `CartTerrain.server` paints 578 balls from `Shared/CartTerrain`:
@@ -44,15 +58,14 @@ Smaller items:
 - `AreaAtmosphere` and `Feedback` now test the cart region before the cell world.
 
 ## 4. Partially done / known issues
-- **Cart valleys are still fairly empty between the hero pieces** (flat floors). Next art steps:
-  - rolling ground (half-buried large parts, or runtime Terrain like `CampusTerrain`);
-  - denser props near the rails;
+- **The cart worlds now have terrain and props near the rails,** but they are still simple primitive-style art. A later art pass could add:
+  - Synty or Creator Store meshes (check their licences);
   - a petri-dish rim in Microbiology.
 - **Pre-existing campus bug, not touched (approved geometry):** 134 `Mullion` and 15 `Ribbon` parts on the campus (x −1000..1000, z −1000..0) have negative sizes, so they probably render as nothing. Check what they were meant to look like before fixing them in their generator.
-- **Cart part budget:** the place has about 32,000 parts (v52 had 28,200). Check frame rate on a real phone before adding more.
+- **Cart part budget:** the place has about 32,900 parts (v52 had 28,200). Check frame rate on a real phone before adding more.
 - **The Arabic Gram answer text** and the other lab text use two-line Arabic/English. Other panels may still mix both languages on one line, which garbles it; split those into two lines too.
-- **Not tested at all:**
-  - multiplayer (2+ clients) for any v53 change;
+- **Not tested:**
+  - the Cell Train and the First Day card with 2+ clients (they run locally per player);
   - a real phone;
   - live DataStore persistence of the `firstday` achievement.
 - **Not built** (the research proposals need owner approval or come later):
@@ -63,21 +76,21 @@ Smaller items:
   - continuing the ride from the last stage.
 
 ## 5. Next steps, in priority order
-1. **Multiplayer check**: Studio → Test → Server + 2 Clients. Check:
-   - two players riding the cart at once see each other's train;
-   - the Cell Train;
-   - the Gram stain for two players at once;
-   - the First Day card.
-2. **Cart world art pass:** ground relief, prop density, a petri rim. Keep the part budget in mind.
-3. **Arcade minigames quality pass:** PetriFloor, ATPRush, EnzymeSweeper, LastCell, LabRush, Virus Tag, Exam Hall, Game Show, Puzzle Rooms, Micro Racers, Laser Escape. Cover the results screens, feedback and fairness. Don't merge or remove any of them.
-4. **Gel electrophoresis and PCR deepening** (research update §3):
-   - gel: load the wells, set the voltage, read the ladder;
-   - PCR: a copy counter and primer choice.
-5. **Lab room 3D dressing:** benches, pipettes, a centrifuge, a gel tank; move the sign off the benches.
-6. **100-stage obby:** a stage-variety and clarity pass. Keep all 100 stages and no visible timer.
-7. **Release checklist:**
-   - phone test by the owner;
-   - private publish, only with the owner's approval.
+1. **Owner tests on a real phone:**
+   - the cart ride (buttons, progress bar, 🎥 camera);
+   - the Gram, gel and PCR panels (text size);
+   - the First Day card;
+   - frame rate in the cart worlds.
+2. **A private test publish, only with the owner's approval:**
+   - check DataStore saving (`firstday`, Passport stamps);
+   - check a real multiplayer server.
+3. **Art pass on the cart worlds:** better props (licensed meshes) and a petri rim. Keep the part budget in mind.
+4. **The other Arcade-area games:**
+   - Virus Tag, Exam Hall, Game Show, Puzzle Rooms, Micro Racers and Laser Escape already have their own flows and results;
+   - review them with real players;
+   - fix only what playtesting shows.
+5. **Light Microscopy vs. Cell ID:** the owner decides whether to merge them (research update §3).
+6. **The 100-stage obby:** a variety and clarity pass on chosen stages after the owner's review. Keep all 100 stages and no visible timer.
 
 ## 6. Owner decisions already made (do not change)
 - **Entertainment first, light and accurate science.** Reply to the owner in simple Kuwaiti Arabic.
