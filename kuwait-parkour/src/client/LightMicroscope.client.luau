@@ -866,12 +866,21 @@ render = function()
 		or "📒 دفتر المختبر • تدريب"
 end
 
-openEvent.OnClientEvent:Connect(function(kind)
+openEvent.OnClientEvent:Connect(function(kind, sampleId)
 	if kind ~= "lightmicro" then
 		return
 	end
 	gui.Enabled = true
-	if not st.sample then
+	-- v54: opened from the bench eyepiece with the slide the player put on the stage
+	local chosen
+	for _, sm in ipairs(Micro.SAMPLES) do
+		if sm.id == sampleId then
+			chosen = sm
+		end
+	end
+	if chosen and st.sample ~= chosen then
+		newSession(chosen)
+	elseif not st.sample then
 		newSession(Micro.SAMPLES[1])
 	end
 	buildNotes()

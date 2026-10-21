@@ -316,63 +316,12 @@ def research_lab():
         G.part("Portal|Campus", (11, 13, 0.6), at(8, 6.6, 51.2), (255, 190, 120), "Neon", transp=0.45, collide=False, shadow=False)
         sign("LabExitCampus", "↩ كلية العلوم", at(8, 14.5, 51.4), (10, 2.2, 0.4), "Front", bg=(150, 95, 35))
         sign("LabTitle", "🔬 معهد الأبحاث | BSC Research Institute", at(0, 19.5, 51.4), (40, 4, 0.4), "Front", bg=GRN)
-        # ---- wet lab (west): three benches + realistic instruments
+        # ---- v54 wet lab (west): four hands-on workstations + the PPE rack (tools/labs54.py). The old menu stations
+        # (microscope/pcr/gel/lightmicro/gram prompts on plain benches) were replaced; the cell-ID quiz moved to a
+        # slide-atlas screen on the microscopy bench.
         sign("WetLab", "🧪 المختبر الرطب | Wet Lab", at(-71.6, 16, -5), (0.4, 3.4, 30), "Right", bg=(30, 70, 60))
-        for z in (-30, -5, 20):
-            r("Bench", -58, -26, 0, 3.6, z - 3, z + 3, (240, 240, 236), "Marble")
-            r("BenchCabinet", -57.6, -26.4, 0, 3.2, z - 3.2, z - 2.8, WOOD, "WoodPlanks", collide=False)
-            r("ReagentShelf", -58, -26, 7, 7.4, z + 2.2, z + 3, (220, 222, 224), "Metal", collide=False)
-            # Micropipette stand & sterile tip box on every wet lab bench
-            r("PipetteStand", -55.5, -53.5, 3.6, 5.8, z - 1.2, z - 0.4, (230, 234, 240), "SmoothPlastic", collide=False)
-            r("TipBoxBlue", -52.5, -50.2, 3.6, 4.4, z - 1.6, z - 0.2, (70, 150, 235), "SmoothPlastic", collide=False)
-            r("TipBoxYellow", -49.8, -47.8, 3.6, 4.3, z - 1.6, z - 0.2, (240, 200, 60), "SmoothPlastic", collide=False)
-            for q in range(8):
-                vcyl("Reagent", LX - 56 + q * 3.8, LY + 7.4, LY + 9.2, LZ + z + 2.6, 1.0,
-                     [(80, 160, 230), (230, 120, 90), (120, 200, 120), (230, 200, 80)][q % 4], "Glass", transp=0.2, collide=False)
-        # microscope (bench 1)
-        r("LabStation|microscope", -44, -40, 3.6, 4.2, -32, -28, DARK, "Metal")
-        r("ScopeArm", -42.6, -41.4, 4.2, 9.5, -28.8, -27.6, DARK, "Metal", collide=False)
-        r("ScopeStage", -43.4, -40.6, 6, 6.4, -31, -28.6, (60, 64, 70), "Metal", collide=False)
-        vcyl("ScopeObjective", LX - 42, LY + 6.6, LY + 8.4, LZ - 29.8, 0.7, (180, 184, 190), "Metal", collide=False)
-        G.part("ScopeEyepiece", (2.6, 0.8, 0.8), at(-42, 9.8, -29.0), (50, 54, 60), "Metal", shape="Cylinder", rot=(0, 90, 60),
-               collide=False)
-        r("SlideBox", -37.5, -34.5, 3.6, 4.1, -31.2, -29.2, (245, 245, 240), "SmoothPlastic", collide=False)
-        sign("ScopeLabel", "🔬 فحص وتصنيف الخلايا\nCell Classification", at(-34, 6.2, -32.9), (9.5, 2.4, 0.3), "Front", bg=(30, 70, 60))
-        # PCR thermocycler (bench 2)
-        r("LabStation|pcr", -46, -38, 3.6, 7.2, -8, -3, (210, 214, 220), "SmoothPlastic")
-        r("PCRLid", -46.2, -37.8, 7.2, 7.8, -8.2, -2.8, (180, 186, 194), "SmoothPlastic", collide=False)
-        r("PCRScreen", -44, -40, 4.6, 6.4, -8.25, -8.15, (60, 220, 140), "Neon", collide=False)
-        # Ice bucket with Taq Polymerase & Master Mix tubes next to PCR
-        r("IceBucket", -36.5, -33.0, 3.6, 5.2, -7.2, -3.8, (110, 195, 240), "SmoothPlastic", collide=False)
-        r("IceTop", -36.2, -33.3, 5.2, 5.4, -6.9, -4.1, (225, 245, 255), "Neon", transp=0.25, collide=False)
-        sign("PCRLabel", "🧬 تفاعل البوليميراز المتسلسل\nPCR Thermal Cycler", at(-34, 6.2, -7.9), (10, 2.4, 0.3), "Front", bg=(30, 70, 60))
-        # gel electrophoresis (bench 3)
-        r("LabStation|gel", -48, -38, 3.6, 5.2, 17, 22, (200, 230, 240), "Glass", transp=0.3)
-        r("GelSlab", -47, -39, 4.2, 4.6, 17.6, 21.4, (90, 140, 255), "Neon", transp=0.35, collide=False)
-        r("PowerSupply", -36, -32, 3.6, 6.2, 18, 21, (50, 54, 60), "SmoothPlastic", collide=False)
-        r("LeadRed", -38, -36, 5.4, 5.6, 18.6, 18.9, (220, 50, 50), "SmoothPlastic", collide=False)
-        r("LeadBlack", -38, -36, 5.4, 5.6, 20.1, 20.4, (20, 20, 22), "SmoothPlastic", collide=False)
-        r("UVTransilluminator", -31.5, -27.0, 3.6, 5.0, 17.5, 21.5, (42, 38, 56), "Metal", collide=False)
-        r("UVWindow", -31.0, -27.5, 5.0, 5.15, 18.0, 21.0, (175, 110, 255), "Neon", transp=0.25, collide=False)
-        sign("GelLabel", "🧪 الفصل الكهربائي للـ DNA\nGel Electrophoresis", at(-30, 6.2, 17.1), (10.5, 2.4, 0.3), "Front", bg=(30, 70, 60))
-        # v41: Light Microscopy lab bench (opens the full simulation: LightMicroscope.client)
-        r("LabStation|lightmicro", -26, -12, 0, 3.6, 22, 28, (238, 238, 232), "Marble")
-        r("ScopeBase2", -21, -17, 3.6, 4.4, 23.5, 26.5, (40, 44, 52), "Metal", collide=False)
-        r("ScopeArm2", -19.6, -18.4, 4.4, 10, 25.4, 26.4, (40, 44, 52), "Metal", collide=False)
-        r("ScopeStage2", -21, -17, 6.2, 6.6, 23.2, 25.6, (30, 32, 38), "Metal", collide=False)
-        vcyl("ScopeObjective2", LX - 19, LY + 6.8, LY + 8.6, LZ + 24.4, 0.8, (190, 194, 200), "Metal", collide=False)
-        G.part("ScopeTube2", (1.2, 3.6, 1.2), at(-19, 10.4, 24.8), (40, 44, 52), "Metal", rot=(-25, 0, 0), collide=False)
-        ball("ScopeLamp2", LX - 19, LY + 5.0, LZ + 24.4, 1.2, (255, 240, 200), "Neon", collide=False, shadow=False)
-        sign("LightMicroLabel", "🔬 مختبر المجهر الضوئي\nLight Microscopy", at(-19, 13.5, 28.2), (12, 3.4, 0.3), "Back",
-             bg=(24, 80, 56))
-        # v50: Gram Staining interactive lab bench (symmetrical on the north side of the wet lab)
-        r("LabStation|gram", -26, -12, 0, 3.6, -33, -27, (238, 238, 232), "Marble")
-        r("GramSink", -25, -21, 3.6, 4.3, -32, -28, (180, 192, 200), "Metal", collide=False)
-        r("GramSlideRack", -20, -13, 3.6, 4.1, -31.5, -28.5, (60, 66, 74), "Metal", collide=False)
-        for q, bcol in enumerate(((130, 60, 200), (190, 130, 40), (180, 220, 250), (230, 70, 120))):
-            vcyl("GramReagent", LX - 19.2 + q * 1.8, LY + 4.1, LY + 6.1, LZ - 30.0, 0.75, bcol, "Glass", transp=0.15, collide=False)
-        sign("GramLabLabel", "🧪 مختبر صبغة جرام\nGram Staining Lab", at(-19, 13.5, -33.2), (12, 3.4, 0.3), "Front",
-             bg=(90, 40, 130))
+        import labs54
+        labs54.build()
         # ---- v52 Realistic Wet-Lab Perimeter Infrastructure (West Wall: Biosafety Cabinet, Incubator, Centrifuge, Autoclave, Safety Shower)
         # 1. Class II Biosafety Cabinet (Laminar Flow Hood)
         r("BiosafetyCabinet", -71, -61, 0, 16, -46, -34, (226, 232, 238), "Metal")
