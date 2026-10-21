@@ -111,6 +111,84 @@ holding.BackgroundColor3 = Color3.fromRGB(30, 34, 44)
 holding.BackgroundTransparency = 0.25
 holding.Visible = false
 corner(holding, 0.4)
+-- v61 lab notebook: the scientific question on top, the steps below; done = ticked green, current = bright with its
+-- reason, later = dim. Slides in from the left when a bench is claimed, slides out when it is released.
+local book = Instance.new("Frame")
+book.Name = "LabNotebook"
+book.AnchorPoint = Vector2.new(0, 0.5)
+book.Position = UDim2.new(0, -330, 0.5, 0)
+book.Size = UDim2.fromOffset(300, 330)
+book.BackgroundColor3 = Color3.fromRGB(250, 248, 240)
+book.BackgroundTransparency = 0.05
+book.Parent = gui
+corner(book, 0.05)
+local bookStroke = Instance.new("UIStroke")
+bookStroke.Color = Color3.fromRGB(40, 120, 90)
+bookStroke.Thickness = 2
+bookStroke.Parent = book
+local bookTitle = textLabel(book, UDim2.fromOffset(12, 8), UDim2.new(1, -24, 0, 24), Color3.fromRGB(30, 90, 70))
+bookTitle.TextXAlignment = Enum.TextXAlignment.Right
+local bookQ = textLabel(book, UDim2.fromOffset(12, 34), UDim2.new(1, -24, 0, 40), Color3.fromRGB(150, 90, 10))
+bookQ.TextXAlignment = Enum.TextXAlignment.Right
+bookQ.Font = Enum.Font.Gotham
+local bookRows = {}
+local bookOpen = false
+local function showNotebook(nb)
+	if not nb then
+		if bookOpen then
+			bookOpen = false
+			TweenService
+				:Create(book, TweenInfo.new(0.35, Enum.EasingStyle.Quad), { Position = UDim2.new(0, -330, 0.5, 0) })
+				:Play()
+		end
+		return
+	end
+	bookTitle.Text = "🔬 " .. nb.title
+	bookQ.Text = "السؤال: " .. nb.question
+	for _, r in ipairs(bookRows) do
+		r:Destroy()
+	end
+	table.clear(bookRows)
+	local y = 80
+	for i, st in ipairs(nb.steps) do
+		local current = i == nb.current
+		local row = textLabel(
+			book,
+			UDim2.fromOffset(12, y),
+			UDim2.new(1, -24, 0, current and 22 or 18),
+			st[3] and Color3.fromRGB(40, 140, 80)
+				or current and Color3.fromRGB(20, 24, 30)
+				or Color3.fromRGB(150, 150, 150)
+		)
+		row.TextXAlignment = Enum.TextXAlignment.Right
+		row.Text = (st[3] and "✓ " or current and "● " or "") .. i .. ". " .. st[1]
+		table.insert(bookRows, row)
+		y += current and 24 or 20
+		if current and st[2] ~= "" then
+			local why = textLabel(book, UDim2.fromOffset(12, y), UDim2.new(1, -24, 0, 18), Color3.fromRGB(90, 90, 100))
+			why.TextXAlignment = Enum.TextXAlignment.Right
+			why.Font = Enum.Font.Gotham
+			why.Text = st[2]
+			table.insert(bookRows, why)
+			y += 22
+		end
+	end
+	if nb.current > #nb.steps then
+		local doneRow =
+			textLabel(book, UDim2.fromOffset(12, y + 4), UDim2.new(1, -24, 0, 22), Color3.fromRGB(40, 140, 80))
+		doneRow.TextXAlignment = Enum.TextXAlignment.Right
+		doneRow.Text = "🎉 خلصت التجربة!"
+		table.insert(bookRows, doneRow)
+		y += 28
+	end
+	book.Size = UDim2.fromOffset(300, y + 12)
+	if not bookOpen then
+		bookOpen = true
+		TweenService:Create(book, TweenInfo.new(0.35, Enum.EasingStyle.Quad), { Position = UDim2.new(0, 84, 0.5, 0) })
+			:Play()
+	end
+end
+
 local function refreshHolding()
 	local c = player:GetAttribute("Carrying")
 	holding.Visible = c ~= nil
@@ -378,6 +456,7 @@ event.OnClientEvent:Connect(function(data)
 		local part = data.part
 		guideLight.Adornee = part
 		guideLight.Enabled = part ~= nil
+		showNotebook(data.notebook)
 		return
 	end
 	if data.kind == "toast" then

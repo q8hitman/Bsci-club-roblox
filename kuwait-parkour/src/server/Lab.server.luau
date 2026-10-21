@@ -123,71 +123,20 @@ end)
 
 -- ------------------------------------------------------------------ automatic Lab Coat inside Research Lab
 local labSpawnPart = mapFolder:FindFirstChild("LabSpawn", true)
-local notifyEvent = ReplicatedStorage:WaitForChild("Notify", 10)
 
-local function setLabCoat(player, equip)
+-- v61: the old automatic box coat is gone (it stacked on top of the PPE-rack coat from Labs54 and looked like a box).
+-- The coat now comes only from the lab's coat rack (a real safety step); leaving the lab takes it off.
+local PPE_PARTS = { Goggles = true, GoggleStrap = true }
+local function takeOffPPE(player)
 	local char = player.Character
-	if not char then
-		return
-	end
-	local existing = char:FindFirstChild("BSC_LabCoat")
-	if not equip then
-		if existing then
-			existing:Destroy()
+	if char then
+		for _, d in ipairs(char:GetChildren()) do
+			if d:IsA("BasePart") and (d.Name:sub(1, 7) == "LabCoat" or PPE_PARTS[d.Name]) then
+				d:Destroy()
+			end
 		end
-		player:SetAttribute("LabCoat", nil)
-		return
 	end
-	if existing then
-		return
-	end
-	local torso = char:FindFirstChild("UpperTorso")
-		or char:FindFirstChild("Torso")
-		or char:FindFirstChild("HumanoidRootPart")
-	if not (torso and torso:IsA("BasePart")) then
-		return
-	end
-	local coat = Instance.new("Model")
-	coat.Name = "BSC_LabCoat"
-	local body = Instance.new("Part")
-	body.Name = "CoatBody"
-	body.Size = Vector3.new(2.15, 2.35, 1.22)
-	body.Color = Color3.fromRGB(248, 250, 252)
-	body.Material = Enum.Material.SmoothPlastic
-	body.CanCollide = false
-	body.CanQuery = false
-	body.CanTouch = false
-	body.Massless = true
-	body.CFrame = torso.CFrame * CFrame.new(0, -0.15, 0)
-	body.Parent = coat
-	local weld = Instance.new("WeldConstraint")
-	weld.Part0 = torso
-	weld.Part1 = body
-	weld.Parent = body
-	local badge = Instance.new("Part")
-	badge.Name = "BSCBadge"
-	badge.Size = Vector3.new(0.45, 0.45, 0.08)
-	badge.Color = Color3.fromRGB(24, 110, 76)
-	badge.Material = Enum.Material.Neon
-	badge.CanCollide = false
-	badge.CanQuery = false
-	badge.CanTouch = false
-	badge.Massless = true
-	badge.CFrame = torso.CFrame * CFrame.new(0.55, 0.45, -0.62)
-	badge.Parent = coat
-	local bweld = Instance.new("WeldConstraint")
-	bweld.Part0 = body
-	bweld.Part1 = badge
-	bweld.Parent = badge
-	coat.Parent = char
-	player:SetAttribute("LabCoat", true)
-	if notifyEvent then
-		notifyEvent:FireClient(
-			player,
-			"🥼 تم ارتداء اللاب كوت لدخول المختبر العلمي",
-			"info"
-		)
-	end
+	player:SetAttribute("LabPPE", nil)
 end
 
 if labSpawnPart then
@@ -199,10 +148,8 @@ if labSpawnPart then
 				if root then
 					local d = root.Position - labSpawnPart.Position
 					local inLab = math.abs(d.X) < 85 and math.abs(d.Z) < 85 and math.abs(d.Y) < 40
-					if inLab and not p:GetAttribute("LabCoat") then
-						setLabCoat(p, true)
-					elseif not inLab and p:GetAttribute("LabCoat") then
-						setLabCoat(p, false)
+					if not inLab and p:GetAttribute("LabPPE") then
+						takeOffPPE(p)
 					end
 				end
 			end

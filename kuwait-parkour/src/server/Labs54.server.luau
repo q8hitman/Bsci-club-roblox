@@ -1140,6 +1140,251 @@ local NEXT = {
 		return nil
 	end,
 }
+-- v61 lab notebook (owner: "the lab steps are not clear; state the goal scientifically"): every experiment opens with
+-- its scientific question; the steps tick off from the bench's real state, the current one says WHY it matters.
+local NOTEBOOK = {
+	gram = {
+		title = "صبغة جرام",
+		question = "جدار هذي البكتيريا سميك (موجبة جرام) أو رقيق (سالبة جرام)؟",
+		steps = {
+			{
+				"ثبّت العينة على اللهب",
+				"الحرارة تلصق البكتيريا بالشريحة",
+				function(st)
+					return st.fixed
+				end,
+			},
+			{
+				"الكريستال البنفسجي",
+				"الصبغة الأساسية: تلوّن كل الخلايا",
+				function(st)
+					return (st.step or 1) > 1
+				end,
+			},
+			{
+				"محلول اليود",
+				"يحبس الصبغة داخل الجدار السميك",
+				function(st)
+					return (st.step or 1) > 2
+				end,
+			},
+			{
+				"مزيل اللون بالتوقيت",
+				"هنا الفرق: الجدار الرقيق يفقد اللون",
+				function(st)
+					return (st.step or 1) > 3
+				end,
+			},
+			{
+				"صبغة السفرانين",
+				"تلوّن اللي فقد لونه بالوردي",
+				function(st)
+					return (st.step or 1) > 4 and not st.rinse
+				end,
+			},
+			{
+				"شوف اللون بالمجهر",
+				"بنفسجي = موجبة • وردي = سالبة",
+				function(st)
+					return st.looking
+				end,
+			},
+			{
+				"سجّل النتيجة",
+				"",
+				function(st)
+					return st.answered
+				end,
+			},
+		},
+	},
+	gel = {
+		title = "الفصل الكهربائي للـ DNA",
+		question = "كم طول قطعة الـ DNA المجهولة؟",
+		steps = {
+			{
+				"حط الجل بالحوض",
+				"الجل غربال: القطع الصغيرة تمشي أسرع",
+				function(st, b)
+					return b.at.gel == "tank" or st.ran
+				end,
+			},
+			{
+				"صب المحلول المنظم",
+				"يوصّل الكهرباء ويحمي الـ DNA",
+				function(st)
+					return st.buffer
+				end,
+			},
+			{
+				"حمّل المسطرة والعينة",
+				"المسطرة قطع معروفة الطول للمقارنة",
+				function(st)
+					return st.wells and st.wells[1] and st.wells[2]
+				end,
+			},
+			{
+				"وجّه الأقطاب",
+				"الـ DNA سالب، فيمشي نحو القطب الموجب",
+				function(st)
+					return st.plusFar ~= nil
+				end,
+			},
+			{
+				"شغّل التيار",
+				"القطع تتفرّق حسب طولها",
+				function(st)
+					return st.ran
+				end,
+			},
+			{
+				"اقرأ الجل تحت الأشعة",
+				"قارن موقع العينة بالمسطرة",
+				function(st, b)
+					return st.reading or b.at.gel == "uv"
+				end,
+			},
+			{
+				"سجّل الطول",
+				"",
+				function(st)
+					return st.answered
+				end,
+			},
+		},
+	},
+	pcr = {
+		title = "تفاعل البلمرة المتسلسل PCR",
+		question = "كيف نضاعف قطعة DNA وحدة إلى مليار نسخة؟",
+		steps = {
+			{
+				"حط الأنبوب بالحامل",
+				"كل المكونات تنجمع بأنبوب واحد",
+				function(st, b)
+					return b.at.tube == "rack" or (st.n or 0) >= 5
+				end,
+			},
+			{
+				"أضف المكونات الخمسة",
+				"قالب + بادئات + نيوكليوتيدات + إنزيم Taq + محلول",
+				function(st)
+					return (st.n or 0) >= 5
+				end,
+			},
+			{
+				"الأنبوب بجهاز التدوير",
+				"يسخّن ويبرّد بدورات تتكرر",
+				function(_, b)
+					return b.at.tube == "cycler"
+				end,
+			},
+			{
+				"شغّل الدورات",
+				"كل دورة تضاعف النسخ: 2، 4، 8…",
+				function(st)
+					return st.running or st.done
+				end,
+			},
+			{
+				"النتيجة",
+				"",
+				function(st)
+					return st.done
+				end,
+			},
+		},
+	},
+	micro = {
+		title = "المجهر الضوئي",
+		question = "شكل خلايا النبات تحت المجهر؟",
+		steps = {
+			{
+				"خذ شريحة",
+				"عينة رقيقة يمر منها الضوء",
+				function(_, b)
+					for id, at in pairs(b.at) do
+						if id:match("^slide_") and at == "mstage" then
+							return true
+						end
+					end
+					return false
+				end,
+			},
+			{
+				"شوف بالعدسة وضبّط البؤرة",
+				"الجدار الخلوي والبلاستيدات الخضراء",
+				function()
+					return false
+				end,
+			},
+		},
+	},
+	dna = {
+		title = "استخلاص الـ DNA من الفراولة",
+		question = "نقدر نشوف الـ DNA بعيوننا؟",
+		steps = {
+			{
+				"الكيس على اللوح",
+				"الفراولة فيها نسخ كثيرة من الـ DNA",
+				function(st, b)
+					return b.at.bag == "board" or st.filtered
+				end,
+			},
+			{
+				"أضف محلول الاستخلاص",
+				"الصابون يكسّر أغشية الخلايا",
+				function(st)
+					return st.buffer or st.filtered
+				end,
+			},
+			{
+				"اهرس الكيس",
+				"يطلق محتويات الخلايا",
+				function(st)
+					return (st.mashed or 0) >= 2 or st.filtered
+				end,
+			},
+			{
+				"صفّي بالقمع",
+				"نشيل بقايا الخلايا",
+				function(st)
+					return st.filtered
+				end,
+			},
+			{
+				"صب الإيثانول البارد",
+				"الـ DNA ما يذوب بالإيثانول فيترسّب",
+				function(st)
+					return st.layered
+				end,
+			},
+			{
+				"لف الخيوط بالعصا",
+				"الخيوط البيضا هي الـ DNA!",
+				function(st)
+					return st.done
+				end,
+			},
+		},
+	},
+}
+local function notebook(b)
+	local nb = NOTEBOOK[b.kind]
+	if not nb then
+		return nil
+	end
+	local steps, current = {}, nil
+	for i, s in ipairs(nb.steps) do
+		local ok, done = pcall(s[3], b.st or {}, b)
+		done = ok and done and true or false
+		if not done and not current then
+			current = i
+		end
+		table.insert(steps, { s[1], s[2], done })
+	end
+	return { title = nb.title, question = nb.question, steps = steps, current = current or (#steps + 1) }
+end
+
 local function guide(player)
 	if not player.Parent then
 		return
@@ -1147,7 +1392,7 @@ local function guide(player)
 	for _, b in pairs(benches) do
 		if b.owner == player then
 			local ok, target = pcall(NEXT[b.kind], b, player)
-			event:FireClient(player, { kind = "guide", part = ok and target or nil })
+			event:FireClient(player, { kind = "guide", part = ok and target or nil, notebook = notebook(b) })
 			return
 		end
 	end
@@ -1292,30 +1537,115 @@ if ppe then
 			w.Parent = p
 			p.Parent = char
 		end
+		-- v61 (owner: "the lab coat looks bad"; Fabric rendered dark-grey knit here, so smooth white): a coat that follows the avatar. Every shell is sized from the body part
+		-- it covers (so it fits any avatar scale and moves with the arms), plus a flared hem, collar, pocket, a BSC
+		-- badge, blue nitrile gloves and goggles with a strap.
+		local WHITE, SHADE = Color3.fromRGB(248, 248, 246), Color3.fromRGB(226, 228, 230)
+		local function shell(partName, pad, yOff, ySize, color)
+			local part = char:FindFirstChild(partName)
+			if not part then
+				return
+			end
+			local sz = part.Size
+			wear(
+				"LabCoat_" .. partName,
+				Vector3.new(sz.X + pad, (ySize or sz.Y) + 0.05, sz.Z + pad),
+				part,
+				CFrame.new(0, yOff or 0, 0),
+				color or WHITE,
+				Enum.Material.SmoothPlastic
+			)
+			return part
+		end
+		local r15 = char:FindFirstChild("UpperTorso") ~= nil
+		if r15 then
+			shell("UpperTorso", 0.18)
+			local lower = shell("LowerTorso", 0.2)
+			for _, side in ipairs({ "Left", "Right" }) do
+				shell(side .. "UpperArm", 0.16)
+				local lowerArm = char:FindFirstChild(side .. "LowerArm")
+				if lowerArm then
+					shell(side .. "LowerArm", 0.14, 0.12, lowerArm.Size.Y * 0.75)
+				end
+				shell(side .. "Hand", 0.08, nil, nil, Color3.fromRGB(70, 140, 230)) -- nitrile glove
+			end
+			if lower then
+				-- the coat's hem hangs below the waist and flares a little
+				wear(
+					"LabCoatHem",
+					Vector3.new(lower.Size.X + 0.35, 1.2, lower.Size.Z + 0.3),
+					lower,
+					CFrame.new(0, -lower.Size.Y / 2 - 0.5, 0),
+					SHADE,
+					Enum.Material.SmoothPlastic
+				)
+			end
+		else
+			wear(
+				"LabCoat",
+				torso.Size + Vector3.new(0.2, 0.05, 0.2),
+				torso,
+				CFrame.new(),
+				WHITE,
+				Enum.Material.SmoothPlastic
+			)
+			for _, side in ipairs({ "Left Arm", "Right Arm" }) do
+				local arm = char:FindFirstChild(side)
+				if arm then
+					wear(
+						"LabCoatSleeve",
+						arm.Size + Vector3.new(0.14, -0.4, 0.14),
+						arm,
+						CFrame.new(0, 0.2, 0),
+						WHITE,
+						Enum.Material.SmoothPlastic
+					)
+				end
+			end
+		end
+		local front = -torso.Size.Z / 2 - 0.1
+		for _, side in ipairs({ -1, 1 }) do -- lapels
+			wear(
+				"LabCoatLapel",
+				Vector3.new(0.35, torso.Size.Y * 0.55, 0.06),
+				torso,
+				CFrame.new(side * 0.32, torso.Size.Y * 0.18, front - 0.02) * CFrame.Angles(0, 0, side * 0.35),
+				SHADE,
+				Enum.Material.SmoothPlastic
+			)
+		end
 		wear(
-			"LabCoat",
-			Vector3.new(2.25, 2.1, 1.25),
+			"LabCoatPocket",
+			Vector3.new(0.5, 0.42, 0.05),
 			torso,
-			CFrame.new(0, -0.05, 0),
-			Color3.fromRGB(248, 248, 246),
-			Enum.Material.Fabric
+			CFrame.new(-0.5, -0.05, front - 0.03),
+			SHADE,
+			Enum.Material.SmoothPlastic
 		)
 		wear(
-			"LabCoatTail",
-			Vector3.new(2.2, 1.3, 1.15),
+			"LabCoatBadge",
+			Vector3.new(0.42, 0.22, 0.05),
 			torso,
-			CFrame.new(0, -1.6, 0),
-			Color3.fromRGB(244, 244, 242),
-			Enum.Material.Fabric
+			CFrame.new(0.5, 0.35, front - 0.03),
+			Color3.fromRGB(40, 120, 90),
+			Enum.Material.SmoothPlastic
 		)
 		wear(
 			"Goggles",
-			Vector3.new(1.3, 0.4, 0.3),
+			Vector3.new(head.Size.X * 0.82, 0.42, 0.22),
 			head,
-			CFrame.new(0, 0.2, -0.62),
+			CFrame.new(0, head.Size.Y * 0.12, -head.Size.Z / 2 - 0.08),
 			Color3.fromRGB(190, 230, 250),
 			Enum.Material.Glass,
-			0.3
+			0.35
+		)
+		wear(
+			"GoggleStrap",
+			Vector3.new(head.Size.X + 0.1, 0.18, head.Size.Z + 0.1),
+			head,
+			CFrame.new(0, head.Size.Y * 0.12, 0),
+			Color3.fromRGB(40, 44, 52),
+			Enum.Material.SmoothPlastic
 		)
 		player:SetAttribute("LabPPE", true)
 		toast(player, "🥼 جاهز! اختار طاولة تجربة وابدأ", "good")
