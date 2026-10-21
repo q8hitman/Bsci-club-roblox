@@ -98,7 +98,7 @@ SIG = {
     "biochem": dict(b1=[(30, 100), (30, 100), (30, 100)], b2=[(20, 200)], c=("camel", [10, 22, 14]),
                     d=("helix", 360, 60, 24)),
     "animal": dict(b1=[(16, 320)], b2=[(28, 160), (28, 160)], c=("drop", 34), d=[(36, 120)]),
-    "plant": dict(b1=[(22, 220), (22, 220)], b2=[(32, 130)], c=("hills", 4, 14), d=("helix", 360, 70, -18)),
+    "plant": dict(b1=[(22, 220), (22, 220)], b2=[(32, 130)], c=("hills", 4, 14), d=("helix", 360, 70, 20)),
     "molecular": dict(b1=[(26, 150)], b2=[(26, 130), (26, 130), (26, 130)], c=("camel", [8, 16, 24, 12]),
                       d=[(20, 240)]),
     "forensic": dict(b1=[(34, 100), (34, 100)], b2=[(14, 320)], c=("drop", 28), d=("helix", 360, 55, 20)),
@@ -174,10 +174,11 @@ def stage_path(t, key, s):
         for h in prof[1]:
             t.straight(120, dy=h)
             t.straight(120, dy=-h)
-    elif prof[0] == "drop":         # a dramatic but safe dive into a dip and back out
-        t.straight(160, dy=-prof[1])
-        t.straight(200)
-        t.straight(160, dy=prof[1])
+    elif prof[0] == "drop":         # v61: a lift hill, then a dive back to the canyon floor level (the v59 dip went
+        t.straight(220, dy=prof[1])  # below the valley floor with no tunnel: "the track sinks into the ground")
+        t.straight(40)
+        t.straight(130, dy=-prof[1])
+        t.straight(130)
     else:
         for _ in range(prof[1]):
             t.straight(120, dy=prof[2])
@@ -193,7 +194,7 @@ def stage_path(t, key, s):
     t.straight(160, flags=["m"])
     t.marks[key + ":mesa"] = (i0, len(t.pts))
     if sig["d"][0] == "helix":      # a scenic spiral: one full turn that climbs or dips, the leg carries on in line
-        t.straight(40)
+        t.straight(110)   # v61: clear of the mesa first (the turn swung back through its walls)
         t.turn(sig["d"][1] * west(t), sig["d"][2], dy=sig["d"][3])
     else:
         slalom(t, sig["d"], west(t))
@@ -207,6 +208,16 @@ def stage_path(t, key, s):
     t.straight(max(10.0, abs(t.p[2]) - R1))
     t.turn(90 * s * (1 if hp[0] % 2 else -1), R1)
     t.straight(40)
+
+
+def underground_points(t):
+    """v61 rule: outside tunnels ('t') and the mesa bore ('m') the rails stay above the valley floor"""
+    bad = 0
+    for p in t.pts:
+        floor = STATION_GROUND if p[0] > t.ridges[0] else GROUND_Y
+        if p[1] < floor + 1.5 and not any(f in ("t", "m") for f in p[4]):
+            bad += 1
+    return bad
 
 
 def build_track():
@@ -238,7 +249,24 @@ def _frame(a, b):
     return L, yaw, pitch, (math.cos(ry), -math.sin(ry))
 
 
+_COLUMN_HASH = {}
+
+
+def column_blocked(a, floor):
+    """v61 (owner: "a pillar in the middle of the track"): a support under point a must not pass through the rider
+    envelope of any other stretch of track below it (spirals and crossings stack the track)."""
+    for cx in (int(a[0] // 16) - 1, int(a[0] // 16), int(a[0] // 16) + 1):
+        for cz in (int(a[2] // 16) - 1, int(a[2] // 16), int(a[2] // 16) + 1):
+            for q in _COLUMN_HASH.get((cx, cz), ()):
+                if floor - 1 < q[1] + 10 and q[1] < a[1] - 6 and (q[0] - a[0]) ** 2 + (q[2] - a[2]) ** 2 < 6.5 ** 2:
+                    return True
+    return False
+
+
 def draw_track(t):
+    _COLUMN_HASH.clear()
+    for q in t.pts:
+        _COLUMN_HASH.setdefault((int(q[0] // 16), int(q[2] // 16)), []).append(q)
     """rails, spine, ties and guide lights. Straight runs are merged into long parts (part budget)."""
     pts = t.pts
     starts = [i for i, _ in t.sections]
@@ -295,7 +323,7 @@ def draw_track(t):
             # supports down to the valley floor wherever the track is up in the air (never inside tunnels)
             if i % 9 == 0 and "t" not in a[4] and "m" not in a[4]:
                 floor = STATION_GROUND if a[0] > t.ridges[0] else GROUND_Y
-                if a[1] - floor > 7:
+                if a[1] - floor > 7 and not column_blocked(a, floor):
                     vcyl("Support", a[0], floor, a[1] - 1.8, a[2], 1.6 + (a[1] - floor) * 0.03, (70, 76, 88), "Metal",
                          collide=False, shadow=False)
         # a gate over the rails right after every tunnel: the stage's name, readable both ways
@@ -610,9 +638,17 @@ def stage_biochem(t, clear, cx, Y):
     landmark(clear, t.pts[slice(*t.marks["biochem:leg"])], 0.85, 46, 30, CR._lm_krebs, "🔄 دورة كربس: طاقة من الغذاء")
 
 
+def low_run(t, key):
+    """v61: z range of the straight hero run (':low'), where the whale ribcage / leaf canopy belong (the rest of the
+    leg now ends in S-bends or a spiral, which the set pieces used to cut through)"""
+    i0, i1 = t.marks[key + ":low"]
+    zs = [p[2] for p in t.pts[i0:i1]]
+    return min(zs), max(zs)
+
+
 def stage_animal(t, clear, cx, Y):
     lx, za, zb, ly = leg_x(t, "animal")
-    z0, z1 = min(za, zb), max(za, zb)
+    z0, z1 = low_run(t, "animal")
     # the low run passes INSIDE a blue whale's ribcage
     z = z0 + 10
     while z < z1 - 10:
@@ -623,7 +659,10 @@ def stage_animal(t, clear, cx, Y):
         z += 16
     rect("WhaleSpine", lx - 2.5, lx + 2.5, ly + 31, ly + 35, z0, z1, BONE, "SmoothPlastic", collide=False)
     head = z0 - 18 if za < zb else z1 + 18
-    box("WhaleSkull", (34, 16, 40), (lx, Y + 10, head), BONE, "SmoothPlastic", collide=False)
+    # v61: the skull is a hollow mouth the train rides into (the solid block sat on the rails)
+    for s_ in (-1, 1):
+        box("WhaleSkull", (11, 16, 40), (lx + s_ * 11.5, Y + 10, head), BONE, "SmoothPlastic", collide=False)
+    box("WhaleSkull", (34, 5, 40), (lx, ly + 13.5, head), BONE, "SmoothPlastic", collide=False)
     box("WhaleJaw", (30, 4, 46), (lx, Y + 2, head), BONE, "SmoothPlastic", collide=False)
     label("🐋 داخل قفص أضلاع حوت أزرق: أكبر حيوان عاش على الأرض", lx + 13, ly + 10, head + (12 if za < zb else -12),
           lx, head + (60 if za < zb else -60), 30)
@@ -639,7 +678,7 @@ def stage_animal(t, clear, cx, Y):
 
 def stage_plant(t, clear, cx, Y):
     lx, za, zb, ly = leg_x(t, "plant")
-    z0, z1 = min(za, zb), max(za, zb)
+    z0, z1 = low_run(t, "plant")
     # a canopy of giant leaves over the low run (the pollen storm, event 2, blows here)
     z = z0 + 20
     q = 0
@@ -948,6 +987,8 @@ def _bigpalm(x, z, h=None):
     """a date palm at the valley's scale (CR._palm is 14-20 tall: invisible from the bridges)"""
     h = h or rng.uniform(40, 56)
     lean = rng.uniform(-6, 6)
+    if _ENV and in_envelope((h, 3.2, 3.2), (x + CR.CART_OFFSET[0], GROUND_Y + h / 2 + CR.CART_OFFSET[1], z + CR.CART_OFFSET[2]), (0, 0, 90)):
+        return   # v61: never a palm trunk in the riders' path
     vcyl("PalmTrunk", x, GROUND_Y, GROUND_Y + h, z, 3.2, (150, 118, 82), "Wood", collide=False)
     for q in range(3):
         vcyl("PalmRing", x, GROUND_Y + h * (0.3 + q * 0.22), GROUND_Y + h * (0.3 + q * 0.22) + 1, z, 3.6,
@@ -1142,7 +1183,52 @@ VALLEY_PARTS = {}   # k -> [part record]: v56 the eight valleys stream on the cl
 SERVER_KEEP = ("Portal|", "CartFinishPoint", "FinishDeck", "CartStart", "CartSpawnPoint")
 
 
+import re as _re
+
+# the ride's own pieces may sit in the rider envelope; everything else may not (v61 clearance rule)
+TRACK_PART = _re.compile(r"^(Rail|TrackSpine|BridgeDeck|BridgeRail|GuideNeon|Tie|Tunnel|Portal|Spec|Gate|Caption)")
+CLEARANCE = {"dropped": {}, "big": []}
+_ENV = {}
+
+
+def _env_hash(t):
+    ox, oy, oz = CR.CART_OFFSET
+    _ENV.clear()
+    for q in t.pts:
+        _ENV.setdefault((int((q[0] + ox) // 24), int((q[2] + oz) // 24)), []).append((q[0] + ox, q[1] + oy, q[2] + oz))
+
+
+def in_envelope(size, pos, rot):
+    """True when the part's (conservative) box reaches into the space a seated rider passes through:
+    4.5 studs either side of the rails, from 0.6 to 9 studs above them"""
+    rx, ry, rz = rot
+    if rx == 0 and rz == 0:   # yaw only: exact footprint of the turned box
+        c, sn = abs(math.cos(math.radians(ry))), abs(math.sin(math.radians(ry)))
+        ext = ((size[0] * c + size[2] * sn) / 2, size[1] / 2, (size[0] * sn + size[2] * c) / 2)
+    elif rx == 0 and ry == 0 and abs(abs(rz) - 90) < 1e-6:   # upright cylinder / column
+        ext = (size[1] / 2, size[0] / 2, size[2] / 2)
+    else:   # any rotation: axis-aligned extents of the rotated box (|R| * half size), Roblox Angles order X*Y*Z
+        ax, ay, az = (math.radians(v) for v in rot)
+        cx, sx, cy, sy, cz, sz = math.cos(ax), math.sin(ax), math.cos(ay), math.sin(ay), math.cos(az), math.sin(az)
+        R = [[cy * cz, -cy * sz, sy],
+             [cx * sz + sx * sy * cz, cx * cz - sx * sy * sz, -sx * cy],
+             [sx * sz - cx * sy * cz, sx * cz + cx * sy * sz, cx * cy]]
+        ext = tuple(sum(abs(R[i][j]) * size[j] / 2 for j in range(3)) for i in range(3))
+    lo = [pos[i] - ext[i] for i in range(3)]
+    hi = [pos[i] + ext[i] for i in range(3)]
+    for cx in range(int((lo[0] - 5) // 24), int((hi[0] + 5) // 24) + 1):
+        for cz in range(int((lo[2] - 5) // 24), int((hi[2] + 5) // 24) + 1):
+            for (x, y, z) in _ENV.get((cx, cz), ()):
+                if lo[0] - 4.5 <= x <= hi[0] + 4.5 and lo[2] - 4.5 <= z <= hi[2] + 4.5 and lo[1] <= y + 9 and hi[1] >= y + 0.6:
+                    return True
+    return False
+
+
+TRACK_REF = [None]
+
+
 def route_parts(t):
+    TRACK_REF[0] = t
     """swap the low-level part writer: valley parts become records for Shared/CartScenery/V<k>; the station cell,
     portals and the finish deck stay real parts in the Map (the server needs them)."""
     base = C5._base_part
@@ -1159,9 +1245,15 @@ def route_parts(t):
         if k == 0 or cls != "Part" or extra or name.startswith(SERVER_KEEP):
             return base(name, size, pos, color, mat, shape=shape, rot=rot, transp=transp, collide=collide, cls=cls,
                         text=text, extra=extra, shadow=shadow, light=light)
+        if transp < 0.9 and not TRACK_PART.match(name) and in_envelope(size, pos, rot):
+            if max(size) < 24:
+                CLEARANCE["dropped"][name] = CLEARANCE["dropped"].get(name, 0) + 1
+                return None
+            CLEARANCE["big"].append((name, tuple(round(v) for v in pos)))
         VALLEY_PARTS.setdefault(k, []).append((name, size, pos, color, mat, shape, rot, transp, collide, text, shadow,
                                                light))
 
+    _env_hash(t)
     C5._base_part = rec
     return base
 
@@ -1255,5 +1347,9 @@ def write_scenery(folder):
                      "-- the client by CartScenery.client when a rider is near. Do not edit by hand.\n" % (k, len(recs)))
             fh.write("return [==[\n%s\n]==]\n" % body)
         total += len(recs)
+    print("cart underground points outside tunnels: %d" % underground_points(TRACK_REF[0]))
+    print("cart clearance: dropped %s | big intruders %d %s" % (
+        sorted(CLEARANCE["dropped"].items(), key=lambda kv: -kv[1])[:12], len(CLEARANCE["big"]),
+        sorted({n for n, _ in CLEARANCE["big"]})))
     print("cart scenery: %d client-side parts in %d valleys (%s)" % (
         total, len(VALLEY_PARTS), ", ".join(str(len(v)) for _, v in sorted(VALLEY_PARTS.items()))))
