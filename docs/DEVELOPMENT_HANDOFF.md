@@ -1,4 +1,4 @@
-# BSC Island: development handoff (v56, 2026-10-21)
+# BSC Island: development handoff (v57, 2026-10-21)
 
 For whoever continues: Claude Code, Codex, or a person. **Continue this project. Do not restart or redesign it.**
 
@@ -7,8 +7,18 @@ For whoever continues: Claude Code, Codex, or a person. **Continue this project.
 |---|---|
 | Repo | `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full` (GitHub `q8hitman/Bsci-club-roblox`) |
 | Branch | `dev/v54-labs-cartride`, created from `dev/v53-release-push` at `6aac766`. Neither branch is merged into `main`. |
-| Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v56.rbxlx` (not published). v55 and every older build and backup are untouched. |
+| Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v57.rbxlx` (not published). v56 and every older build and backup are untouched. |
 | Studio | Session `KuwaitParkour_v53.rbxlx`, hot-swapped to the v54 code. It is unsaved; the file on disk is newer. |
+
+## 00. v57: research-driven polish (report: `docs/BSC_CREATIVE_RESEARCH_AND_POLISH.md`)
+| Item | What | Test |
+|---|---|---|
+| **Cart Ride resume** | Profile field `cart` (max-merged). The client reports each valley; the server accepts it only while the player rides, and no faster than 70 s per valley. A button at the station resumes from the furthest valley, starting in its tunnel. | Studio: rode to valley 2, left, boarded again, the button resumed at the valley-2 tunnel |
+| **Lab guide** | `Labs54.server` `NEXT[kind]` sends the next object to touch; `Bench54.client` outlines it with a pulsing Highlight. It never points at a decision. | Gram: burner, then crystal violet |
+| **Arcade watch-only** | A toggle button; spectators are left out of rounds | A spectating player was not pulled into a round |
+| **Analytics funnels** | `Analytics.luau` (pcall): onboarding (joined + First Day tasks) and CartRide (valley per ride) | Static; data only appears after publishing |
+| **Fewer Neon beads** | Genetics zone helix beads every 10 studs instead of 5 | -444 parts, obby validator 0 violations |
+| **Final QA (Studio)** | Lint, Lune tests, all three two-player suites (`V53`, `Labs54`, `Arcade53`), the 14-destination travel tour | All PASS, 0 errors |
 
 ## 0. v56 (same branch): what changed, and how it works
 | Area | What | Evidence |
@@ -180,6 +190,6 @@ Smaller items:
 ## 9. Exact prompt to start Codex
 From the repo root:
 ```
-"C:\Users\User\AppData\Local\OpenAI\Codex\bin\896a0166b774037a\codex.exe" exec -C "C:\Users\User\Desktop\KuwaitParkour\BSC_project_full" "Continue BSC Island development. Read docs/DEVELOPMENT_HANDOFF.md first, then CLAUDE.md and BSC_RESUME.md. Work on branch dev/v54-labs-cartride from the latest commit. Follow section 5 (next steps) in order, respect section 6 (owner decisions) and ask before anything in section 7. Build with the commands in section 2, never overwrite older .rbxlx builds (next build is KuwaitParkour_v57.rbxlx), commit after each verified milestone, and never publish."
+"C:\Users\User\AppData\Local\OpenAI\Codex\bin\896a0166b774037a\codex.exe" exec -C "C:\Users\User\Desktop\KuwaitParkour\BSC_project_full" "Continue BSC Island development. Read docs/DEVELOPMENT_HANDOFF.md first, then CLAUDE.md and BSC_RESUME.md. Work on branch dev/v54-labs-cartride from the latest commit. Follow section 5 (next steps) in order, respect section 6 (owner decisions) and ask before anything in section 7. Build with the commands in section 2, never overwrite older .rbxlx builds (next build is KuwaitParkour_v58.rbxlx), commit after each verified milestone, and never publish."
 ```
 Or paste the same text into the existing Codex thread `01a14bdc-a4d3-7360-a7e5-eacb9a8c4924` in the Codex app.

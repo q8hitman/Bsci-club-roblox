@@ -241,3 +241,7 @@ Portals are parts named `Portal|<Kind>`. `destinations` lives in `src/server/Mai
   CartScenery.client (current +-1 valley). Server Map ~20.9k parts. Route 84k studs, ~32 min at default speed.
   Edit valleys only via tools/cart_tour53.py; server-needed valley parts must be listed in SERVER_KEEP.
 - Help.client (؟ button) replaces how-to boards. DNA extraction bench (5th). Arcade vote (ArcadeVote.client).
+
+## v57 (2026-10-21, local only, NOT published). Same branch. Research report: docs/BSC_CREATIVE_RESEARCH_AND_POLISH.md
+- Cart resume (Profiles.cart, CartRide remote "progress"/"resume"), lab guide Highlight (Labs54 NEXT), arcade
+  watch-only (ArcadeSpectate), Analytics.luau funnels. QA: V53/Labs54/Arcade53 2-client suites + 14-destination tour.
