@@ -385,6 +385,7 @@ local function changeSpeed(step)
 end
 
 goBtn.Activated:Connect(toggleGo)
+_G.BSCCartToggle = toggleGo -- same as pressing ▶ (used by the Studio multiplayer test, tools/studio_tests/v53.*)
 hornBtn.Activated:Connect(function()
 	play("sting")
 	say("🚂 توت توت! قطار التخصصات البيولوجية ينطلق", 2.5)

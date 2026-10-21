@@ -312,7 +312,8 @@ labFn.OnServerInvoke = function(player, action, a, b)
 			return nil
 		end
 		local D = LabData.GRAM_DECOLOR
-		local secs = math.clamp(b, 0, D.bar)
+		-- the claimed time can never exceed the time that really passed since the stain started
+		local secs = math.clamp(math.min(b, os.clock() - p.at), 0, D.bar)
 		p.quality = secs < D.min and "under" or secs > D.max and "over" or "ok"
 		local violet = (p.answer == "pos" and p.quality ~= "over") or (p.answer == "neg" and p.quality == "under")
 		return { color = violet and "violet" or "pink", quality = p.quality }
@@ -327,7 +328,7 @@ labFn.OnServerInvoke = function(player, action, a, b)
 			ok = b == p.answer
 		elseif p.kind == "gram" then
 			-- only a properly decolourised slide counts, and the whole procedure takes real time
-			ok = p.quality == "ok" and b == p.answer and os.clock() - p.at >= LabData.GRAM_DECOLOR.min + 2
+			ok = p.quality == "ok" and b == p.answer
 		elseif p.kind == "pcr" then
 			-- 3 cycles x 3 steps cannot honestly be finished in under ~8 s
 			ok = b == true and os.clock() - p.at > 8
