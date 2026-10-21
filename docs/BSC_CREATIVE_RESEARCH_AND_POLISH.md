@@ -133,6 +133,21 @@
 **جولة الـ 14 وجهة:** كلها على أرض صلبة، وصفر أخطاء.
 
 ---
+
+## G. بحث v59 القصير وتطبيقه (ملاحظات تجربة v58)
+
+البحث كان قصير ومن مقالات ووثائق Roblox ومنتدى المطورين. **ما لعبت هالألعاب بنفسي.**
+
+| الدرس | المصدر | وين انطبّق |
+|---|---|---|
+| المنصة المتحركة بالـ Tween ما تشيل اللاعب. الحل: الجهاز يحرّك اللاعب مع المنصة | DevForum (Jailbreak train، platform carry) | منصات الباركور |
+| الخطر لازم يبين قبل لا يصير (تحذير ½ ثانية أو أكثر، إيقاع ثابت) | DevForum + دراسات تصميم الأوبي | مرحلة المراوح: ضو أخضر ثم كهرماني ثم أحمر، ومصدّات زجاج |
+| المضمار يحتاج أرض وحواجز وخط بداية، مو خطوط مضيئة بالفراغ | منتدى المطورين (raycast cars) + أعراف ألعاب السباق | Micro Racers داخل طبق بتري عملاق |
+| غرف الألغاز: هدف واضح، وفكرة وحدة لكل محطة، وتأكيد واضح لما تنحل | مقالات تصميم غرف الهروب | غرفة التحكم بالخلية |
+| إيموجي كثير ما يطلع بخطوط Roblox | DevForum + اختبار شبكة الرموز بنفسي داخل Studio | الـ Game Show |
+| إضاءة: نيون أقل، وظلال على الأشياء الكبيرة بس | Roblox Creator Hub (performance) | مختبر الليزر واستوديو المسابقات |
+
+---
 **المصادر الرئيسية:**
 - [Roblox Performance](https://create.roblox.com/docs/performance-optimization/improve)
 - [Studio MCP](https://create.roblox.com/docs/studio/mcp)
@@ -140,6 +155,11 @@
 - [Onboarding](https://create.roblox.com/docs/production/game-design/onboarding)
 - [Funnel events](https://create.roblox.com/docs/production/analytics/funnel-events)
 - [luau-lsp](https://github.com/JohnnyMorganz/luau-lsp)
+- [DevForum: Jailbreak train platform system](https://devforum.roblox.com/t/jailbreak-train-platform-system/236339)
+- [DevForum: platform moves while character doesn't](https://devforum.roblox.com/t/platform-moves-while-character-doesnt/1051218)
+- [DevForum: raycast vehicle](https://devforum.roblox.com/t/raycast-vehicle/1906980)
+- [Roblox Creator Hub: improve performance](https://create.roblox.com/docs/performance-optimization/improve)
+- [Sherlocked: how escape rooms are designed](https://www.sherlocked.nl/blog/how-escape-rooms-are-designed)
 - [Luau Execution](https://create.roblox.com/docs/cloud/reference/features/luau-execution)
 - [Blender plugin](https://create.roblox.com/docs/art/modeling/roblox-blender-plugin)
 - [DevForum checkpoints](https://devforum.roblox.com/t/2514154)

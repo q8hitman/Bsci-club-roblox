@@ -1,4 +1,4 @@
-# BSC Island: development handoff (v58, 2026-10-21)
+# BSC Island: development handoff (v59, 2026-10-21)
 
 For whoever continues: Claude Code, Codex, or a person. **Continue this project. Do not restart or redesign it.**
 
@@ -7,8 +7,27 @@ For whoever continues: Claude Code, Codex, or a person. **Continue this project.
 |---|---|
 | Repo | `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full` (GitHub `q8hitman/Bsci-club-roblox`) |
 | Branch | `dev/v54-labs-cartride`, created from `dev/v53-release-push` at `6aac766`. Neither branch is merged into `main`. |
-| Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v58.rbxlx` (not published). v57 and every older build and backup are untouched. |
+| Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v59.rbxlx` (not published). v58 and every older build and backup are untouched. |
 | Studio | Session `KuwaitParkour_v53.rbxlx`, hot-swapped to the v54 code. It is unsaved; the file on disk is newer. |
+
+## 000. v59: the owner's v58 playtest (9 screenshots) fixed
+| Owner issue | Cause found | Fix | Studio evidence |
+|---|---|---|---|
+| Moving Obby platform doesn't carry you (Level 24) | Server `TweenService` on an anchored part never moves the character | `Move|` parts are tagged `BSCMover`; `MovingPlatforms.client` moves them from the server clock and carries the local character (delta per physics step, a jump keeps the carry 1.2 s) | Standing still: relative offset 0.00 over a full cycle; two jumps landed back on it |
+| Corridor glass missing | (1) `genmap5.rect` did not sort bounds: 149 negative-size `Mullion`/`Ribbon` parts (facade glass) did not render; (2) the Red Corridor glass at 0.55 read as empty | `rect` sorts bounds (0 negative sizes left); corridor glass 0.38 + sill + concrete soffit underneath | Before/after from below and the side |
+| Museum buried in sand | `CampusTerrain.server` FLAT list only covered the original campus; `outside()` only read the first two zones | Museum grounds added as a flat zone, `outside()` checks every zone | Lawn, path, trees visible; walked in through the entrance to the exhibits |
+| Micro Racers broken/ugly | Steering reversed (right turned left); barrier contact x0.55 per step pinned cars at ~2 studs/s; bots at full speed | Steering sign fixed, wall slide (x0.93 + heading to the wall tangent), bots 35/37/39 vs players 42; tracks rebuilt as a race inside a giant petri dish (agar, bench, barriers, curbs, chequered start, FINISH arch, colonies, microscope objective) | Full 3-lap race finished (95 s, throttle only), results card, back to arcade; D turns right |
+| Laser Escape not found | Its frame was dark with the title facing away from the lobby | `tools/arcade59.py`: five matching gateways on one arc facing the lobby (HQ, Racers, Laser straight ahead, Puzzle, Campus); rainbow pillars + 5 arena signposts removed; laser rooms became an indoor facility | E at the new gate, full 5-room run twice (82.4 s / 81.3 s) |
+| Fan stage unclear | Sign said "walk when it calms" but nothing showed when; code let you hold by walking into the wind | Glass windbreaks on the fan side (shelter), fan lights green/amber/red, wind streaks; sign removed | Behind a windbreak dx 0.00 through a gust; in the open you are blown off |
+| Memory Wall | - | Wall, title and 10 cards removed (lobby opens onto the garden glass) | Screenshot |
+| Graduation area on the walkway | - | Moved across the lawn to (136, 16), just before the eastern palms, facing the walkway; guest chairs; GradPad name kept | Screenshot from the walkway |
+| Game Show weak, bad images | U+2794 and 4 newer emoji render as boxes (glyph audit grid in Studio) | TV studio (LED wall, towers, truss, bulb stage, podiums with `PodLight|i`, framed picture screen, audience tiers); broken glyphs replaced; Arabic-first answer lines; smaller phone panel; Studio-only `ServerStorage.GameShowQA` | Full solo show (6 rounds via pods); 2-client tie test PASS: Red 20 = Blue 20, tie screen (`tools/studio_tests/gameshow59.server.luau`) |
+| Puzzle Rooms weak | - | Ceiling, panelled walls, round cytoplasm windows, a floor pad per station, slimmer kiosks | Player-view solver solved circuit, specimens, core; reward + achievement |
+| Cart Ride predictable | One 5-leg template | `cart_tour53.SIG`: per-specialty slaloms, hills/camel humps/drop, S-bends or a scenic spiral after the mesa | 87,176 studs, 0 clashes, 14/14 landmarks; same max grade 21 deg / radius 50; ride at 120: 60 fps, valleys stream, 0 errors. **Banking is not implemented** (flat rails) |
+
+Regression: Lune tests all PASS, selene 0 errors, 2-client suites V53 / Labs54 / Arcade53 PASS, validator 0 violations.
+Map 21,134 server parts (+643 vs v58: racer tracks, game show, laser rooms, chairs). Cart scenery 32,572 client parts.
+**Not done / not verified:** real phone, live server, a dedicated per-attraction art pass beyond the fixed areas, Neon reduction across the whole game.
 
 ## 00. v57: research-driven polish (report: `docs/BSC_CREATIVE_RESEARCH_AND_POLISH.md`)
 | Item | What | Test |
@@ -192,6 +211,6 @@ Smaller items:
 ## 9. Exact prompt to start Codex
 From the repo root:
 ```
-"C:\Users\User\AppData\Local\OpenAI\Codex\bin\896a0166b774037a\codex.exe" exec -C "C:\Users\User\Desktop\KuwaitParkour\BSC_project_full" "Continue BSC Island development. Read docs/DEVELOPMENT_HANDOFF.md first, then CLAUDE.md and BSC_RESUME.md. Work on branch dev/v54-labs-cartride from the latest commit. Follow section 5 (next steps) in order, respect section 6 (owner decisions) and ask before anything in section 7. Build with the commands in section 2, never overwrite older .rbxlx builds (next build is KuwaitParkour_v59.rbxlx), commit after each verified milestone, and never publish."
+"C:\Users\User\AppData\Local\OpenAI\Codex\bin\896a0166b774037a\codex.exe" exec -C "C:\Users\User\Desktop\KuwaitParkour\BSC_project_full" "Continue BSC Island development. Read docs/DEVELOPMENT_HANDOFF.md first, then CLAUDE.md and BSC_RESUME.md. Work on branch dev/v54-labs-cartride from the latest commit. Follow section 5 (next steps) in order, respect section 6 (owner decisions) and ask before anything in section 7. Build with the commands in section 2, never overwrite older .rbxlx builds (next build is KuwaitParkour_v60.rbxlx), commit after each verified milestone, and never publish."
 ```
 Or paste the same text into the existing Codex thread `01a14bdc-a4d3-7360-a7e5-eacb9a8c4924` in the Codex app.

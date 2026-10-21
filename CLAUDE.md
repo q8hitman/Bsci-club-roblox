@@ -249,3 +249,9 @@ Portals are parts named `Portal|<Kind>`. `destinations` lives in `src/server/Mai
 ## v58 (2026-10-21, local only, NOT published). Same branch.
 - luau-lsp 1.70.1 in tools/luau-lsp (git-ignored). `bash tools/typecheck.sh`; 61 known false positives listed in its header.
 - Fix: Game Show team tie now rewards both teams (was always Blue).
+
+## v59 (2026-10-21, local only, NOT published). Same branch. Owner playtest fixes: docs/DEVELOPMENT_HANDOFF.md section 000
+- Moving platforms: MovingPlatforms.client (tag BSCMover). genmap5.rect sorts bounds (facade glass back).
+- CampusTerrain FLAT includes the museum. arcade59.py gateways (scripted parts stay at the folder root!).
+- Racers: steering sign, wall slide, petri-dish tracks. Game Show: glyph audit (no U+2794 / Unicode 12+ emoji).
+- Hot swap: scratchpad swap.sh builds client/server/shared(/map) rbxm into Studio content/bsc; delete it after.
