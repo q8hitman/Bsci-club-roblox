@@ -146,8 +146,8 @@ def build():
     with G.Group("Racers47"):
         # Entrance fits inside the existing Arcade floor; the racing lobby is outside random-round selection.
         with G.Group("Entry"):
-            arch("ArcadeRaceGate",-5972,300,-5982,TEAL,"سباق العالم المجهري",width=10)
-            G.part("RaceEntrance",(8,9,2),(-5972,304.5,-5982),TEAL,"Neon",transp=.55,collide=False,shadow=False)
+            import arcade59   # v59: a matching gateway on the lobby arc
+            arcade59.gateway("Racers","RaceEntrance")
         with G.Group("Lobby"):
             G.box("LobbyFloor",(100,2,80),(-7400,299,-6000),DARK,"Concrete")
             G.part("RaceLobbySpawn",(8,1,8),(-7400,300.5,-6000),TEAL,transp=1,collide=False)

@@ -9,6 +9,7 @@ ROOMS=[
  dict(id=4,ar="جسر المنصات",hint="انتظر الجسر ثم اعبر • السقوط يعيدك لنقطة الحفظ",cycle=7.5,safe=4.4,warning=1.3,kind="platform"),
  dict(id=5,ar="الهروب الأخير",hint="فعّل اللوح الأيمن • راقب الشعاعين ثم اعبر إلى الخروج",cycle=8,safe=4.9,warning=1.3,kind="final")]
 NAVY=(29,49,65); WHITE=(202,218,223); CYAN=(68,202,209)
+FLOOR=(128,136,148); WALL=(84,96,116); CEIL=(60,66,80)   # v59 facility palette: dark surfaces make the beams read
 COLORS=[CYAN,(130,164,228),(234,184,89),(131,202,166),(180,151,223)]
 def deco(n,size,p,c,mat="SmoothPlastic",**kw):
  G.box(n,size,p,c,mat,collide=False,shadow=False,extra='<bool name="CanQuery">false</bool><bool name="CanTouch">false</bool>',**kw)
@@ -20,31 +21,35 @@ def gate(name,x,y,z,text,color):
   deco("Guide",(50,.12,1),(x,y+.06,z),color,"Neon")
 def beam(parent,x,y,z,width=52):
  with G.Group(parent):
-  for h in (1.5,5,8.5):deco("Beam",(width,.28,.45),(x,y+h,z),CYAN,"Neon",transp=.8)
+  for h in (1.5,5,8.5):deco("Beam",(width,.32,.5),(x,y+h,z),CYAN,"Neon",transp=.8)
+  deco("BeamFloorMark",(width,.06,3),(x,y+.04,z),(190,60,72))   # v59: where the beams cross the floor
   for side in (-1,1):G.box("Emitter",(1.2,10,1.2),(x+side*width/2,y+5,z),NAVY,"Metal",collide=False)
 def build():
  with G.Group("Laser48"):
   with G.Group("Entry"):
-   for side in (-1,1):G.box("EntryPost",(1,8,1),(-6027+side*5,304,-5981),NAVY,"Metal")
-   G.box("EntryLintel",(11,1,1),(-6027,308,-5981),WHITE,"Metal")
-   G.sign("EntranceLabel","LASER ESCAPE\nهروب الليزر",(-6027,310,-5981),(17,4,.4),"Back",bg=NAVY)
-   G.part("LaserEntrance",(7,8,2),(-6027,304,-5981),CYAN,"Neon",transp=.65,collide=False,shadow=False)
-   G.part("LaserSpawn",(8,1,8),(-6027,300.5,-5986),CYAN,transp=1,collide=False,shadow=False)
+   import arcade59   # v59: was a dark frame with its title facing away from the lobby (owner could not find it)
+   arcade59.gateway("Laser","LaserEntrance")
+   lx,lz,_=arcade59.spot("Laser")
+   G.part("LaserSpawn",(8,1,8),(lx,300.5,lz-7),CYAN,transp=1,collide=False,shadow=False)
   for d in ROOMS:
    i=d['id'];x,y,z=ORIGIN[0],ORIGIN[1],ORIGIN[2]-(i-1)*100;c=COLORS[i-1]
    with G.Group("Room_"+str(i)):
     if i==4:
-     for side in (-1,1):G.box("SafeFloor",(60,1,28),(x,y-.5,z+side*26),WHITE,"Concrete")
+     for side in (-1,1):G.box("SafeFloor",(60,1,28),(x,y-.5,z+side*26),FLOOR,"DiamondPlate")
      G.box("MovingBridge",(10,1,28),(x,y-.25,z),c,"DiamondPlate")
      deco("GapBasin",(60,.4,24),(x,y-12,z),NAVY,"Metal")
-    else:G.box("Floor",(60,1,80),(x,y-.5,z),WHITE,"Concrete")
+    else:G.box("Floor",(60,1,80),(x,y-.5,z),FLOOR,"DiamondPlate")
     for side in (-1,1):
      G.box("WallBase",(2,3,80),(x+side*30,y+1.5,z),NAVY,"Metal")
-     G.box("GlassWall",(.4,8,78),(x+side*30,y+7,z),(118,166,186),"Glass",transp=.55)
+     G.box("Wall",(.8,9,80),(x+side*30.2,y+7.5,z),WALL,"SmoothPlastic")   # v59: opaque: an indoor facility, not a sky deck
      G.box("UpperRail",(2,1,80),(x+side*30,y+12,z),WHITE,"Metal")
      deco("LightStrip",(.3,.2,78),(x+side*28.8,y+11,z),c,"Neon")
      for dz in (-35,0,35):G.box("FramePost",(1.4,12,1.4),(x+side*30,y+6,z+dz),NAVY,"Metal")
     for dz in (-35,35):G.box("CeilingRib",(60,.7,1.4),(x,y+12,z+dz),NAVY,"Metal")
+    G.box("Ceiling",(62,.6,80),(x,y+12.7,z),CEIL,"SmoothPlastic")
+    for dz in (-30,-10,10,30):
+     deco("CeilingLight",(18,.2,3),(x,y+12.3,z+dz),(235,244,255),"Neon")
+     G.part("CeilingLamp",(1,1,1),(x,y+10.5,z+dz),(235,244,255),transp=1,collide=False,shadow=False,light=(2.2,30,(225,238,255)))
     gate("StartGate",x,y,z+38,str(i)+" / 5 • "+d['ar'],c)
     gate("FinishGate",x,y,z-33,"نقطة حفظ ✓" if i<5 else "الخروج • أحسنت",c)
     G.part("Checkpoint",(8,.2,6),(x,y+.1,z+32),c,"Neon",transp=.3,collide=False,shadow=False)
@@ -63,8 +68,9 @@ def build():
      G.box("SecurityDoor",(57.8,10,1),(x,y+5,z-18),NAVY,"Metal")  # wall to wall: no side gap around the door
      deco("DoorWindow",(30,4,.15),(x,y+6,z-17.4),CYAN,"Neon")
     if i<5:
-     G.box("Vestibule",(60,1,20),(x,y-.5,z-50),WHITE,"Concrete")
-     for side in (-1,1):G.box("VestibuleRail",(1,4,20),(x+side*29.5,y+2,z-50),NAVY,"Metal")
+     G.box("Vestibule",(60,1,20),(x,y-.5,z-50),FLOOR,"DiamondPlate")
+     for side in (-1,1):G.box("VestibuleWall",(.8,12,20),(x+side*30.2,y+6,z-50),WALL,"SmoothPlastic")
+     G.box("VestibuleCeiling",(62,.6,20),(x,y+12.7,z-50),CEIL,"SmoothPlastic")
     else:
      G.box("ExitPlatform",(60,1,24),(x,y-.5,z-52),WHITE,"Concrete")
      G.part("ReturnConsole",(8,4,3),(x,y+2,z-56),c,"Metal")

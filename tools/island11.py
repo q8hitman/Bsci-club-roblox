@@ -109,27 +109,24 @@ def arcade():
     with G.Group("Arcade"):
         disc("ArcadeFloor", AX, AY - 1, AZ, 90, 2, (110, 92, 150), "SmoothPlastic")
         disc("ArcadeRim", AX, AY - 0.6, AZ, 91, 0.8, (120, 255, 200), "Neon", collide=False, shadow=False)
-        for i in range(10):
-            a = i * 2 * math.pi / 10
-            vcyl("ArcadePillar", AX + 40 * math.cos(a), AY, AY + 14, AZ + 40 * math.sin(a), 3, PASTEL[i % 5], "SmoothPlastic")
-            ball("ArcadeLamp", AX + 40 * math.cos(a), AY + 15.5, AZ + 40 * math.sin(a), 3, PASTEL[i % 5], "Neon", collide=False,
-                 shadow=False, light=(1, 22, PASTEL[i % 5]))
+        # v59: the 10 rainbow pillars blocked the new gateway arc; four warm lamp posts on the south half instead
+        for deg in (115, 150, 210, 245):
+            a = math.radians(deg)
+            x, z = AX + 41 * math.sin(a), AZ + 41 * math.cos(a)
+            vcyl("ArcadeLampPost", x, AY, AY + 11, z, 0.7, (236, 238, 242), "SmoothPlastic")
+            ball("ArcadeLamp", x, AY + 11.6, z, 2.2, (255, 226, 170), "Neon", collide=False, shadow=False,
+                 light=(0.8, 26, (255, 226, 170)))
         G.part("ArcadeLobby", (90, 30, 90), (AX, AY + 14, AZ), (0, 0, 0), "SmoothPlastic", transp=1, collide=False, shadow=False)
         G.part("ArcadeSpawn", (10, 1, 10), (AX, AY + 0.5, AZ + 12), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
-        sign("ArcadeTitle", "🎮 محطة الألعاب | Chaos Campus\nكل جولة لعبة + طفرة عشوائية 🧬", (AX, AY + 16, AZ - 30), (34, 9, 0.6), "Back",
-             bg=(80, 30, 110))
+        sign("ArcadeTitle", "محطة الألعاب • BSC ARCADE" + chr(10) + "كل جولة لعبة جديدة", (AX, AY + 16, AZ - 30), (34, 9, 0.6), "Back",
+             bg=(40, 30, 70))
         G.part("ArcadeBoard", (26, 16, 0.6), (AX - 24, AY + 9, AZ - 22), (20, 24, 34), "SmoothPlastic", rot=(0, 35, 0),
                text=dict(face="Back", text="🏆", color=(255, 236, 160), bg=(20, 28, 44), bg_t=0.0))
-        G.part("Portal|HQ", (10, 12, 0.6), (AX, AY + 6.2, AZ + 40), (120, 255, 200), "Neon", transp=0.45, collide=False,
-               shadow=False)
-        sign("ArcadeExit", "↩ مقر النادي", (AX, AY + 14, AZ + 40.4), (10, 2.2, 0.4), "Front", bg=GREEN)
-        G.part("Portal|Campus", (10, 12, 0.6), (AX + 16, AY + 6.2, AZ + 40), (255, 190, 120), "Neon", transp=0.45, collide=False,
-               shadow=False)
-        sign("ArcadeExitCampus", "↩ كلية العلوم", (AX + 16, AY + 14, AZ + 40.4), (10, 2.2, 0.4), "Front", bg=(150, 95, 35))
-        # v39: door to the puzzle rooms, next to the exit
-        G.part("Portal|Puzzle", (8, 12, 0.6), (AX - 18, AY + 6.2, AZ + 40), (255, 200, 90), "Neon", transp=0.45, collide=False,
-               shadow=False)
-        sign("ArcadePuzzleSign", "🧩 غرف الألغاز", (AX - 18, AY + 14, AZ + 40.4), (10, 2.2, 0.4), "Front", bg=(110, 70, 150))
+        # v59: every door out of the lobby is a matching gateway on one arc (tools/arcade59.py)
+        import arcade59
+        arcade59.gateway("HQ", "Portal|HQ")
+        arcade59.gateway("Campus", "Portal|Campus")
+        arcade59.gateway("Puzzle", "Portal|Puzzle")
     CG.Y = AY
     CG.petri_floor(AX + 300, AZ)
     CG.atp_rush(AX - 300, AZ)
@@ -222,21 +219,7 @@ def arcade_dressing():
             r = 60 + (q * 13) % 50
             ball("Ribosome", AX + r * math.cos(a), AY + 10 + (q * 7) % 40, AZ + r * math.sin(a), 2.4, (110, 230, 160), "Neon",
                  collide=False, shadow=False)
-        # signposts pointing at the arenas that float in the distance
-        arenas = (((1, 0), "🧫 أرضية بتري\nPetri Floor"), ((-1, 0), "⚡ سباق ATP\nATP Rush"), ((0, 1), "🧹 كانسة الإنزيم\nEnzyme Sweeper"),
-                  ((0, -1), "🦠 آخر خلية صامدة\nLast Cell Standing"),
-                  ((-0.7, 0.7), "🧪 مختبر الفوضى\nLab Rush"))
-        for (dx, dz), text in arenas:
-            x, z = AX + dx * 36 + (16 if dz else 0), AZ + dz * 36   # keep clear of the exit portal at z+40
-            vcyl("ArenaSignPost", x, AY, AY + 9, z, 0.8, (60, 50, 80), "Metal", collide=False)
-            if dx:
-                sign("ArenaSign", text, (x, AY + 10.5, z), (0.4, 4, 13), "Right" if dx < 0 else "Left", bg=(80, 30, 110))
-            else:
-                sign("ArenaSign", text, (x, AY + 10.5, z), (13, 4, 0.4), "Front" if dz > 0 else "Back", bg=(80, 30, 110))
-            # dotted glowing trail from the rim out towards the arena
-            for q in range(1, 9):
-                d = 46 + q * 9
-                ball("ArenaTrail", AX + dx * d + (16 if dz else 0), AY - 0.5, AZ + dz * d, 1.6, (120, 255, 200), "Neon", collide=False, shadow=False)
+        # v59: the five arena signposts and glowing trails were removed (rounds teleport players; the vote names them)
 
 
 def course_backdrop():
