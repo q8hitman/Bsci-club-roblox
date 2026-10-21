@@ -353,8 +353,31 @@ local function pcrProgram()
 	panel.Visible = true
 end
 
+-- v57 lab guide: a soft pulsing outline on the next thing to touch (the server decides what that is)
+local guideLight = Instance.new("Highlight")
+guideLight.Name = "LabGuide"
+guideLight.FillTransparency = 1
+guideLight.OutlineColor = Color3.fromRGB(120, 255, 200)
+guideLight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+guideLight.Enabled = false
+guideLight.Parent = workspace.CurrentCamera
+task.spawn(function()
+	while true do
+		if guideLight.Enabled then
+			guideLight.OutlineTransparency = 0.15 + 0.35 * (0.5 + 0.5 * math.sin(os.clock() * 4))
+		end
+		task.wait(0.05)
+	end
+end)
+
 event.OnClientEvent:Connect(function(data)
 	if type(data) ~= "table" then
+		return
+	end
+	if data.kind == "guide" then
+		local part = data.part
+		guideLight.Adornee = part
+		guideLight.Enabled = part ~= nil
 		return
 	end
 	if data.kind == "toast" then

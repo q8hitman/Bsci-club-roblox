@@ -1027,9 +1027,140 @@ EXP.dna = {
 
 -- ------------------------------------------------------------------ bench ownership + prompts
 local handlers = {} -- "<kind>|item|<id>" / "|slot|" / "|use|" / "ppe" -> prompt handler (also used by the QA hook)
+-- v57 lab guide (research: DOORS' guiding light, Roblox onboarding docs): after every action the client outlines the
+-- next thing to touch. It never points at a scientific decision (which electrode is +, which answer is right).
+local function heldBy(player, b)
+	local c = carrying[player]
+	return c and c.bench == b and c.id or nil
+end
+local function item(b, id)
+	return b.items[id] and b.items[id].Handle
+end
+local NEXT = {
+	gram = function(b, player)
+		local st, h = b.st, heldBy(player, b)
+		if not st.fixed then
+			return h == "slide" and b.uses.burner or item(b, "slide")
+		end
+		if (st.step or 1) <= #GRAM_SEQ or st.rinse then
+			if b.at.slide ~= "tray" then
+				return h == "slide" and b.slots.tray or item(b, "slide")
+			end
+			local want = st.rinse and "water" or GRAM_SEQ[st.step]
+			return h == want and b.slots.tray or item(b, want)
+		end
+		if b.at.slide ~= "stage" then
+			return h == "slide" and b.slots.stage or item(b, "slide")
+		end
+		return b.uses.eyepiece
+	end,
+	gel = function(b, player)
+		local st, h = b.st, heldBy(player, b)
+		if b.at.gel ~= "tank" and not st.ran then
+			return h == "gel" and b.slots.tank or item(b, "gel")
+		end
+		if not st.buffer then
+			return h == "buffer" and b.slots.tank or item(b, "buffer")
+		end
+		if not (st.wells[1] and st.wells[2]) then
+			if h ~= "pipette" then
+				return item(b, "pipette")
+			end
+			if st.pip then
+				return b.slots.tank
+			end
+			return st.wells[1] and b.uses.sample or b.uses.ladder
+		end
+		if st.plusFar == nil then
+			return nil -- the + electrode is the player's own decision
+		end
+		if not st.ran then
+			return b.uses.power
+		end
+		if b.at.gel ~= "uv" then
+			return h == "gel" and b.slots.uv or item(b, "gel")
+		end
+		return nil
+	end,
+	pcr = function(b, player)
+		local st, h = b.st, heldBy(player, b)
+		if (st.n or 0) < 5 then
+			if b.at.tube ~= "rack" then
+				return h == "tube" and b.slots.rack or item(b, "tube")
+			end
+			if h ~= "pipette" then
+				return item(b, "pipette")
+			end
+			if st.pip then
+				return b.slots.rack
+			end
+			for _, k in ipairs(PCR_PARTS) do
+				if not st.added[k] then
+					return b.uses[k]
+				end
+			end
+		end
+		if b.at.tube ~= "cycler" then
+			return h == "tube" and b.slots.cycler or item(b, "tube")
+		end
+		return not st.running and b.uses.cycler or nil
+	end,
+	micro = function(b, player)
+		for id, at in pairs(b.at) do
+			if at == "mstage" and id:match("^slide_") then
+				return b.uses.meyepiece
+			end
+		end
+		local h = heldBy(player, b)
+		if h and h:match("^slide_") then
+			return b.slots.mstage
+		end
+		return item(b, "slide_elodea")
+	end,
+	dna = function(b, player)
+		local st, h = b.st, heldBy(player, b)
+		if not st.filtered then
+			if b.at.bag ~= "board" then
+				return h == "bag" and (st.mashed >= 2 and b.slots.funnel or b.slots.board) or item(b, "bag")
+			end
+			if not st.buffer then
+				return h == "xbuffer" and b.slots.board or item(b, "xbuffer")
+			end
+			if st.mashed < 2 then
+				return b.uses.mash
+			end
+			return item(b, "bag")
+		end
+		if not st.layered then
+			return h == "ethanol" and b.uses.testtube or item(b, "ethanol")
+		end
+		if st.dna and not st.done then
+			return h == "rod" and b.uses.testtube or item(b, "rod")
+		end
+		return nil
+	end,
+}
+local function guide(player)
+	if not player.Parent then
+		return
+	end
+	for _, b in pairs(benches) do
+		if b.owner == player then
+			local ok, target = pcall(NEXT[b.kind], b, player)
+			event:FireClient(player, { kind = "guide", part = ok and target or nil })
+			return
+		end
+	end
+	event:FireClient(player, { kind = "guide", part = nil })
+end
+
 local function bind(key, p, handler)
-	handlers[key] = handler
-	p.Triggered:Connect(handler)
+	local function run(player)
+		handler(player)
+		task.delay(0.1, guide, player)
+	end
+	handlers[key] = run
+	p.Triggered:Connect(run)
 end
 local function prompt(part, action, object, hold)
 	local p = Instance.new("ProximityPrompt")
@@ -1074,8 +1205,12 @@ local function resetBench(b)
 	for id in pairs(b.items) do
 		returnHome(b, id)
 	end
+	local was = b.owner
 	b.owner = nil
 	EXP[b.kind].reset(b)
+	if was and was.Parent then
+		event:FireClient(was, { kind = "guide", part = nil })
+	end
 end
 
 for _, model in ipairs(mapFolder:GetDescendants()) do

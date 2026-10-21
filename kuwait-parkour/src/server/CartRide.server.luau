@@ -25,6 +25,7 @@ remote.Name = "CartRide"
 remote.Parent = ReplicatedStorage
 
 local carts = {} -- [Player] = Model
+local rideFrom = {} -- [Player] = { t = os.clock(), valley = start valley } (v57 resume)
 
 local function removeCart(player)
 	local cart = carts[player]
@@ -81,6 +82,7 @@ local function spawnCart(player)
 		pcall(function()
 			seat:SetNetworkOwner(player)
 		end)
+		rideFrom[player] = { t = os.clock(), valley = 1 }
 		remote:FireClient(player, "start", cart)
 	end)
 end
@@ -103,8 +105,31 @@ end)
 local Teleport = require(script.Parent.Teleport)
 local hubSpawn = mapFolder:FindFirstChild("CampusSpawn", true) or mapFolder:FindFirstChild("HQSpawn", true)
 local lastAction = {}
-remote.OnServerEvent:Connect(function(player, action)
+-- v57 resume: the client reports each valley it reaches; the server keeps the highest one (Profiles s.cart), but only
+-- while that player really rides, and only as fast as a train can go (70 s per valley at least)
+local Profiles = require(script.Parent.Profiles)
+remote.OnServerEvent:Connect(function(player, action, arg)
 	if typeof(action) ~= "string" then
+		return
+	end
+	if action == "resume" or action == "progress" then
+		local s = Profiles.state[player]
+		local k = typeof(arg) == "number" and math.floor(arg) or 0
+		if not (s and carts[player] and k >= 1 and k <= 8) then
+			return
+		end
+		if action == "resume" then
+			if k <= (s.cart or 0) then
+				rideFrom[player] = { t = os.clock(), valley = k }
+			end
+			return
+		end
+		local from = rideFrom[player] or { t = os.clock(), valley = 1 }
+		rideFrom[player] = from
+		if k > (s.cart or 0) and os.clock() - from.t >= (k - from.valley) * 70 then
+			s.cart = k
+			player:SetAttribute("CartBest", k)
+		end
 		return
 	end
 	local now = os.clock()
@@ -141,4 +166,5 @@ Players.PlayerRemoving:Connect(function(player)
 	removeCart(player)
 	touchCooldown[player] = nil
 	lastAction[player] = nil
+	rideFrom[player] = nil
 end)

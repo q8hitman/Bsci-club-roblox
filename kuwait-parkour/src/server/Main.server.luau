@@ -336,6 +336,7 @@ local function save(player)
 			end
 			old.batch = s.batch
 			old.passport = PassportState.merge(old.passport, s.passport, os.time())
+			old.cart = math.max(old.cart or 0, s.cart or 0)
 			old.quiz = old.quiz or {}
 			for key, n in pairs(s.quiz or {}) do
 				old.quiz[key] = math.max(old.quiz[key] or 0, n)
@@ -376,6 +377,8 @@ local function onPlayerAdded(player)
 		s.batch = data.batch
 		s.passport = data.passport or {}
 		s.quiz = data.quiz or {}
+		s.cart = math.clamp(tonumber(data.cart) or 0, 0, 8)
+		player:SetAttribute("CartBest", s.cart)
 		player:SetAttribute("Coins", s.coins)
 		applyStage(player, math.clamp(data.stage or 0, 0, Config.Total), false)
 	else

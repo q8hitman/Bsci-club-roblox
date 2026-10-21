@@ -135,6 +135,22 @@ local function button(name, text, pos, color)
 end
 local exitBtn = button("ExitBtn", "خروج", UDim2.fromScale(0.91, 0.2), Color3.fromRGB(150, 50, 60))
 local camBtn = button("CamBtn", "🎥", UDim2.fromScale(0.82, 0.31), Color3.fromRGB(70, 70, 110))
+-- v57: continue from the furthest valley reached before (only shown at the station, before ▶)
+local resumeBtn = Instance.new("TextButton")
+resumeBtn.Name = "ResumeBtn"
+resumeBtn.AnchorPoint = Vector2.new(1, 0.5)
+resumeBtn.Position = UDim2.fromScale(0.86, 0.65)
+resumeBtn.Size = UDim2.fromScale(0.22, 0.08)
+resumeBtn.BackgroundColor3 = Color3.fromRGB(70, 90, 160)
+resumeBtn.TextColor3 = Color3.new(1, 1, 1)
+resumeBtn.TextScaled = true
+resumeBtn.Font = Enum.Font.GothamBold
+resumeBtn.Visible = false
+resumeBtn.Parent = gui
+Instance.new("UICorner", resumeBtn).CornerRadius = UDim.new(0.3, 0)
+local resumeMin = Instance.new("UISizeConstraint")
+resumeMin.MinSize = Vector2.new(150, 40)
+resumeMin.Parent = resumeBtn
 local hornBtn = button("HornBtn", "🔔", UDim2.fromScale(0.91, 0.31), Color3.fromRGB(195, 140, 40))
 local fasterBtn = button("FasterBtn", "＋", UDim2.fromScale(0.91, 0.42), Color3.fromRGB(60, 140, 200))
 local slowerBtn = button("SlowerBtn", "－", UDim2.fromScale(0.91, 0.53), Color3.fromRGB(90, 100, 130))
@@ -317,6 +333,9 @@ local function refreshUI(r)
 	goBtn.Visible = r.state ~= "finished"
 	fasterBtn.Visible, slowerBtn.Visible = r.state ~= "finished", r.state ~= "finished"
 	endCard.Visible = r.state == "finished"
+	local best = player:GetAttribute("CartBest") or 0
+	resumeBtn.Visible = r.state == "ready" and r.d < 1 and best >= 2 and stageStart[best] ~= nil
+	resumeBtn.Text = ("⏩ كمّل من %s"):format(STAGE_NAMES[best] or "")
 end
 
 local function setCinematic(r, on)
@@ -385,6 +404,22 @@ local function changeSpeed(step)
 end
 
 goBtn.Activated:Connect(toggleGo)
+resumeBtn.Activated:Connect(function()
+	local r = ride
+	local best = player:GetAttribute("CartBest") or 0
+	if not r or r.d >= 1 or not stageStart[best] then
+		return
+	end
+	-- jump to the dark tunnel just before that valley, so the reveal still happens
+	r.d = math.max(stageStart[best] - 175, 0)
+	local _, _, _, idx = sample(r.d)
+	r.idx = idx
+	r.section = best - 1
+	remote:FireServer("resume", best)
+	setState(r, "running")
+	say(("⏩ نكمّل من %s"):format(STAGE_NAMES[best] or ""), 3)
+	play("click")
+end)
 _G.BSCCartToggle = toggleGo -- same as pressing ▶ (used by the Studio multiplayer test, tools/studio_tests/v53.*)
 hornBtn.Activated:Connect(function()
 	play("sting")
@@ -550,6 +585,7 @@ local function passFlags(r, fromIdx, toIdx)
 		if type(sec) == "number" and sec >= 1 and p.label ~= "" then
 			r.section = sec
 			say(p.label, 3)
+			remote:FireServer("progress", sec) -- v57: the server keeps the furthest valley for "continue"
 			local fact = FACTS[sec]
 			if fact then
 				task.delay(3.2, function()

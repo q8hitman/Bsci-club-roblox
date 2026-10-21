@@ -38,6 +38,7 @@ function Profiles.blank()
 		batch = nil, -- chosen club batch id (Shared/Batches)
 		quiz = {}, -- challenge center: "spec:level" -> best correct answers in one session (0..5)
 		passport = {}, -- v45: additive evidence ledger and current UTC week's challenge proof
+		cart = 0, -- v57: highest Specialties Cart Ride valley reached (resume point, never goes down)
 	}
 end
 
