@@ -21,38 +21,42 @@ WHITE = (244, 244, 248)
 
 # ---------------------------------------------------------------- the train (built along +X)
 def train(x0, y0, z0, name="TrainTemplate"):
-    """locomotive + two open cars; parts named so the client can find the seats"""
+    """locomotive + four open cars, built along +X. v62: every car is its own Model (PrimaryPart "Base") so the ride can
+    put each one on the rails at its own distance (one rigid model swung the rear cars off the track in curves)."""
     with G.Group(name, "Model"):
-        # locomotive
-        G.part("Base", (16, 1.2, 7), (x0, y0 + 0.6, z0), (40, 30, 60), "SmoothPlastic")
-        box("LocoBody", (12, 6, 6.4), (x0 - 1, y0 + 4.2, z0), PURPLE, "SmoothPlastic")
-        box("LocoStripe", (12.1, 0.8, 6.5), (x0 - 1, y0 + 3.0, z0), WHITE, "SmoothPlastic")
-        box("Cab", (5, 3.4, 6), (x0 - 4.5, y0 + 8.9, z0), (90, 50, 140), "SmoothPlastic")
-        box("CabGlass", (5.2, 2.2, 6.2), (x0 - 4.5, y0 + 9.0, z0), (180, 220, 255), "Glass", transp=0.4)
-        ball("Nose", x0 + 6.5, y0 + 4.2, z0, 6.2, PURPLE, "SmoothPlastic")
-        ball("Headlight", x0 + 9.2, y0 + 4.8, z0, 1.8, (255, 255, 230), "Neon", light=(2.0, 30, (255, 250, 220)))
-        sign("LocoName", "قطار الخلية", (x0 - 1, y0 + 4.6, z0 + 3.25), (10, 1.6, 0.2), "Back", bg=PURPLE)
-        sign("LocoName2", "Cell Train", (x0 - 1, y0 + 4.6, z0 - 3.25), (10, 1.6, 0.2), "Front", bg=PURPLE)
-        for wx in (-5, 0, 5):
-            for wz in (-3.6, 3.6):
-                G.part("Wheel", (1.0, 3, 3), (x0 + wx, y0 + 0.9, z0 + wz), (40, 40, 46), "SmoothPlastic", shape="Cylinder",
-                       rot=(0, 90, 0))
-        # two open passenger cars
-        for ci in range(4):  # v29: a longer train (4 cars)
-            cx = x0 - 15 - ci * 14
-            box("CarBase", (12, 1.2, 7), (cx, y0 + 0.6, z0), (40, 30, 60), "SmoothPlastic")
-            box("CarFloor", (12, 0.6, 6.4), (cx, y0 + 1.5, z0), (250, 240, 250), "SmoothPlastic")
-            for s_ in (-1, 1):
-                box("CarSide", (12, 2.6, 0.5), (cx, y0 + 3.0, z0 + s_ * 3.2), PINK, "SmoothPlastic")
-            box("CarEnd", (0.5, 2.6, 6.4), (cx - 6, y0 + 3.0, z0), PINK, "SmoothPlastic")
-            for si in range(2):
-                box("Seat%d" % (ci * 2 + si + 1), (2.6, 1.2, 5), (cx + 2.5 - si * 5, y0 + 2.4, z0), (90, 60, 150), "Fabric")
-                box("SeatBack", (0.6, 2.4, 5), (cx + 1.2 - si * 5, y0 + 3.6, z0), (90, 60, 150), "Fabric")
-            for wx in (-3.5, 3.5):
+        with G.Group("Loco", "Model"):
+            G.part("Base", (16, 1.2, 7), (x0, y0 + 0.6, z0), (40, 30, 60), "SmoothPlastic")
+            box("LocoBody", (12, 6, 6.4), (x0 - 1, y0 + 4.2, z0), PURPLE, "SmoothPlastic")
+            box("LocoStripe", (12.1, 0.8, 6.5), (x0 - 1, y0 + 3.0, z0), WHITE, "SmoothPlastic")
+            box("Cab", (5, 3.4, 6), (x0 - 4.5, y0 + 8.9, z0), (90, 50, 140), "SmoothPlastic")
+            box("CabGlass", (5.2, 2.2, 6.2), (x0 - 4.5, y0 + 9.0, z0), (180, 220, 255), "Glass", transp=0.4)
+            ball("Nose", x0 + 6.5, y0 + 4.2, z0, 6.2, PURPLE, "SmoothPlastic")
+            ball("Headlight", x0 + 9.2, y0 + 4.8, z0, 1.8, (255, 255, 230), "Neon", light=(2.0, 30, (255, 250, 220)))
+            sign("LocoName", "قطار الخلية", (x0 - 1, y0 + 4.6, z0 + 3.25), (10, 1.6, 0.2), "Back", bg=PURPLE)
+            sign("LocoName2", "Cell Train", (x0 - 1, y0 + 4.6, z0 - 3.25), (10, 1.6, 0.2), "Front", bg=PURPLE)
+            for wx in (-5, 0, 5):
                 for wz in (-3.6, 3.6):
-                    G.part("Wheel", (1.0, 2.6, 2.6), (cx + wx, y0 + 0.8, z0 + wz), (40, 40, 46), "SmoothPlastic",
+                    G.part("Wheel", (1.0, 3, 3), (x0 + wx, y0 + 0.9, z0 + wz), (40, 40, 46), "SmoothPlastic",
                            shape="Cylinder", rot=(0, 90, 0))
-            box("Coupler", (2, 0.6, 0.6), (cx + 7, y0 + 1.0, z0), (60, 60, 66), "SmoothPlastic")
+        for ci in range(4):
+            cx = x0 - 16 - ci * 14
+            with G.Group("Car%d" % (ci + 1), "Model"):
+                G.part("Base", (12, 1.2, 7), (cx, y0 + 0.6, z0), (40, 30, 60), "SmoothPlastic")
+                box("CarFloor", (12, 0.6, 6.4), (cx, y0 + 1.5, z0), (250, 240, 250), "SmoothPlastic")
+                for s_ in (-1, 1):
+                    box("CarSide", (12, 2.6, 0.5), (cx, y0 + 3.0, z0 + s_ * 3.2), PINK, "SmoothPlastic")
+                    box("CarTrim", (12.1, 0.3, 0.6), (cx, y0 + 4.35, z0 + s_ * 3.2), (255, 220, 245), "Neon", collide=False,
+                        shadow=False)
+                box("CarEnd", (0.5, 2.6, 6.4), (cx - 6, y0 + 3.0, z0), PINK, "SmoothPlastic")
+                for si in range(2):
+                    box("Seat%d" % (ci * 2 + si + 1), (2.6, 1.2, 5), (cx + 2.5 - si * 5, y0 + 2.4, z0), (90, 60, 150),
+                        "Fabric")
+                    box("SeatBack", (0.6, 2.4, 5), (cx + 1.2 - si * 5, y0 + 3.6, z0), (90, 60, 150), "Fabric")
+                for wx in (-3.5, 3.5):
+                    for wz in (-3.6, 3.6):
+                        G.part("Wheel", (1.0, 2.6, 2.6), (cx + wx, y0 + 0.8, z0 + wz), (40, 40, 46), "SmoothPlastic",
+                               shape="Cylinder", rot=(0, 90, 0))
+                box("Coupler", (2, 0.6, 0.6), (cx + 7, y0 + 1.0, z0), (60, 60, 66), "SmoothPlastic")
 
 
 # ---------------------------------------------------------------- station on campus
@@ -138,7 +142,7 @@ def mito(cx, cy, cz, yaw, L=60, d=24):
         G.part("MitoInner", (L * 0.96, d * 0.84, d * 0.84), (cx, cy, cz), (240, 120, 50), "SmoothPlastic", shape="Cylinder",
                rot=(0, yaw, 0), transp=0.25, collide=False)
         G.part("MitoMatrix", (L * 0.9, d * 0.4, d * 0.4), (cx, cy, cz), (255, 214, 130), "Neon", shape="Cylinder",
-               rot=(0, yaw, 0), transp=0.3, collide=False, shadow=False)
+               rot=(0, yaw, 0), transp=0.3, collide=False, shadow=False, light=(1.4, 30, (255, 200, 120)))
         n = 7
         for q in range(n):
             t = (q - (n - 1) / 2) * (L * 0.8 / n)
@@ -206,7 +210,7 @@ def cell_world():
         # v53 nucleus: outer + inner membrane (the envelope), pore complexes through both, chromatin threads inside
         ball("Nucleus", 0, 95, 0, 124, (160, 90, 220), "SmoothPlastic", transp=0.6, collide=False)
         ball("NucleusInner", 0, 95, 0, 114, (130, 70, 200), "SmoothPlastic", transp=0.45, collide=False)
-        ball("Nucleolus", 0, 92, 0, 34, (80, 30, 130), "SmoothPlastic", collide=False)   # v54: centred; the track circles it
+        ball("Nucleolus", 0, 92, 0, 34, (80, 30, 130), "SmoothPlastic", collide=False, light=(1.6, 60, (210, 140, 255)))   # v54: centred; the track circles it
         for q in range(30):
             a, b = rng.uniform(0, 6.28), rng.uniform(-1.2, 1.2)
             nx, ny, nz = math.cos(a) * math.cos(b), math.sin(b), math.sin(a) * math.cos(b)
@@ -273,6 +277,10 @@ def cell_world():
             a = rng.uniform(0, 6.28)
             ball("Vesicle", gx + math.cos(a) * 24, rng.uniform(74, 86), gz + math.sin(a) * 24, 6, (150, 220, 255), "Glass",
                  transp=0.3, collide=False)
+        for deg, col in ((142, (255, 200, 140)), (178, (220, 140, 255)), (200, (140, 255, 220)), (62, (200, 180, 255))):
+            gx_, _, gz_ = polar(150, deg, 0)   # v62: each organelle group glows in its own colour
+            G.part("OrganelleGlow", (1, 1, 1), (gx_, 70, gz_), (0, 0, 0), "SmoothPlastic", transp=1, collide=False,
+                   shadow=False, light=(1.3, 45, col))
         # lysosomes (v53: smaller than a mitochondrion's width)
         lx, _, lz = polar(150, 178, 0)
         for q in range(7):
@@ -293,23 +301,23 @@ def cell_world():
         # cytoskeleton strands high up
         for q in range(10):
             a = rng.uniform(0, 3.14)
-            box("Cytoskeleton", (1.2, 1.2, 560), (rng.uniform(-100, 100), rng.uniform(150, 220), rng.uniform(-100, 100)),
-                (230, 200, 255), "Neon", rot=(0, math.degrees(a), 0), collide=False, shadow=False)
-        # track: a loop around everything at radius TRACK_R, labels at each stop
-        stops = [(-90, "الغشاء الخلوي: يحمي الخلية ويتحكم في دخول المواد"),
-                 (-55, "السيتوبلازم: السائل اللي تسبح فيه العضيات"),
-                 (-20, "الميتوكوندريا: مصنع الطاقة في الخلية"),
-                 (25, "الشبكة الإندوبلازمية الخشنة وعليها الريبوسومات"),
-                 (44, "الشبكة الإندوبلازمية الملساء: تصنع الدهون"),
-                 (62, "الريبوسومات: تصنع البروتين"),
-                 (100, "النواة: فيها المادة الوراثية DNA"),
-                 (142, "جهاز جولجي: يعبّئ البروتين ويوزعه"),
-                 (178, "الليسوسومات: تهضم الفضلات"),
-                 (200, "البيروكسيسومات: تفكك المواد الضارة مثل فوق أكسيد الهيدروجين"),
-                 (222, "الجسيم المركزي: يساعد في انقسام الخلية"),
-                 (262, "نهاية الرحلة! شكراً لركوبك قطار الخلية")]
+            box("Cytoskeleton", (0.7, 0.7, 560), (rng.uniform(-100, 100), rng.uniform(150, 220), rng.uniform(-100, 100)),
+                (190, 160, 235), "Neon", rot=(0, math.degrees(a), 0), transp=0.55, collide=False, shadow=False)
+        # track: a loop around everything at radius TRACK_R. v62: stops carry an id ("WP|i|<id>"); the explanation for
+        # each id lives in Shared/CellStops.luau (on screen), the map only shows the structure's name (CellName|<id>)
+        stops = [(-90, "membrane"), (-62, "cytoplasm"), (-40, "cytoskeleton"), (-20, "mitochondria"), (25, "rough_er"),
+                 (44, "smooth_er"), (62, "ribosomes"), (142, "golgi"), (178, "lysosomes"), (200, "peroxisomes"),
+                 (222, "centrioles"), (262, "finish")]
+        names = {"membrane": polar(TRACK_R + 30, -90, 78), "cytoplasm": polar(185, -62, 70),
+                 "cytoskeleton": (0, 150, 0), "mitochondria": polar(140, -20, 82), "rough_er": polar(125, 25, 98),
+                 "smooth_er": polar(118, 47, 88), "ribosomes": polar(150, 62, 92), "nuclear_pore": polar(66, 92, 140),
+                 "nucleus": (0, 168, 0), "nucleolus": (0, 116, 0), "golgi": polar(145, 142, 94),
+                 "lysosomes": polar(150, 178, 94), "peroxisomes": polar(150, 200, 96), "centrioles": polar(150, 222, 82)}
+        for key, pos in names.items():
+            G.part("CellName|" + key, (1, 1, 1), pos, (0, 0, 0), "SmoothPlastic", transp=1, collide=False, shadow=False)
         pts = []
         labels = {}
+        main = set()   # indices of the outer loop (piers go only there, never inside the nucleus)
 
         def loop_y(deg):
             return 42 + 10 * math.sin(math.radians(deg * 2))
@@ -320,32 +328,56 @@ def cell_world():
                     # v54: detour INTO the nucleus through one pore, round the nucleolus, out through another pore
                     ctrl = [polar(TRACK_R, 84, loop_y(84)), polar(TRACK_R, 88, loop_y(88)), polar(175, 92, 56),
                             polar(110, 94, 72), polar(66, 96, 84), polar(36, 104, 88)]
-                    for a in range(80, -230, -30):          # inner circle, clockwise, around the nucleolus
-                        ctrl.append(polar(36, a, 88))
+                    for a_ in range(80, -230, -30):          # inner circle, clockwise, around the nucleolus
+                        ctrl.append(polar(36, a_, 88))
                     ctrl += [polar(36, 118, 88), polar(66, 126, 84), polar(110, 128, 72), polar(175, 130, 56),
                              polar(TRACK_R, 132, loop_y(132)), polar(TRACK_R, 136, loop_y(136))]
                     first = len(pts)
                     pts.extend(catmull(ctrl[1:-1], ctrl[0], ctrl[-1], 5.0))
-                    labels[first + 6] = "ثقب نووي: البروتينات وmRNA تدخل وتطلع من هالثقوب"
-                    labels[first + 30] = "داخل النواة: الـ DNA ملفوف ككروماتين، والنوية تصنع الريبوسومات"
+                    # by geometry: the pore where the rails cross the envelope (r 62), the nucleus just inside it,
+                    # the nucleolus on the inner circle
+                    for k in range(first, len(pts)):
+                        r = math.hypot(pts[k][0], pts[k][2])
+                        key = ("nuclear_pore" if r < 75 else None) if "nuclear_pore" not in labels.values() else                             ("nucleus" if r < 50 else None) if "nucleus" not in labels.values() else                             ("nucleolus" if r < 38 and k > first + 4 else None) if "nucleolus" not in labels.values() else None
+                        if key:
+                            labels[k + 1] = key
                 continue
             pts.append(polar(TRACK_R, deg, loop_y(deg)))
-            for sdeg, text in stops:
-                # v54: <= 2 on the 4-degree grid (with < 2, half the stops never got their caption), once per stop
-                if abs(deg - sdeg) <= 2 and text not in labels.values():
-                    labels[len(pts)] = text
+            main.add(len(pts))
+            for sdeg, key in stops:
+                if abs(deg - sdeg) <= 2 and key not in labels.values():
+                    labels[len(pts)] = key
         for i, p in enumerate(pts, 1):
             G.part("WP|%d|%s" % (i, labels.get(i, "")), (1, 1, 1), p, (0, 0, 0), "SmoothPlastic", transp=1, collide=False,
                    shadow=False)
-        for a, b in zip(pts, pts[1:]):
+        # v62 track: a dark bed, two steel rails and sleepers every ~3.5 studs; piers on the outer loop only
+        acc = 0.0
+        for i, (a, b) in enumerate(zip(pts, pts[1:]), 1):
             dx, dy, dz = b[0] - a[0], b[1] - a[1], b[2] - a[2]
             L = math.sqrt(dx * dx + dy * dy + dz * dz)
+            if L < 0.05:
+                continue
             yaw = math.degrees(math.atan2(dx, dz))
             pitch = -math.degrees(math.atan2(dy, math.hypot(dx, dz)))
-            mx, my, mz = (a[0] + b[0]) / 2, (a[1] + b[1]) / 2 - 0.9, (a[2] + b[2]) / 2
-            box("TrackBed", (6, 0.6, L + 0.5), (mx, my, mz), (230, 220, 245), "SmoothPlastic", rot=(pitch, yaw, 0), collide=False,
-                shadow=False)
-            vcyl("TrackPier", mx, 0, my - 0.3, mz, 1.6, (170, 130, 210), "SmoothPlastic", collide=False) if int(mx + mz) % 3 == 0 else None
+            rx, rz = math.cos(math.radians(yaw)), -math.sin(math.radians(yaw))
+            mx, my, mz = (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2
+            box("TrackBed", (6.4, 0.6, L + 0.6), (mx, my - 0.9, mz), (52, 34, 78), "SmoothPlastic", rot=(pitch, yaw, 0),
+                collide=False)
+            for s_ in (-1, 1):
+                box("Rail", (0.45, 0.5, L + 0.5), (mx + rx * s_ * 2.3, my - 0.35, mz + rz * s_ * 2.3), (200, 205, 215), "Metal",
+                    rot=(pitch, yaw, 0), collide=False, shadow=False)
+                box("RailGlow", (0.2, 0.15, L + 0.5), (mx + rx * s_ * 3.15, my - 0.62, mz + rz * s_ * 3.15), (255, 150, 230),
+                    "Neon", rot=(pitch, yaw, 0), collide=False, shadow=False)
+            n = max(1, int(L / 3.5))
+            for k in range(n):
+                f = (k + 0.5) / n
+                box("Sleeper", (7.2, 0.35, 0.9), (a[0] + dx * f, a[1] + dy * f - 0.62, a[2] + dz * f), (120, 90, 150),
+                    "SmoothPlastic", rot=(pitch, yaw, 0), collide=False, shadow=False)
+            acc += L
+            if i in main and (i + 1) in main and acc >= 30:
+                acc = 0.0
+                vcyl("TrackPier", mx, 0, my - 1.2, mz, 1.8, (110, 80, 150), "SmoothPlastic", collide=False)
+                box("PierCap", (7, 0.8, 2), (mx, my - 1.4, mz), (90, 64, 128), "SmoothPlastic", rot=(0, yaw, 0), collide=False)
         # v54: no floating name boards (the ride caption names each stop); the scenery does the teaching
         # v51: Glowing phospholipid bilayer entry tunnel around the Membrane stop (-98..-74 deg)
         for deg in range(-98, -72, 4):

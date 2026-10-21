@@ -73,11 +73,11 @@ local PRESETS = {
 	},
 	cell = {
 		13.5,
-		rgb(128, 104, 158),
-		rgb(138, 112, 170),
+		rgb(98, 76, 130),
+		rgb(108, 84, 142),
 		{ 0.28, 1.0, rgb(214, 180, 236), rgb(230, 170, 255) },
 		{ rgb(250, 240, 255), 0.16, 0.08 },
-	}, -- the Cell Train world: violet cytoplasm, a little dimmer (v53) so the organelles' own glow reads
+	}, -- the Cell Train world: violet cytoplasm, dimmer (v53, v62) so the organelles' own glow and the name tags read
 	cart = {
 		20,
 		rgb(120, 90, 130),
