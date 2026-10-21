@@ -630,6 +630,42 @@ STAGES = {"micro": stage_micro, "biochem": stage_biochem, "animal": stage_animal
           "molecular": stage_molecular, "forensic": stage_forensic, "agri": stage_agri, "biotech": stage_biotech}
 
 
+RAIL_PROPS = {
+    "micro": lambda x, z: disc("ColonyDot", x, GROUND_Y + 0.2, z, rng.uniform(6, 14), 0.5,
+                               rng.choice([(250, 240, 205), (240, 190, 90), (230, 140, 170)]), "SmoothPlastic", collide=False),
+    "biochem": lambda x, z: CR._tube(x, GROUND_Y, z),
+    "animal": lambda x, z: (CR._cactus if rng.random() < 0.6 else CR._palm)(x, GROUND_Y, z),
+    "plant": lambda x, z: (CR._flower if rng.random() < 0.7 else CR._leaf)(x, GROUND_Y, z),
+    "molecular": lambda x, z: sign("Codon", rng.choice(["AUG", "UAA", "GCC", "A-T", "G-C", "5'→3'"]),
+                                   (x, GROUND_Y + rng.uniform(8, 22), z), (8, 3, 0.4), "Front", bg=(20, 60, 50),
+                                   color=(120, 255, 180)),
+    "forensic": lambda x, z: CR._tape(x, GROUND_Y, z),
+    "agri": lambda x, z: CR._palm(x, GROUND_Y, z),
+    "biotech": lambda x, z: CR._bioreactor(x, GROUND_Y, z),
+}
+
+
+def rail_props(t, clear, k, key):
+    """v53: small themed props close to the rails (alternating sides, ~70 studs apart) so the valleys never feel empty
+    from the train. Skips tunnels and the hero runs (they have their own set pieces)."""
+    starts = [i for i, _ in t.sections] + [len(t.pts)]
+    i0, i1 = starts[k - 1], starts[k]
+    low = t.marks.get(key + ":low", (0, 0))
+    side, acc = 1, 0.0
+    for i in range(i0 + 1, i1):
+        a, b = t.pts[i - 1], t.pts[i]
+        acc += math.dist(a[:3], b[:3])
+        if acc < 70 or "t" in b[4] or low[0] - 4 <= i <= low[1] + 4:
+            continue
+        acc = 0.0
+        rx, rz = math.cos(math.radians(b[3])), -math.sin(math.radians(b[3]))
+        d = rng.uniform(22, 38)
+        x, z = b[0] + rx * side * d, b[2] + rz * side * d
+        if abs(z) < CELLZ - 20 and clear.ok(x, z, 6):
+            RAIL_PROPS[key](x, z)
+        side = -side
+
+
 def scenery(t, cells):
     CR.CUTS[:] = []
     CR.ISLAND_Y = GROUND_Y   # the landmark builders stand on CR.ISLAND_Y
@@ -638,6 +674,7 @@ def scenery(t, cells):
         hi, lo = cells[k]
         with G.Group("CartScene%d" % k):
             STAGES[key](t, clear, (hi + lo) / 2, GROUND_Y)
+            rail_props(t, clear, k, key)
 
 
 def station_hall(t):
