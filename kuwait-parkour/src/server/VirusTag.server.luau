@@ -146,75 +146,180 @@ end
 local virusRng = Random.new()
 local lastZero = {} -- [Player] = true if picked as Patient Zero in the immediately preceding round
 
+-- v55 solo practice opponent: a virus particle (capsid + spike proteins) that hunts the lone player.
+-- It aims where you are going, telegraphs a red dash, replicates into a second particle halfway through (viruses
+-- multiply inside hosts), and bounces off a vaccinated player. Survive the whole round for the full reward.
+local SOLO_TIME = 45
+local function makeVirusParticle()
+	local m = Instance.new("Model")
+	m.Name = "BioVirusDrone"
+	local core = Instance.new("Part")
+	core.Name = "Capsid"
+	core.Shape = Enum.PartType.Ball
+	core.Size = Vector3.new(4.2, 4.2, 4.2)
+	core.Material = Enum.Material.Neon
+	core.Color = Color3.fromRGB(110, 255, 80)
+	core.Anchored, core.CanCollide, core.CanQuery, core.CanTouch = true, false, false, false
+	core.Parent = m
+	m.PrimaryPart = core
+	local rnd = Random.new(7)
+	for i = 1, 14 do
+		local a, b = rnd:NextNumber(0, math.pi * 2), rnd:NextNumber(-1.2, 1.2)
+		local dir = Vector3.new(math.cos(a) * math.cos(b), math.sin(b), math.sin(a) * math.cos(b))
+		local spike = Instance.new("Part")
+		spike.Name = "Spike" .. i
+		spike.Shape = Enum.PartType.Ball
+		spike.Size = Vector3.one * 0.9
+		spike.Material = Enum.Material.Neon
+		spike.Color = Color3.fromRGB(255, 220, 90)
+		spike.Anchored, spike.CanCollide, spike.CanQuery, spike.CanTouch = true, false, false, false
+		spike:SetAttribute("Offset", dir * 2.5)
+		spike.Parent = m
+	end
+	local light = Instance.new("PointLight")
+	light.Color = core.Color
+	light.Range = 14
+	light.Parent = core
+	m.Parent = workspace
+	return m
+end
+
+local function placeParticle(m, pos, t)
+	local spin = CFrame.Angles(0, t * 2, t * 0.7)
+	m.PrimaryPart.CFrame = CFrame.new(pos)
+	for _, p in ipairs(m:GetChildren()) do
+		local off = p:GetAttribute("Offset")
+		if off then
+			p.CFrame = CFrame.new(pos + (spin * CFrame.new(off)).Position)
+		end
+	end
+end
+
 local function runSoloDroneRound(player)
 	workspace:SetAttribute("VirusPhase", "running")
-	local soloTime = 40
-	workspace:SetAttribute("VirusEnds", workspace:GetServerTimeNow() + soloTime)
+	workspace:SetAttribute("VirusEnds", workspace:GetServerTimeNow() + SOLO_TIME)
 	player:SetAttribute("Virus", "healthy")
 	setLook(player, false)
 	notify:FireClient(
 		player,
-		"🤖 جولة تدريب فردية! اهرب من كبسولة الفيروس الذكية وجمّع اللقاحات 💉",
+		"🤖 تدريب فردي: جزيء فيروس يطاردك! اهرب وجمّع اللقاح 💉",
 		"info"
 	)
-	local drone = Instance.new("Part")
-	drone.Name = "BioVirusDrone"
-	drone.Shape = Enum.PartType.Ball
-	drone.Size = Vector3.new(4.2, 4.2, 4.2)
-	drone.Material = Enum.Material.Neon
-	drone.Color = Color3.fromRGB(110, 255, 80)
-	drone.Anchored = true
-	drone.CanCollide = false
-	drone.CFrame = center.CFrame + Vector3.new(0, 3.5, -28)
-	drone.Parent = workspace
+	local y = center.Position.Y + 3.2
+	-- spawn on the far side of the arena from the player (a fixed spawn could start right on top of them)
+	local start = center.Position + Vector3.new(0, 3.2, -40)
+	local proot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	if proot then
+		local rel = Vector3.new(proot.Position.X - center.Position.X, 0, proot.Position.Z - center.Position.Z)
+		local dir = rel.Magnitude > 1 and rel.Unit or Vector3.zAxis
+		start = center.Position - dir * 45 + Vector3.new(0, 3.2, 0)
+	end
+	local drones = { { model = makeVirusParticle(), pos = start, dash = 0 } }
 	spawnVaccine()
-	local endsAt = os.clock() + soloTime
-	local survived = true
+	local t0 = os.clock()
+	local endsAt = t0 + SOLO_TIME
+	local nextVaccine, nextDash, split = t0 + 10, t0 + 9, false
+	local caughtAt
 	while os.clock() < endsAt do
-		task.wait(0.1)
+		local dt = task.wait(0.05)
+		local now = os.clock()
 		if not (player.Parent and inArena(player)) then
-			survived = false
+			caughtAt = caughtAt or now
 			break
 		end
 		local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 		if not root then
-			survived = false
+			caughtAt = now
 			break
 		end
-		local toPlayer = Vector3.new(root.Position.X - drone.Position.X, 0, root.Position.Z - drone.Position.Z)
-		if toPlayer.Magnitude > 0.5 then
-			local step = toPlayer.Unit * (14.5 * 0.1)
-			drone.CFrame = CFrame.new(
-				drone.Position.X + step.X,
-				center.Position.Y + 3.2 + math.sin(os.clock() * 4) * 0.6,
-				drone.Position.Z + step.Z
-			)
-		end
-		if
-			(root.Position - drone.Position).Magnitude < TOUCH_DIST
-			and not (shieldUntil[player] and os.clock() < shieldUntil[player])
-		then
-			survived = false
+		local elapsed = now - t0
+		-- halfway: the virus replicates
+		if not split and elapsed > SOLO_TIME * 0.45 then
+			split = true
+			table.insert(drones, { model = makeVirusParticle(), pos = drones[1].pos + Vector3.new(6, 0, 0), dash = 0 })
 			notify:FireClient(
 				player,
-				"🤢 لمستك كبسولة الفيروس! حاول مرة ثانية",
+				"🧬 الفيروس تضاعف! الفيروسات تتكاثر باستغلال الخلية",
 				"wrong"
 			)
+		end
+		local shielded = shieldUntil[player] and now < shieldUntil[player]
+		for i, d in ipairs(drones) do
+			-- aim where the player will be in ~0.6 s (a straight chase is too easy to circle)
+			local vel = root.AssemblyLinearVelocity
+			local aim = root.Position + Vector3.new(vel.X, 0, vel.Z) * 0.6
+			local to = Vector3.new(aim.X - d.pos.X, 0, aim.Z - d.pos.Z)
+			local speed = 12 + elapsed * 0.1 - (i - 1) * 1.5 -- reaches walking speed (16) only near the end; the copy is slower
+			if d.dash > now then
+				speed *= 1.8
+			elseif d.warn and now >= d.warn then
+				d.warn = nil
+				d.dash = now + 0.6
+				d.model.Capsid.Color = Color3.fromRGB(110, 255, 80)
+			end
+			if to.Magnitude > 0.5 then
+				d.pos += to.Unit * math.min(speed * dt, to.Magnitude)
+			end
+			local here = Vector3.new(d.pos.X, y + math.sin(now * 4 + i) * 0.6, d.pos.Z)
+			placeParticle(d.model, here, now)
+			local dist = (root.Position - here).Magnitude
+			if dist < TOUCH_DIST then
+				if shielded then
+					-- the vaccine-trained immune system pushes the particle away
+					local away = Vector3.new(here.X - root.Position.X, 0, here.Z - root.Position.Z)
+					d.pos += (away.Magnitude > 0.1 and away.Unit or Vector3.xAxis) * 18
+					d.dash, d.warn = 0, nil
+				else
+					caughtAt = now
+				end
+			end
+		end
+		if caughtAt then
 			break
 		end
+		-- telegraphed dash: the first particle flashes red for 1 s, then lunges (x1.8 for 0.6 s)
+		if now > nextDash then
+			nextDash = now + math.max(4, 7 - elapsed * 0.06)
+			local d = drones[1]
+			d.warn = now + 1.0
+			d.model.Capsid.Color = Color3.fromRGB(255, 70, 70)
+		end
+		if now > nextVaccine then
+			nextVaccine = now + 10
+			spawnVaccine()
+		end
 	end
-	drone:Destroy()
+	for _, d in ipairs(drones) do
+		d.model:Destroy()
+	end
 	cleanupVaccines()
 	table.clear(shieldUntil)
-	if survived and player.Parent and inArena(player) then
+	local lasted = math.floor((caughtAt or os.clock()) - t0)
+	if player.Parent then
 		local s = Profiles.state[player]
-		if s then
-			s.coins += 15
-			player:SetAttribute("Coins", s.coins)
-		end
-		notify:FireClient(player, "💪 نجيت في تدريب المناعة! +15 💰", "ach")
-		if Profiles.award then
-			Profiles.award(player, "virus_survive")
+		if not caughtAt then
+			if s then
+				s.coins += 15
+				player:SetAttribute("Coins", s.coins)
+			end
+			notify:FireClient(player, "💪 نجيت في تدريب المناعة كامل! +15 💰", "ach")
+			if Profiles.award then
+				Profiles.award(player, "virus_survive")
+			end
+		else
+			local coins = math.floor(lasted / 10) * 2
+			if s and coins > 0 then
+				s.coins += coins
+				player:SetAttribute("Coins", s.coins)
+			end
+			notify:FireClient(
+				player,
+				("🤢 مسكك الفيروس بعد %d ثانية%s. جرّب مرة ثانية!"):format(
+					lasted,
+					coins > 0 and (" (+" .. coins .. " 💰)") or ""
+				),
+				"wrong"
+			)
 		end
 	end
 	clearPlayer(player)
