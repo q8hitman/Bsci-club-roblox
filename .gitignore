@@ -8,6 +8,8 @@ kuwait-parkour/src/map/Map.rbxmx
 # third-party tool binaries and downloads (see BSC_ARCHITECTURE.md for versions)
 tools/rojo/
 tools/lune/
+tools/luau-lsp/
+kuwait-parkour/sourcemap.json
 tools/stylua/
 tools/selene/
 tools/ytdlp/

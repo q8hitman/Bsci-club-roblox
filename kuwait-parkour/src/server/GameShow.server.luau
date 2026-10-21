@@ -401,8 +401,11 @@ local function runShow(starter)
 	-- results + rewards
 	local winners = {}
 	if show.teams then
-		local w = show.teamScore.Red == show.teamScore.Blue and nil
-			or (show.teamScore.Red > show.teamScore.Blue and "Red" or "Blue")
+		-- a tie rewards both teams (the old `x and nil or y` form always picked a winner)
+		local w = if show.teamScore.Red == show.teamScore.Blue
+			then nil
+			elseif show.teamScore.Red > show.teamScore.Blue then "Red"
+			else "Blue"
 		for p, t in pairs(show.team) do
 			if w == nil or t == w then
 				table.insert(winners, p)

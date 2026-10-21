@@ -1,4 +1,4 @@
-# BSC Island: development handoff (v57, 2026-10-21)
+# BSC Island: development handoff (v58, 2026-10-21)
 
 For whoever continues: Claude Code, Codex, or a person. **Continue this project. Do not restart or redesign it.**
 
@@ -61,7 +61,9 @@ git checkout -- kuwait-parkour/src/shared/LaserData.luau kuwait-parkour/src/shar
 tools/rojo/rojo.exe build kuwait-parkour/default.project.json -o ../KuwaitParkour_vNN.rbxlx
 cd kuwait-parkour && ../tools/stylua/stylua.exe <changed files> && ../tools/selene/selene.exe src
 tools/lune/lune.exe run tools/test_passport45.luau      # also test_museum46, test_racers47, test_laser48, validate_questions
+bash tools/typecheck.sh                                  # luau-lsp 1.70.1 type check (sourcemap + analyze)
 ```
+- **Type check (`tools/typecheck.sh`)**: baseline is 61 known false positives, all listed in the script header (fields added at runtime, such as `Profiles.award`). A new kind of error is worth reading. The first run found a real bug: a Game Show team tie always gave Blue the win, fixed in v58.
 - **Run selene from `kuwait-parkour/`**: from the repo root it can't see its config and reports hundreds of false errors. Baseline is 0 errors and 27 known warnings.
 - **Do not run stylua on all of `src`**: it reformats the generated `shared/*.luau` files.
 - **Hot-swap into an open Studio** (no restart):
@@ -185,11 +187,11 @@ Smaller items:
 | Rojo 7.7.1, Lune 0.11, StyLua 2.5.2, Selene 0.32 | In `tools/`, all work |
 | Codex CLI 0.163 (`C:\Users\User\AppData\Local\OpenAI\Codex\bin\896a0166b774037a\codex.exe`) | Callable (`--version` OK) |
 
-**Not installed (would need the owner's OK to download):** `luau-lsp` (type checking, open source, JohnnyMorganz/luau-lsp). It is the most useful missing tool.
+**luau-lsp 1.70.1** is installed in `tools/luau-lsp/` (official GitHub release, approved by the owner, git-ignored like rojo). Run it with `bash tools/typecheck.sh`.
 
 ## 9. Exact prompt to start Codex
 From the repo root:
 ```
-"C:\Users\User\AppData\Local\OpenAI\Codex\bin\896a0166b774037a\codex.exe" exec -C "C:\Users\User\Desktop\KuwaitParkour\BSC_project_full" "Continue BSC Island development. Read docs/DEVELOPMENT_HANDOFF.md first, then CLAUDE.md and BSC_RESUME.md. Work on branch dev/v54-labs-cartride from the latest commit. Follow section 5 (next steps) in order, respect section 6 (owner decisions) and ask before anything in section 7. Build with the commands in section 2, never overwrite older .rbxlx builds (next build is KuwaitParkour_v58.rbxlx), commit after each verified milestone, and never publish."
+"C:\Users\User\AppData\Local\OpenAI\Codex\bin\896a0166b774037a\codex.exe" exec -C "C:\Users\User\Desktop\KuwaitParkour\BSC_project_full" "Continue BSC Island development. Read docs/DEVELOPMENT_HANDOFF.md first, then CLAUDE.md and BSC_RESUME.md. Work on branch dev/v54-labs-cartride from the latest commit. Follow section 5 (next steps) in order, respect section 6 (owner decisions) and ask before anything in section 7. Build with the commands in section 2, never overwrite older .rbxlx builds (next build is KuwaitParkour_v59.rbxlx), commit after each verified milestone, and never publish."
 ```
 Or paste the same text into the existing Codex thread `01a14bdc-a4d3-7360-a7e5-eacb9a8c4924` in the Codex app.

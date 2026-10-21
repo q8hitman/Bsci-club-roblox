@@ -245,3 +245,7 @@ Portals are parts named `Portal|<Kind>`. `destinations` lives in `src/server/Mai
 ## v57 (2026-10-21, local only, NOT published). Same branch. Research report: docs/BSC_CREATIVE_RESEARCH_AND_POLISH.md
 - Cart resume (Profiles.cart, CartRide remote "progress"/"resume"), lab guide Highlight (Labs54 NEXT), arcade
   watch-only (ArcadeSpectate), Analytics.luau funnels. QA: V53/Labs54/Arcade53 2-client suites + 14-destination tour.
+
+## v58 (2026-10-21, local only, NOT published). Same branch.
+- luau-lsp 1.70.1 in tools/luau-lsp (git-ignored). `bash tools/typecheck.sh`; 61 known false positives listed in its header.
+- Fix: Game Show team tie now rewards both teams (was always Blue).
