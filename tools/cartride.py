@@ -1020,8 +1020,7 @@ def stations(t):
         for zz in (sz - 34, sz + 14):
             rect("DeckEdge", sx - 30, sx + 30, sy - 1.4, sy - 1.3, zz - 0.4, zz + 0.4, (240, 110, 200), "Neon", collide=False)
         G.part("CartStart", (8, 0.4, 8), (sx - 9, sy - 1.2, sz - 4), (240, 110, 200), "Neon", transp=0.1, shadow=False)
-        sign("CartStartSign", "🚆 دوس هنا عشان تركب القطار\nبعدها اضغط ▶ انطلاق مرة وحدة واستمتع", (sx - 9, sy + 6, sz - 8.4), (16, 5, 0.4), "Back",
-             bg=(120, 40, 110))
+        sign("CartStartSign", "🚆 اركب هنا", (sx - 9, sy + 6, sz - 8.4), (8, 2.4, 0.4), "Back", bg=(120, 40, 110))
         sign("CartTitle", "🚆 قطار التخصصات الثمانية  •  BSC Science Express", (sx, sy + 16, sz - 33.4), (56, 5, 0.6),
              "Back", bg=(80, 40, 130))
         A.logo_board(sx + 22, sy + 30, sz - 33.0, R=1.5, nx=0.0, nz=1.0)

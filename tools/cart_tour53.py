@@ -1011,10 +1011,9 @@ def station_hall(t):
         rect("StationRoofBeam", sx - 40, sx + 40, sy + 44, sy + 46, sz - 42, sz + 20, (200, 196, 186), "Concrete")
         rect("StationGlassRoof", sx - 38, sx + 38, sy + 46, sy + 46.6, sz - 40, sz + 18, (190, 220, 240), "Glass", transp=0.5,
              collide=False)
-        sign("Departures", "🚆 المحطة الرئيسية | Grand Station\n8 عوالم • مايكروبيولوجي ← البايوتكنولوجي",
-             (sx, sy + 34, sz - 39.4), (44, 8, 0.6), "Back", color=(255, 220, 120), bg=(16, 18, 26))
-        sign("HowTo", "▶ تشغيل  •  ＋ أسرع  •  － أبطأ  •  🎥 كاميرا\nما تحتاج تضغط W طول الوقت",
-             (sx + 22, sy + 8, sz + 17.4), (26, 6, 0.6), "Front", color=(255, 255, 255), bg=(40, 60, 110))
+        # v56: one short station name; the controls are in the ؟ help button and the ride's own one-line hint
+        sign("Departures", "🚆 المحطة الرئيسية | Grand Station", (sx, sy + 34, sz - 39.4), (30, 4, 0.6), "Back",
+             color=(255, 220, 120), bg=(16, 18, 26))
 
 
 # ====================================================================== runtime terrain (CartTerrain.server)

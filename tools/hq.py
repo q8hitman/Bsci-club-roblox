@@ -194,9 +194,7 @@ def south_wall():
     gateway_hall()
     sign("Discord", "💬 انضموا لمجتمعنا على Discord\ndiscord.gg/8hw9hBn27\nأكواد الجوائز تنزل هناك أول بأول!", (-40, 10, Z - 0.6),
          (24, 9, 0.5), "Front", bg=(88, 101, 242))
-    sign("HowTo", "طريقة اللعب\n• البوابات الشمالية: باركور 100 مرحلة بتخصصاتنا\n• كل 5 مراحل سؤال\n"
-         "• ركن الأسئلة: تدرّب واكسب عملات\n• قطار التخصصات وقطار الخلية من الجهة الشرقية", (40, 10, Z - 0.6), (26, 11, 0.5), "Front",
-         bg=(30, 50, 70))
+    # v56: the "how to play" board became the ؟ help button (Help.client)
 
 
 def club_office_corner():

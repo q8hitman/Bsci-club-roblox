@@ -64,7 +64,8 @@ local function build(k)
 				if loaded[k] ~= entry then
 					return -- unloaded while still building
 				end
-				local f = string.split(line, "\t")
+				-- a Windows checkout may turn the module into CRLF: drop the stray \r
+				local f = string.split((string.gsub(line, "\r$", "")), "\t")
 				if #f >= 15 then
 					local p = Instance.new("Part")
 					p.Name = f[1]

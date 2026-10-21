@@ -34,8 +34,7 @@ def lobby():
         sign("Title", "⚡ CHAOS CAMPUS ⚡\nفوضى الكلية", (0, Y + 16, -30), (34, 9, 0.6), "Back", bg=(80, 30, 110))
         G.part("ScoreBoard", (26, 16, 0.6), (-24, Y + 9, -22), (20, 24, 34), "SmoothPlastic", rot=(0, 35, 0),
                text=dict(face="Back", text="🏆", color=(255, 236, 160), bg=(20, 28, 44), bg_t=0.0))
-        sign("HowTo", "كيف تلعب؟\n• كل جولة لعبة مختلفة + طفرة عشوائية 🧬\n• آخر واحد يبقى أو أكثر نقاط يفوز\n• الفوز = نقاط ولقب",
-             (24, Y + 9, -22), (26, 14, 0.6), "Back", bg=(30, 50, 70))
+        # v56: the "how to play" board became the ؟ help button (Help.client)
         # spectator balcony view of the sweeper arena is not needed: players watch from the lobby screens
 
 

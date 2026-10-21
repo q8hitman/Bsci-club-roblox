@@ -80,8 +80,7 @@ def train_station():
              bg=(80, 40, 130))
         sign("StationName2", "محطة قطار الخلية  |  Cell Train Station", (135, 17.5, zp - 4.6), (40, 4.6, 0.4), "Front",
              bg=(80, 40, 130))
-        sign("Departures", "الرحلة القادمة: جولة داخل الخلية الحيوانية\nاركب من الباب الوردي ← المدة: دقيقتين",
-             (118, 7, zp - 5.6), (18, 5, 0.4), "Back", color=(255, 220, 120), bg=(20, 16, 32))
+        # v56: departures board removed (the station name is enough; ؟ help explains the ride)
         for x in (130, 146):
             box("Bench", (8, 0.6, 2.4), (x, 3.3, zp - 3.6), (150, 100, 62), "WoodPlanks", collide=False)
             box("BenchBase", (7, 1.8, 1.6), (x, 2.3, zp - 3.6), (50, 50, 56), "SmoothPlastic", collide=False)

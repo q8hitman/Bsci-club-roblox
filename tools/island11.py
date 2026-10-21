@@ -431,8 +431,7 @@ def quiz_center():
         G.part("Portal|Campus", (11, 13, 0.6), at(8, 6.6, 59.2), (255, 190, 120), "Neon", transp=0.45, collide=False, shadow=False)
         sign("QuizExitCampus", "↩ كلية العلوم", at(8, 14.5, 59.4), (10, 2.2, 0.4), "Front", bg=(150, 95, 35))
         sign("QuizTitle", "🎓 مركز التحديات العلمية | Science Challenge Center", at(0, 25, -59.4), (60, 4.4, 0.4), "Back", bg=NAVY)
-        sign("QuizHowTo", "اختار تخصصك ← حل 5 أسئلة ← 3 صح تفتح المستوى اللي بعده ⭐", at(0, 20, -59.4), (52, 2.6, 0.4),
-             "Back", bg=(60, 70, 90))
+        # v56: the rules line moved into the ؟ help button (Help.client)
         # ---- specialty booths: 4 west (facing east), 4 east (facing west)
         for i in range(8):
             west = i < 4
