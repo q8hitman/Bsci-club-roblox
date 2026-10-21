@@ -35,6 +35,11 @@ tools/lune/lune.exe run tools/test_passport45.luau      # also test_museum46, te
 | **First Day at the College**:<br>• 4 optional steps (HQ, Arcade, Lab, train) with travel buttons<br>• `firstday` achievement (+50 coins, title) | Lune tests all PASS | Card shows `0000`; a real click on the HQ step travelled there and ticked it (`1000`) | no | Layout checked in the emulator only |
 
 Smaller items:
+- **Cart terrain:** `CartTerrain.server` paints 578 balls from `Shared/CartTerrain`:
+  - Limestone scree at the base of the cliffs and ridges;
+  - Sand dunes (animals), LeafyGrass hills (plants), Ground hills (agriculture).
+  - Seen in Play.
+- **Fixed:** the mirrored −z side of the cart worlds had negative part sizes, so the south cliffs and the left tunnel walls were missing. `cart_tour53.rect` now sorts its bounds; 0 negative sizes remain in the cart worlds.
 - The welcome hint about a timer was replaced, because the owner removed the visible timer.
 - `AreaAtmosphere` and `Feedback` now test the cart region before the cell world.
 
@@ -43,6 +48,7 @@ Smaller items:
   - rolling ground (half-buried large parts, or runtime Terrain like `CampusTerrain`);
   - denser props near the rails;
   - a petri-dish rim in Microbiology.
+- **Pre-existing campus bug, not touched (approved geometry):** 134 `Mullion` and 15 `Ribbon` parts on the campus (x −1000..1000, z −1000..0) have negative sizes, so they probably render as nothing. Check what they were meant to look like before fixing them in their generator.
 - **Cart part budget:** the place has about 32,000 parts (v52 had 28,200). Check frame rate on a real phone before adding more.
 - **The Arabic Gram answer text** and the other lab text use two-line Arabic/English. Other panels may still mix both languages on one line, which garbles it; split those into two lines too.
 - **Not tested at all:**
