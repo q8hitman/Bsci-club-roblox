@@ -222,3 +222,11 @@ Portals are parts named `Portal|<Kind>`. `destinations` lives in `src/server/Mai
   - In multi-client mode, scripted `InputHoldBegin` presses stop reaching the server after a few presses. Use real
     people for full co-op runs.
 - The game is landscape-only (`LandscapeSensor`).
+
+## v53 (2026-10-21, local only, NOT published). Branch dev/v53-release-push. Full state: docs/DEVELOPMENT_HANDOFF.md
+- Cart Ride = tools/cart_tour53.py (genmap9 calls it; old hall code still in cartride.py): 8 open valleys along -X from
+  (-9000,150,9000), ridges + tunnels, track data in Shared/CartTrack.luau (no CW parts), stage edges in CartRooms.edges.
+- Cell Train: celltrain.py organelle pass + CellLife.client (vesicle traffic on CellPath|n anchors).
+- Gram stain: reagent rack + decolouriser timing; server action gramView decides the observed colour.
+- First Day questline: PassportService sets attribute FirstDay ("0000".."1111"), achievement firstday; FirstDay.client.
+- Run selene from kuwait-parkour/ (root = false errors). Don't stylua generated shared/*.luau. Codex CLI is callable (handoff §9).
