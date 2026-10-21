@@ -12,7 +12,7 @@ local Zones = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Zon
 local okRooms, CartRooms = pcall(function()
 	return require(ReplicatedStorage.Shared:WaitForChild("CartRooms", 5))
 end)
-CartRooms = okRooms and type(CartRooms) == "table" and CartRooms.tops and CartRooms or { tops = {}, zones = {} }
+CartRooms = okRooms and type(CartRooms) == "table" and CartRooms.edges and CartRooms or { edges = {}, zones = {} }
 local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
 local grade = Lighting:FindFirstChildOfClass("ColorCorrectionEffect")
 
@@ -186,17 +186,17 @@ local function areaAt(p)
 			end
 		end
 		return "z" .. zone
-	elseif p.X < -10000 then
-		return "cell"
 	elseif p.X < -7000 and p.Z > 7000 then
-		-- rail hall (v31): one room per specialty in ride order; each room reuses that specialty's parkour-zone look
+		-- v53 Grand Tour: one open valley per specialty along -X; each reuses that specialty's parkour-zone look
 		local room = 1
-		for i, zTop in ipairs(CartRooms.tops) do
-			if p.Z <= zTop then
+		for i, x0 in ipairs(CartRooms.edges) do
+			if p.X <= x0 then
 				room = i
 			end
 		end
 		return "z" .. (CartRooms.zones[room] or 1)
+	elseif p.X < -10000 then
+		return "cell"
 	elseif math.abs(p.X) < 1000 and p.Z < -5000 and p.Z > -7100 then
 		return "quiz"
 	elseif p.Z < -12300 then

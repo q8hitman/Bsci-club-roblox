@@ -272,10 +272,10 @@ local function areaAt(pos)
 		return "hq"
 	elseif pos.X > 10000 then
 		return "course"
+	elseif pos.X < -7000 and pos.Z > 7000 then
+		return "cart" -- v53: the Grand Tour valleys run past x -10000, so test the cart region before the cell world
 	elseif pos.X < -10000 then
 		return "cell"
-	elseif pos.X < -7000 and pos.Z > 7000 then
-		return "cart"
 	end
 	return "campus"
 end

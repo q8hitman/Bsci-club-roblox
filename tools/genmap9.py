@@ -16,6 +16,7 @@ import parkour9  # noqa: E402
 import campus9  # noqa: E402
 import hq  # noqa: E402
 import cartride  # noqa: E402
+import cart_tour53  # noqa: E402
 import celltrain  # noqa: E402
 import hq_beauty  # noqa: E402
 import hq_fill  # noqa: E402
@@ -108,7 +109,7 @@ if __name__ == "__main__":
     G.hub = course_start
     at(C5.COURSE_OFFSET, C3.build)
     at(celltrain.CELL_OFFSET, celltrain.cell_world)
-    n_cart, cart_bad = at(cartride.CART_OFFSET, cartride.build)
+    n_cart, cart_bad = at(cartride.CART_OFFSET, cart_tour53.build)   # v53: open-world Grand Tour (old hall: cartride.build)
     collectibles9.build(G8.zone_starts())   # absolute coordinates (needs the course already written)
     extras10.build()   # virus arena, graduation stage, secret roof, daily board (absolute coordinates)
     island11.build()   # BSC Island gameplay layer, exam hall, arcade (absolute coordinates)
@@ -125,7 +126,7 @@ if __name__ == "__main__":
             size += len(chunk)
         f.write("</Item></roblox>")
     G8.write_zones_module(os.path.join(os.path.dirname(os.path.dirname(out_path)), "shared", "Zones.luau"))
-    cartride.write_rooms_module(cartride.ROOMS, os.path.join(os.path.dirname(os.path.dirname(out_path)), "shared", "CartRooms.luau"))
+    cart_tour53.write_modules(os.path.join(os.path.dirname(os.path.dirname(out_path)), "shared"))
     laser48.write_data(os.path.join(os.path.dirname(os.path.dirname(out_path)), "shared", "LaserData.luau"))
     racers47.write_data(os.path.join(os.path.dirname(os.path.dirname(out_path)), "shared", "RacerData.luau"))
     print("parts:", G.nparts[0], "| steps:", n, "| gap %.2f rise %.2f" % (gap, rise), "| violations:", len(bad),
