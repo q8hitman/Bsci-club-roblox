@@ -131,7 +131,11 @@ player:GetAttributeChangedSignal("FirstDay"):Connect(refresh)
 task.spawn(function()
 	while gui.Parent do
 		local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-		card.Visible = not (hum and hum.Sit)
+		-- the Cell Train does not seat the rider: its own buttons tell us it is running
+		local cell = player.PlayerGui:FindFirstChild("CellTrainGui")
+		local speedBtn = cell and cell:FindFirstChild("SpeedToggleBtn")
+		local onCellTrain = speedBtn ~= nil and speedBtn.Visible
+		card.Visible = not ((hum and hum.Sit) or onCellTrain)
 		task.wait(0.5)
 	end
 end)
