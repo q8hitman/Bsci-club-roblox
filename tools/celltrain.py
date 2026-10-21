@@ -162,6 +162,23 @@ def tube(name, a, b, d, col, mat="Neon", transp=0.0):
            rot=radial_rot(dx / L, dy / L, dz / L), transp=transp, collide=False, shadow=False)
 
 
+def catmull(ctrl, before, after, step):
+    """points every ~step studs along a Catmull-Rom curve through ctrl (before/after shape the two ends)"""
+    P = [before] + ctrl + [after]
+    out = []
+    for i in range(1, len(P) - 2):
+        p0, p1, p2, p3 = P[i - 1], P[i], P[i + 1], P[i + 2]
+        seg = math.dist(p1, p2)
+        n = max(1, int(seg / step))
+        for k in range(n):
+            t = k / n
+            t2, t3 = t * t, t * t * t
+            out.append(tuple(0.5 * ((2 * p1[j]) + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t2
+                                    + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t3) for j in range(3)))
+    out.append(tuple(P[-2]))
+    return out
+
+
 def cell_world():
     with G.Group("CellTrain"):
         # enclosed purple room (we see the inside faces of boxes, unlike a Ball)
@@ -190,7 +207,7 @@ def cell_world():
         # v53 nucleus: outer + inner membrane (the envelope), pore complexes through both, chromatin threads inside
         ball("Nucleus", 0, 95, 0, 124, (160, 90, 220), "SmoothPlastic", transp=0.6, collide=False)
         ball("NucleusInner", 0, 95, 0, 114, (130, 70, 200), "SmoothPlastic", transp=0.45, collide=False)
-        ball("Nucleolus", 14, 100, -10, 40, (80, 30, 130), "SmoothPlastic", collide=False)
+        ball("Nucleolus", 0, 92, 0, 34, (80, 30, 130), "SmoothPlastic", collide=False)   # v54: centred; the track circles it
         for q in range(30):
             a, b = rng.uniform(0, 6.28), rng.uniform(-1.2, 1.2)
             nx, ny, nz = math.cos(a) * math.cos(b), math.sin(b), math.sin(a) * math.cos(b)
@@ -263,7 +280,7 @@ def cell_world():
             ball("Lysosome", lx + rng.uniform(-24, 24), rng.uniform(40, 80), lz + rng.uniform(-24, 24), 12, (180, 90, 230),
                  "SmoothPlastic", collide=False)
         # v53 microtubules (the cell's rails) and the secretion route the vesicles travel: rough ER -> Golgi -> membrane
-        route = [polar(120, 30, 72), polar(112, 70, 78), polar(112, 110, 80), polar(132, 142, 38),
+        route = [polar(120, 30, 72), polar(112, 70, 104), polar(112, 110, 106), polar(132, 142, 38),   # v54: above the nucleus detour
                  polar(160, 142, 84), polar(240, 142, 96), polar(314, 142, 96)]
         for a, b in zip(route, route[1:]):
             tube("Microtubule", a, b, 1.0, (210, 255, 230), "Neon")
@@ -294,11 +311,29 @@ def cell_world():
                  (262, "نهاية الرحلة! شكراً لركوبك قطار الخلية")]
         pts = []
         labels = {}
+
+        def loop_y(deg):
+            return 42 + 10 * math.sin(math.radians(deg * 2))
+
         for deg in range(-100, 266, 4):
-            y = 42 + 10 * math.sin(math.radians(deg * 2))
-            pts.append(polar(TRACK_R, deg, y))
+            if 92 <= deg <= 128:
+                if deg == 92:
+                    # v54: detour INTO the nucleus through one pore, round the nucleolus, out through another pore
+                    ctrl = [polar(TRACK_R, 84, loop_y(84)), polar(TRACK_R, 88, loop_y(88)), polar(175, 92, 56),
+                            polar(110, 94, 72), polar(66, 96, 84), polar(36, 104, 88)]
+                    for a in range(80, -230, -30):          # inner circle, clockwise, around the nucleolus
+                        ctrl.append(polar(36, a, 88))
+                    ctrl += [polar(36, 118, 88), polar(66, 126, 84), polar(110, 128, 72), polar(175, 130, 56),
+                             polar(TRACK_R, 132, loop_y(132)), polar(TRACK_R, 136, loop_y(136))]
+                    first = len(pts)
+                    pts.extend(catmull(ctrl[1:-1], ctrl[0], ctrl[-1], 5.0))
+                    labels[first + 6] = "ثقب نووي: البروتينات وmRNA تدخل وتطلع من هالثقوب"
+                    labels[first + 30] = "داخل النواة: الـ DNA ملفوف ككروماتين، والنوية تصنع الريبوسومات"
+                continue
+            pts.append(polar(TRACK_R, deg, loop_y(deg)))
             for sdeg, text in stops:
-                if abs(deg - sdeg) < 2:
+                # v54: <= 2 on the 4-degree grid (with < 2, half the stops never got their caption), once per stop
+                if abs(deg - sdeg) <= 2 and text not in labels.values():
                     labels[len(pts)] = text
         for i, p in enumerate(pts, 1):
             G.part("WP|%d|%s" % (i, labels.get(i, "")), (1, 1, 1), p, (0, 0, 0), "SmoothPlastic", transp=1, collide=False,
@@ -312,8 +347,7 @@ def cell_world():
             box("TrackBed", (6, 0.6, L + 0.5), (mx, my, mz), (230, 220, 245), "SmoothPlastic", rot=(pitch, yaw, 0), collide=False,
                 shadow=False)
             vcyl("TrackPier", mx, 0, my - 0.3, mz, 1.6, (170, 130, 210), "SmoothPlastic", collide=False) if int(mx + mz) % 3 == 0 else None
-        for sdeg, text in stops[:-1]:
-            label_board(sdeg, 70, text.split(":")[0])
+        # v54: no floating name boards (the ride caption names each stop); the scenery does the teaching
         # v51: Glowing phospholipid bilayer entry tunnel around the Membrane stop (-98..-74 deg)
         for deg in range(-98, -72, 4):
             tx, ty, tz = polar(TRACK_R, deg, 42 + 10 * math.sin(math.radians(deg * 2)))

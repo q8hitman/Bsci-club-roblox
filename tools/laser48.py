@@ -48,7 +48,7 @@ def build():
     gate("StartGate",x,y,z+38,str(i)+" / 5 • "+d['ar'],c)
     gate("FinishGate",x,y,z-33,"نقطة حفظ ✓" if i<5 else "الخروج • أحسنت",c)
     G.part("Checkpoint",(8,.2,6),(x,y+.1,z+32),c,"Neon",transp=.3,collide=False,shadow=False)
-    G.sign("Instructions",d['hint'],(x,y+7,z+27),(48,4,.4),"Back",bg=NAVY)
+    G.sign("Instructions",d['hint'],(x,y+9.5,z+27),(26,2.2,.4),"Back",bg=NAVY)  # v54: a slim plate above the door
     for dz in (20,-22):deco("SafeStripe",(52,.1,1),(x,y+.07,z+dz),c)
     if i==2:beam("Hazard",x,y,z,20)
     elif i==3:beam("Hazard",x+15,y,z,16)

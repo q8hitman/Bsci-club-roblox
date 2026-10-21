@@ -14,8 +14,8 @@ local player = Players.LocalPlayer
 local mapFolder = workspace:WaitForChild("Map")
 local remote = ReplicatedStorage:WaitForChild("CartRide")
 
-local SPEEDS = { 15, 25, 35, 45, 60, 75, 90 } -- cruise steps (studs/s); motion is kinematic, so all are safe
-local START_LEVEL = 3
+local SPEEDS = { 15, 25, 35, 45, 60, 75, 90, 120 } -- cruise steps (studs/s); motion is kinematic, so all are safe
+local START_LEVEL = 4 -- v54: 45 studs/s, about 18 minutes for the whole 48k-stud ride
 local ACCEL, DECEL = 14, 20 -- gentle: no jolts when starting, pausing or arriving
 local LATERAL = 70 -- comfort limit for v^2 / radius in bends
 local SEAT_HEIGHT = 2.0
@@ -425,8 +425,8 @@ local KEYS = {
 	[Enum.KeyCode.S] = function()
 		changeSpeed(-1)
 	end,
-	[Enum.KeyCode.P] = toggleGo,
-	[Enum.KeyCode.C] = toggleCamera,
+	-- v54: P and C belong to Photo Mode; the train uses Enter (start/pause) and V (camera)
+	[Enum.KeyCode.V] = toggleCamera,
 	[Enum.KeyCode.ButtonX] = toggleGo,
 	[Enum.KeyCode.ButtonY] = toggleCamera,
 }
@@ -532,6 +532,9 @@ end
 local function passFlags(r, fromIdx, toIdx)
 	for i = fromIdx + 1, toIdx do
 		local p = pts[i]
+		if p.flags.c and p.label ~= "" then
+			say(p.label, 5) -- v54: landmark captions replace the floating boards beside the rails
+		end
 		local ev = p.flags.e
 		if type(ev) == "number" and not r.events[ev] then
 			r.events[ev] = true

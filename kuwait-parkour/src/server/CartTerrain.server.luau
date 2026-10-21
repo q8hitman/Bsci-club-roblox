@@ -13,8 +13,14 @@ end
 task.wait(3) -- after the map and the campus dunes
 local T = workspace.Terrain
 for i, ball in ipairs(plan) do
-	local material = Enum.Material[ball[5]] or Enum.Material.Limestone
-	T:FillBall(Vector3.new(ball[1], ball[2], ball[3]), ball[4], material)
+	if ball[1] == "block" then
+		-- v54 rivers: { "block", x, y, z, sx, sy, sz, material }
+		local material = Enum.Material[ball[8]] or Enum.Material.Water
+		T:FillBlock(CFrame.new(ball[2], ball[3], ball[4]), Vector3.new(ball[5], ball[6], ball[7]), material)
+	else
+		local material = Enum.Material[ball[5]] or Enum.Material.Limestone
+		T:FillBall(Vector3.new(ball[1], ball[2], ball[3]), ball[4], material)
+	end
 	if i % 40 == 0 then
 		task.wait()
 	end

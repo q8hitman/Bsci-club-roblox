@@ -29,7 +29,8 @@ rng = random.Random(53)
 
 GROUND_Y = -14.0        # stage valley floor (the track runs at y -4 .. +44)
 STATION_GROUND = -2.4   # the station cell floor = the station deck top
-CELLZ = 400.0           # half width of every valley
+CELLZ = 780.0           # half width of every valley (v54: grand valleys)
+LEGZ = 560.0            # how far each leg runs out from the centre line (hairpin centres)
 TUNNEL_L = 160.0
 RIDGE_T = 44.0
 CR.STEP = 8.0           # longer track, fewer points: the client interpolates between them
@@ -60,35 +61,63 @@ def tunnel(t):
     return xm
 
 
+def west(t):
+    """turn sign whose centre lies on the -X side (spirals and S-bends never swing back toward the ridge behind)"""
+    return -1 if math.cos(math.radians(t.yaw)) > 0 else 1
+
+
+def s_bend(t, w, ang=24.0, R=200.0):
+    t.turn(ang * w, R)
+    t.turn(-2 * ang * w, R)
+    t.turn(ang * w, R)
+
+
 def stage_path(t, key, s):
-    h, low = PATH[key]
+    """v54 grand valley: four long legs across the valley (|z| up to LEGZ) joined by three hairpins.
+    A: spiral climb + rise to the overlook | B: high bridge over the river, S-bend, the big drop, low run
+    C: the hero set piece (straight ':low'), a tunnel through a mesa, S-bend, climb | D: double spiral down, exit.
+    The last straight is computed so the path closes exactly on z = 0 at the exit tunnel."""
+    h_top, low = PATH[key]
+    h_top += 56   # the overlook bridge is high above the valley floor
+    mid = 40.0
+    R1, RH = 120.0, 140.0
     t.straight(40)
-    t.turn(90 * s, 100)
-    t.straight(150, dy=h)
+    t.turn(90 * s, R1)
+    # ---- leg A: spiral climb, then up to the overlook
+    t.straight(40)
+    t.turn(360 * west(t), 50, dy=45)
+    t.marks[key + ":spiralA"] = t.last_center
+    t.straight(LEGZ - abs(t.p[2]), dy=h_top - 45)
     t.marks[key + ":view"] = tuple(t.p)
-    t.turn(-180 * s, 110, flags=["e%d" % EVENT[key]] if key in ("micro",) else ())
+    t.turn(-180 * s, RH, flags=["e%d" % EVENT[key]] if key in ("micro",) else ())
+    t.marks[key + ":overlook"] = t.last_center
     i_leg = len(t.pts)
-    if key == "molecular":
-        t.straight(200, dy=-h)
-        t.turn(360 * s, 40, dy=44)
-        t.marks["dna"] = t.last_center
-        i0 = len(t.pts)
-        t.straight(100)
-        t.marks[key + ":low"] = (i0, len(t.pts))
-        t.turn(-360 * s, 40, dy=-44)
-        t.straight(200)
-        y_end = 0.0
-    else:
-        t.straight(130, dy=low - h)
-        i0 = len(t.pts)
-        t.straight(240, flags=["e%d" % EVENT[key]] if key in ("plant", "forensic") else ())
-        t.marks[key + ":low"] = (i0, len(t.pts))
-        t.straight(130)
-        y_end = low
+    # ---- leg B: the high bridge over the river, an S-bend, the big drop, a low run
+    i0 = len(t.pts)
+    t.straight(360, dy=5)
+    t.marks[key + ":bridge"] = (i0, len(t.pts))
+    s_bend(t, west(t))
+    t.straight(300, dy=low - (t.p[1]))
+    t.straight(max(40.0, LEGZ - abs(t.p[2])))
+    t.turn(180 * s, RH)
+    # ---- leg C: hero set piece, mesa tunnel, S-bend, climb
+    t.straight(120)
+    i0 = len(t.pts)
+    t.straight(280, flags=["e%d" % EVENT[key]] if key in ("plant", "forensic") else ())
+    t.marks[key + ":low"] = (i0, len(t.pts))
+    i0 = len(t.pts)
+    t.straight(160, flags=["m"])
+    t.marks[key + ":mesa"] = (i0, len(t.pts))
+    s_bend(t, west(t))
+    t.straight(max(40.0, LEGZ - abs(t.p[2])), dy=mid - t.p[1])
     t.marks[key + ":leg"] = (i_leg, len(t.pts))
-    t.turn(180 * s, 110)
-    t.straight(150, dy=-y_end)
-    t.turn(-90 * s, 100)
+    t.turn(-180 * s, RH)
+    # ---- leg D: a double spiral down around the stage's tower, then home to z = 0
+    t.straight(60)
+    t.turn(720 * west(t), 46, dy=-(t.p[1]))
+    t.marks["dna" if key == "molecular" else key + ":tower"] = t.last_center
+    t.straight(max(10.0, abs(t.p[2]) - R1))
+    t.turn(90 * s, R1)
     t.straight(40)
 
 
@@ -133,13 +162,16 @@ def draw_track(t):
                 k = q
         return k
 
+    # v54: a run is merged while its total bend stays under 6 degrees (and slope under 3), so gentle curves use
+    # 2-3 segments per part while tight spirals keep one segment each (part budget for the 48k-stud track)
     runs, i = [], 0
     while i < len(pts) - 1:
         j = i + 1
         _, y0, p0, _ = _frame(pts[i], pts[i + 1])
         while j < len(pts) - 1 and j - i < 8:
             _, y1, p1, _ = _frame(pts[j], pts[j + 1])
-            if abs(y1 - y0) > 0.05 or abs(p1 - p0) > 0.05:
+            dyaw = abs((y1 - y0 + 180) % 360 - 180)
+            if dyaw > 6 or abs(p1 - p0) > 3 or ("t" in pts[j][4]) != ("t" in pts[i][4]):
                 break
             j += 1
         runs.append((i, j))
@@ -155,20 +187,29 @@ def draw_track(t):
                     rot=(pitch, yaw, 0), collide=False, shadow=False)
             box("TrackSpine", (1.8, 1.4, L + 0.4), (mx, my - 1.6, mz), (52, 58, 70), "Metal", rot=(pitch, yaw, 0),
                 collide=False, shadow=False)
-            if n % 2 == 0:
+            # v54: high straight runs become bridges: a deck under the rails and railings on both sides
+            ground = STATION_GROUND if a[0] > t.ridges[0] else GROUND_Y
+            if j - i >= 3 and min(a[1], b[1]) - ground > 40 and "t" not in a[4]:
+                box("BridgeDeck", (8.4, 0.7, L + 0.4), (mx, my - 2.6, mz), (120, 112, 104), "Concrete", rot=(pitch, yaw, 0),
+                    collide=False, shadow=True)
+                for s_ in (-1, 1):
+                    box("BridgeRail", (0.35, 0.35, L + 0.4), (mx + rx * s_ * 4.1, my + 0.9, mz + rz * s_ * 4.1),
+                        (230, 232, 236), "Metal", rot=(pitch, yaw, 0), collide=False, shadow=False)
+            if n % 3 == 0:
                 for s_ in (-1, 1):
                     box("GuideNeon", (0.22, 0.28, L + 0.2), (mx + rx * s_ * 3.35, my - 0.55, mz + rz * s_ * 3.35), glow,
                         "Neon", rot=(pitch, yaw, 0), collide=False, shadow=False)
-        for i in range(0, len(pts) - 1, 2):
+        for i in range(0, len(pts) - 1, 3):   # v54: a tie every 24 studs (part budget for the 48k-stud track)
             a, b = pts[i], pts[i + 1]
             L, yaw, pitch, _ = _frame(a, b)
             box("Tie", (6.8, 0.45, 1.1), (a[0], a[1] - 0.85, a[2]), (85, 92, 108), "Metal", rot=(pitch, yaw, 0),
                 collide=False, shadow=False)
             # supports down to the valley floor wherever the track is up in the air (never inside tunnels)
-            if i % 6 == 0 and "t" not in a[4]:
+            if i % 9 == 0 and "t" not in a[4] and "m" not in a[4]:
                 floor = STATION_GROUND if a[0] > t.ridges[0] else GROUND_Y
                 if a[1] - floor > 7:
-                    vcyl("Support", a[0], floor, a[1] - 1.8, a[2], 1.6, (70, 76, 88), "Metal", collide=False, shadow=False)
+                    vcyl("Support", a[0], floor, a[1] - 1.8, a[2], 1.6 + (a[1] - floor) * 0.03, (70, 76, 88), "Metal",
+                         collide=False, shadow=False)
         # a gate over the rails right after every tunnel: the stage's name, readable both ways
         for k, (st, title) in enumerate(t.sections):
             sx, sy, sz, syaw = pts[min(st + 3, len(pts) - 1)][:4]
@@ -201,7 +242,7 @@ def ridge(xm, next_col):
     while z < CELLZ + 20:
         w = rng.uniform(36, 60)
         z1 = min(z + w, CELLZ + 20)
-        top = GROUND_Y + rng.uniform(120, 175)
+        top = GROUND_Y + rng.uniform(210, 270)   # v54: taller than the highest bridge
         x0, x1 = xm - RIDGE_T / 2 - rng.uniform(0, 8), xm + RIDGE_T / 2 + rng.uniform(0, 8)
         if z1 < -14 or z > 14:
             rect("Ridge", x0, x1, GROUND_Y - 4, top, z, z1, ROCK, "Sandstone")
@@ -215,7 +256,7 @@ def ridge(xm, next_col):
     for q in range(10):
         zz = rng.uniform(-CELLZ, CELLZ)
         if abs(zz) > 40:
-            box("RidgeCrag", (RIDGE_T * 0.7, rng.uniform(20, 50), rng.uniform(30, 60)), (xm, GROUND_Y + 170, zz),
+            box("RidgeCrag", (RIDGE_T * 0.7, rng.uniform(20, 50), rng.uniform(30, 60)), (xm, GROUND_Y + 265, zz),
                 (184, 152, 114), "Sandstone", rot=(0, rng.uniform(-20, 20), rng.uniform(-8, 8)), collide=False)
 
 
@@ -264,11 +305,11 @@ def valleys(t):
             while x > west:
                 w = rng.uniform(90, 160)
                 x1 = max(x - w, west)
-                top = GROUND_Y + rng.uniform(150, 200)
+                top = GROUND_Y + rng.uniform(230, 290)
                 rect("Cliff", x1, x, GROUND_Y - 4, top, s_ * CELLZ, s_ * (CELLZ + 40), ROCK, "Sandstone")
                 x = x1
         for xe in (east, west):
-            rect("Cliff", xe - 20, xe + 20, GROUND_Y - 4, GROUND_Y + 190, -CELLZ - 40, CELLZ + 40, ROCK, "Sandstone")
+            rect("Cliff", xe - 20, xe + 20, GROUND_Y - 4, GROUND_Y + 280, -CELLZ - 40, CELLZ + 40, ROCK, "Sandstone")
         for xm in t.ridges:
             ridge(xm, None)
         draw_tunnels(t, CR.SPEC_TRACK_COL)
@@ -281,19 +322,69 @@ def leg_x(t, key):
     return t.pts[i0][0], t.pts[i0][2], t.pts[i1 - 1][2], t.pts[i0][1]
 
 
+CAPTIONS = []   # (x, z, text): v54 no floating boards; the ride shows these as short captions when passing
+
+
 def label(text, x, y, z, tx, tz, w=26):
-    G.part("LandmarkLabel", (w, 4.2, 0.4), (x, y, z), (24, 28, 40), "SmoothPlastic",
-           rot=(0, CR._yaw_to(x, z, tx, tz), 0), collide=False, shadow=False,
-           text=dict(face="Front", text=text, color=(255, 255, 255), bg=(24, 28, 40), bg_t=0.1))
+    CAPTIONS.append((x, z, text))
+
+
+def landmark(clear, seg, frac, dist, r, fn, text):
+    """CR.landmark without the floating label board: the set piece beside the rails + a ride caption"""
+    p = seg[min(len(seg) - 1, int(len(seg) * frac))]
+    x, y, z, yaw = p[:4]
+    rx, rz = math.cos(math.radians(yaw)), -math.sin(math.radians(yaw))
+    for d in (dist, dist + 8, dist + 16, dist - 6, dist + 24):
+        for s_ in (1, -1):
+            lx, lz = x + rx * s_ * d, z + rz * s_ * d
+            if clear.ok(lx, lz, r):
+                fn(lx, lz, y)
+                CAPTIONS.append((lx, lz, text))
+                CR.LANDMARKS.append((fn.__name__, text, lx, lz))
+                return True
+    CR.LANDMARKS.append((fn.__name__, "NOT PLACED", x, z))
+    return False
+
+
+def apply_captions(t):
+    """attach each caption to the track point ~40 studs before the closest one (flag c + label)"""
+    for (x, z, text) in CAPTIONS:
+        best, bd = 0, 1e18
+        for i, q in enumerate(t.pts):
+            d = (q[0] - x) ** 2 + (q[2] - z) ** 2
+            if d < bd:
+                best, bd = i, d
+        i = max(1, best - 5)
+        while i > 1 and t.pts[i][5]:
+            i -= 1
+        q = t.pts[i]
+        t.pts[i] = (q[0], q[1], q[2], q[3], list(q[4]) + ["c"], text)
+
+
+CELL = [0.0, 0.0]   # x range (hi, lo) of the valley being decorated (set by scenery())
+DENSITY = 1.6       # v54 valleys are ~2.5x larger (kept below that for the part budget)
 
 
 def place(clear, cx, cz, R, r, tries=60):
+    """a free spot for a set piece anywhere in the current valley (cx/cz/R are kept for the old call sites)"""
+    hi, lo = CELL
     for _ in range(tries):
-        a, d = rng.uniform(0, 2 * math.pi), R * math.sqrt(rng.random())
-        x, z = cx + d * math.cos(a), cz + d * math.sin(a)
-        if abs(z) < CELLZ - r - 10 and clear.ok(x, z, r):
+        x, z = rng.uniform(lo + r + 30, hi - r - 30), rng.uniform(-CELLZ + r + 30, CELLZ - r - 30)
+        if clear.ok(x, z, r):
             return x, z
     return None
+
+
+def sc(clear, cx, n, r, fn):
+    """CR.scatter over the whole valley (a grid of discs), DENSITY times as many"""
+    hi, lo = CELL
+    discs = []
+    x = lo + 200
+    while x < hi - 100:
+        for z in (-520, -170, 170, 520):
+            discs.append((x, z, 250))
+        x += 330
+    CR.scatter(clear, discs, max(1, round(n * DENSITY)), r, fn)
 
 
 def _rod(x, y, z, yaw, col, L=44, D=14):
@@ -349,11 +440,11 @@ def stage_micro(t, clear, cx, Y):
         vcyl("ObjectiveBand", vx, Y + 190 + q * 30, Y + 196 + q * 30, vz, 71, c, "Metal", collide=False)
     vcyl("ObjectiveLens", vx, Y + 164, Y + 170, vz, 40, (200, 230, 255), "Glass", transp=0.3, collide=False)
     vcyl("LightBeam", vx, Y + 60, Y + 164, vz, 38, (230, 245, 255), "Neon", transp=0.9, collide=False, shadow=False)
-    CR.scatter(clear, [(cx, 0, CELLZ - 30)], 50, 6, lambda x, z: disc("ColonyDot", x, Y + 0.2, z, rng.uniform(4, 10), 0.5,
+    sc(clear, cx, 50, 6, lambda x, z: disc("ColonyDot", x, Y + 0.2, z, rng.uniform(4, 10), 0.5,
                rng.choice(COLS), "SmoothPlastic", collide=False))
-    CR.landmark(clear, t.pts[slice(*t.marks["micro:leg"])], 0.15, 46, 22, CR._lm_microscope,
+    landmark(clear, t.pts[slice(*t.marks["micro:leg"])], 0.15, 46, 22, CR._lm_microscope,
                 "🔬 مجهر ضوئي: يكبّر حتى 1000 مرة")
-    CR.landmark(clear, t.pts[slice(*t.marks["micro:leg"])], 0.85, 50, 34, CR._lm_petri,
+    landmark(clear, t.pts[slice(*t.marks["micro:leg"])], 0.85, 50, 34, CR._lm_petri,
                 "🧫 طبق بتري: مستعمرات بكتيرية تنمو على الآجار")
 
 
@@ -402,11 +493,11 @@ def stage_biochem(t, clear, cx, Y):
     G.part("BondGlow", (2.4, 2.4, 22), (ax, yb, az + 55), (255, 240, 120), "Neon", collide=False, shadow=False)
     label("🔋 ATP: عملة الطاقة بالخلية. كسر رابطة الفوسفات الأخيرة يطلق طاقة", lx - (ax - lx) * 0.1, ly + 12, az + 30,
           ax, az, 30)
-    CR.scatter(clear, [(cx, 0, CELLZ - 30)], 22, 18, lambda x, z: CR._molecule(x, Y + rng.uniform(25, 70), z))
-    CR.scatter(clear, [(cx, 0, CELLZ - 30)], 18, 8, lambda x, z: CR._tube(x, Y, z))
-    CR.landmark(clear, t.pts[slice(*t.marks["biochem:leg"])], 0.15, 46, 22, CR._lm_enzyme,
+    sc(clear, cx, 22, 18, lambda x, z: CR._molecule(x, Y + rng.uniform(25, 70), z))
+    sc(clear, cx, 18, 8, lambda x, z: CR._tube(x, Y, z))
+    landmark(clear, t.pts[slice(*t.marks["biochem:leg"])], 0.15, 46, 22, CR._lm_enzyme,
                 "🧩 إنزيم: المادة المتفاعلة تدخل الموقع النشط")
-    CR.landmark(clear, t.pts[slice(*t.marks["biochem:leg"])], 0.85, 46, 30, CR._lm_krebs, "🔄 دورة كربس: طاقة من الغذاء")
+    landmark(clear, t.pts[slice(*t.marks["biochem:leg"])], 0.85, 46, 30, CR._lm_krebs, "🔄 دورة كربس: طاقة من الغذاء")
 
 
 def stage_animal(t, clear, cx, Y):
@@ -426,13 +517,13 @@ def stage_animal(t, clear, cx, Y):
     box("WhaleJaw", (30, 4, 46), (lx, Y + 2, head), BONE, "SmoothPlastic", collide=False)
     label("🐋 داخل قفص أضلاع حوت أزرق: أكبر حيوان عاش على الأرض", lx + 13, ly + 10, head + (12 if za < zb else -12),
           lx, head + (60 if za < zb else -60), 30)
-    CR.scatter(clear, [(cx, 0, CELLZ - 30)], 12, 16, lambda x, z: CR._camel(x, Y, z))
-    CR.scatter(clear, [(cx, 0, CELLZ - 30)], 4, 26, lambda x, z: CR._turtle(x, Y, z))
-    CR.scatter(clear, [(cx, 0, CELLZ - 30)], 14, 10, lambda x, z: CR._falcon(x, Y + rng.uniform(40, 90), z))
-    CR.scatter(clear, [(cx, 0, CELLZ - 30)], 24, 6, lambda x, z: CR._cactus(x, Y, z))
-    CR.scatter(clear, [(cx, 0, CELLZ - 30)], 10, 10, lambda x, z: CR._palm(x, Y, z))
-    CR.landmark(clear, t.pts[slice(*t.marks["animal:leg"])], 0.88, 44, 16, CR._lm_heart, "❤️ قلب الإنسان: 4 حجرات")
-    CR.landmark(clear, t.pts[slice(*t.marks["animal:leg"])], 0.12, 50, 30, CR._lm_whale,
+    sc(clear, cx, 12, 16, lambda x, z: CR._camel(x, Y, z))
+    sc(clear, cx, 4, 26, lambda x, z: CR._turtle(x, Y, z))
+    sc(clear, cx, 14, 10, lambda x, z: CR._falcon(x, Y + rng.uniform(40, 90), z))
+    sc(clear, cx, 24, 6, lambda x, z: CR._cactus(x, Y, z))
+    sc(clear, cx, 10, 10, lambda x, z: CR._palm(x, Y, z))
+    landmark(clear, t.pts[slice(*t.marks["animal:leg"])], 0.88, 44, 16, CR._lm_heart, "❤️ قلب الإنسان: 4 حجرات")
+    landmark(clear, t.pts[slice(*t.marks["animal:leg"])], 0.12, 50, 30, CR._lm_whale,
                 "🦴 هيكل الحوت يحمي أعضاءه، والقلب لحاله بحجم سيارة صغيرة")
 
 
@@ -478,12 +569,12 @@ def stage_plant(t, clear, cx, Y):
         for s_ in (-1, 1):
             box("SunLeaf", (24, 1, 10), (x + s_ * 12, Y + 50 + s_ * 6, z), (80, 160, 70), "Grass", rot=(0, 0, s_ * 20),
                 collide=False)
-    CR.scatter(clear, [(cx, 0, CELLZ - 30)], 26, 16, lambda x, z: CR._leaf(x, Y, z))
-    CR.scatter(clear, [(cx, 0, CELLZ - 30)], 70, 6, lambda x, z: CR._flower(x, Y, z))
-    CR.scatter(clear, [(cx, 0, CELLZ - 30)], 4, 22, lambda x, z: CR._chloroplast(x, Y + 70, z))
-    CR.landmark(clear, t.pts[slice(*t.marks["plant:leg"])], 0.12, 46, 22, CR._lm_flower,
+    sc(clear, cx, 26, 16, lambda x, z: CR._leaf(x, Y, z))
+    sc(clear, cx, 40, 6, lambda x, z: CR._flower(x, Y, z))
+    sc(clear, cx, 4, 22, lambda x, z: CR._chloroplast(x, Y + 70, z))
+    landmark(clear, t.pts[slice(*t.marks["plant:leg"])], 0.12, 46, 22, CR._lm_flower,
                 "🌸 زهرة عملاقة: البتلات تجذب الملقّحات")
-    CR.landmark(clear, t.pts[slice(*t.marks["plant:leg"])], 0.9, 46, 20, CR._lm_roots,
+    landmark(clear, t.pts[slice(*t.marks["plant:leg"])], 0.9, 46, 20, CR._lm_roots,
                 "🌱 الجذور تمتص الماء والأملاح من التربة")
 
 
@@ -514,8 +605,8 @@ def stage_molecular(t, clear, cx, Y):
     while zg < CELLZ:
         rect("GridLine", lo, hi, Y, Y + 0.15, zg - 0.4, zg + 0.4, (60, 200, 140), "Neon", collide=False, shadow=False)
         zg += 80
-    CR.scatter(clear, [(cx, 0, CELLZ - 40)], 4, 16, lambda x, z: CR._dna(x, Y, z, 80))
-    CR.scatter(clear, [(cx, 0, CELLZ - 30)], 14, 6, lambda x, z: sign("Codon",
+    sc(clear, cx, 4, 16, lambda x, z: CR._dna(x, Y, z, 80))
+    sc(clear, cx, 14, 6, lambda x, z: sign("Codon",
                rng.choice(["AUG", "UUU", "GGC", "UGG", "TATA", "A-T", "G-C"]), (x, Y + rng.uniform(20, 60), z), (10, 4, 0.4),
                "Front", bg=(20, 60, 50), color=(120, 255, 180)))
 
@@ -557,11 +648,11 @@ def stage_forensic(t, clear, cx, Y):
                rot=(0, 90, 0), collide=False,
                text=dict(face="Front", text=str(q + 1), color=(20, 20, 20), bg=(250, 210, 40), bg_t=0.0))
     label("🔦 ضوء UV يكشف بصمات ما تشوفها العين!", lx + 13, ly + 10, (z0 + z1) / 2, lx + 60, (z0 + z1) / 2, 28)
-    CR.scatter(clear, [(cx, 0, CELLZ - 30)], 10, 10, lambda x, z: CR._tape(x, Y, z))
-    CR.scatter(clear, [(cx, 0, CELLZ - 30)], 3, 12, lambda x, z: CR._magnifier(x, Y, z))
-    CR.landmark(clear, t.pts[slice(*t.marks["forensic:leg"])], 0.12, 44, 26, CR._lm_fingerprint,
+    sc(clear, cx, 10, 10, lambda x, z: CR._tape(x, Y, z))
+    sc(clear, cx, 3, 12, lambda x, z: CR._magnifier(x, Y, z))
+    landmark(clear, t.pts[slice(*t.marks["forensic:leg"])], 0.12, 44, 26, CR._lm_fingerprint,
                 "🔎 البصمة: نمطها يختلف من شخص لشخص")
-    CR.landmark(clear, t.pts[slice(*t.marks["forensic:leg"])], 0.88, 44, 22, CR._lm_evidence_lab,
+    landmark(clear, t.pts[slice(*t.marks["forensic:leg"])], 0.88, 44, 22, CR._lm_evidence_lab,
                 "🧪 تحليل الأدلة: عيّنات وجهاز DNA")
 
 
@@ -575,8 +666,8 @@ def stage_agri(t, clear, cx, Y):
         for r in range(-2, 3):
             rect("CropRow", x + r * 12 - 2.5, x + r * 12 + 2.5, Y, Y + rng.uniform(2.5, 4), z - 30, z + 30,
                  (110, 170, 80) if (q + r) % 2 else (220, 190, 90), "Grass", collide=False)
-    CR.scatter(clear, [(cx, 0, CELLZ - 30)], 34, 10, lambda x, z: CR._palm(x, Y, z))
-    CR.scatter(clear, [(cx, 0, CELLZ - 30)], 3, 30, lambda x, z: CR._windmill(x, Y, z))
+    sc(clear, cx, 24, 10, lambda x, z: CR._palm(x, Y, z))
+    sc(clear, cx, 3, 30, lambda x, z: CR._windmill(x, Y, z))
     for q in range(2):
         spot = place(clear, cx, 0, CELLZ - 80, 50)
         if spot:
@@ -589,8 +680,8 @@ def stage_agri(t, clear, cx, Y):
     lx, za, zb, ly = leg_x(t, "agri")
     label("🌴 النخيل يتحمّل الحر والملوحة، والتمر من أهم محاصيل الكويت", lx + 13, ly + 10, (za + zb) / 2, lx + 60,
           (za + zb) / 2, 30)
-    CR.landmark(clear, t.pts[slice(*t.marks["agri:leg"])], 0.12, 40, 12, CR._lm_pivot, "💧 ري محوري: يسقي الحقل بدائرة كاملة")
-    CR.landmark(clear, t.pts[slice(*t.marks["agri:leg"])], 0.88, 44, 22, CR._lm_silo_tractor, "🌾 صومعة الحبوب والجرار")
+    landmark(clear, t.pts[slice(*t.marks["agri:leg"])], 0.12, 40, 12, CR._lm_pivot, "💧 ري محوري: يسقي الحقل بدائرة كاملة")
+    landmark(clear, t.pts[slice(*t.marks["agri:leg"])], 0.88, 44, 22, CR._lm_silo_tractor, "🌾 صومعة الحبوب والجرار")
 
 
 def stage_biotech(t, clear, cx, Y):
@@ -622,8 +713,8 @@ def stage_biotech(t, clear, cx, Y):
             CR._jelly(spot[0], Y + rng.uniform(30, 70), spot[1])
     vx, vy, vz = t.marks["biotech:view"]
     label("🪼 بروتين GFP المضيء أصله من قنديل البحر، ويستخدم لتعليم الخلايا", vx, vy + 12, vz, cx, vz, 30)
-    CR.landmark(clear, t.pts[slice(*t.marks["biotech:leg"])], 0.12, 46, 24, CR._lm_pcr, "🧬 جهاز PCR: ينسخ DNA ملايين المرات")
-    CR.landmark(clear, t.pts[slice(*t.marks["biotech:leg"])], 0.88, 46, 22, CR._lm_crispr, "✂️ كريسبر: مقص جيني يعدّل DNA بدقة")
+    landmark(clear, t.pts[slice(*t.marks["biotech:leg"])], 0.12, 46, 24, CR._lm_pcr, "🧬 جهاز PCR: ينسخ DNA ملايين المرات")
+    landmark(clear, t.pts[slice(*t.marks["biotech:leg"])], 0.88, 46, 22, CR._lm_crispr, "✂️ كريسبر: مقص جيني يعدّل DNA بدقة")
 
 
 STAGES = {"micro": stage_micro, "biochem": stage_biochem, "animal": stage_animal, "plant": stage_plant,
@@ -655,7 +746,7 @@ def rail_props(t, clear, k, key):
     for i in range(i0 + 1, i1):
         a, b = t.pts[i - 1], t.pts[i]
         acc += math.dist(a[:3], b[:3])
-        if acc < 70 or "t" in b[4] or low[0] - 4 <= i <= low[1] + 4:
+        if acc < 110 or "t" in b[4] or "m" in b[4] or low[0] - 4 <= i <= low[1] + 4:
             continue
         acc = 0.0
         rx, rz = math.cos(math.radians(b[3])), -math.sin(math.radians(b[3]))
@@ -666,14 +757,67 @@ def rail_props(t, clear, k, key):
         side = -side
 
 
+RIVERS = {"animal", "plant", "agri", "forensic"}
+TERRAIN_BLOCKS = []   # (x, y, z, sx, sy, sz, material) for CartTerrain.server
+
+
+def grand_features(t, clear, k, key):
+    """v54 set pieces every valley shares: the overlook pavilion inside the top hairpin, the stage tower inside the
+    double spiral, the mesa the track tunnels through, and a river under the high bridge (landscape worlds)."""
+    col = CR.SPEC_TRACK_COL[k - 1]
+    Y = GROUND_Y
+    # overlook pavilion
+    ox, oy, oz = t.marks[key + ":overlook"]
+    rect("OverlookDeck", ox - 22, ox + 22, oy - 3, oy - 2, oz - 18, oz + 18, (226, 220, 206), "WoodPlanks")
+    for dx in (-20, 20):
+        for dz in (-16, 16):
+            vcyl("OverlookPier", ox + dx, Y, oy - 3, oz + dz, 3, (150, 140, 128), "Concrete", collide=False)
+            vcyl("OverlookPost", ox + dx, oy - 2, oy + 10, oz + dz, 1.2, (240, 240, 236), "Metal", collide=False)
+    rect("OverlookRoof", ox - 23, ox + 23, oy + 10, oy + 11, oz - 19, oz + 19, col, "SmoothPlastic", transp=0.2,
+         collide=False)
+    vcyl("OverlookFlagpole", ox, oy - 2, oy + 30, oz, 0.6, (230, 230, 236), "Metal", collide=False)
+    box("OverlookFlag", (0.3, 6, 10), (ox, oy + 26, oz + 5), col, "Fabric", collide=False)
+    # stage tower in the middle of the double spiral (molecular already has its giant DNA there)
+    if key != "molecular":
+        tx, ty, tz = t.marks[key + ":tower"]
+        vcyl("StageTower", tx, Y, Y + 120, tz, 16, (236, 236, 240), "SmoothPlastic", collide=False)
+        for q in range(6):
+            vcyl("TowerRing", tx, Y + 14 + q * 18, Y + 16 + q * 18, tz, 17, col, "Neon", collide=False, shadow=False)
+        ball("TowerCrown", tx, Y + 126, tz, 22, col, "Neon", transp=0.15, collide=False, shadow=False,
+             light=(1.5, 60, col))
+    # mesa tunnel: rock walls and roof over the straight, a rocky mass on top
+    i0, i1 = t.marks[key + ":mesa"]
+    mx = t.pts[i0][0]
+    my = t.pts[i0][1]
+    z0, z1 = sorted((t.pts[i0][2], t.pts[i1 - 1][2]))
+    rect("MesaWall", mx - 40, mx - 8, Y - 2, my + 30, z0 - 10, z1 + 10, ROCK, "Sandstone")
+    rect("MesaWall", mx + 8, mx + 40, Y - 2, my + 30, z0 - 10, z1 + 10, ROCK, "Sandstone")
+    rect("MesaRoof", mx - 40, mx + 40, my + 12, my + 30, z0 - 10, z1 + 10, ROCK, "Sandstone")
+    rect("MesaCap", mx - 34, mx + 30, my + 30, my + 44, z0 + 10, z1 - 20, (184, 152, 114), "Sandstone")
+    for z in (z0 - 10, z1 + 10):
+        rect("MesaPortal", mx - 9, mx + 9, my + 10, my + 13, z - 1.5, z + 1.5, (90, 76, 60), "Slate", collide=False)
+    TERRAIN.append((mx - 30, my + 40, (z0 + z1) / 2, 34, "Limestone"))
+    TERRAIN.append((mx + 26, my + 36, z0 + 20, 26, "Limestone"))
+    # river under the high bridge, the full width of the valley
+    if key in RIVERS:
+        b0, b1 = t.marks[key + ":bridge"]
+        rx = t.pts[b0][0]
+        TERRAIN_BLOCKS.append((rx, Y + 1.0, 0.0, 46.0, 4.0, CELLZ * 2 - 20, "Water"))
+        for z in range(int(-CELLZ + 40), int(CELLZ - 40), 70):
+            for s_ in (-1, 1):
+                TERRAIN.append((rx + s_ * 30, Y - 4, z + rng.uniform(-15, 15), rng.uniform(9, 13), "Sand"))
+
+
 def scenery(t, cells):
     CR.CUTS[:] = []
     CR.ISLAND_Y = GROUND_Y   # the landmark builders stand on CR.ISLAND_Y
     clear = CR.Clear(t.pts, 16)
     for k, key in enumerate(CR.SECTION_KEYS, start=1):
         hi, lo = cells[k]
+        CELL[0], CELL[1] = hi, lo
         with G.Group("CartScene%d" % k):
             STAGES[key](t, clear, (hi + lo) / 2, GROUND_Y)
+            grand_features(t, clear, k, key)
             rail_props(t, clear, k, key)
 
 
@@ -724,6 +868,7 @@ def terrain_plan(t, cells):
                 z += tr.uniform(36, 52)
         if key in HILLS:
             mat, n = HILLS[key]
+            n = n * 2   # v54 valleys are larger
             placed = 0
             for _ in range(n * 25):
                 if placed >= n:
@@ -747,6 +892,7 @@ def build():
         draw_track(t)
         cells = valleys(t)
         scenery(t, cells)
+        apply_captions(t)
         terrain_plan(t, cells)
         CR.stations(t)
         station_hall(t)
@@ -777,6 +923,9 @@ def write_modules(shared_dir):
         f.write("-- Each: { x, y, z, radius, material }.\nreturn {\n")
         for (x, y, z, r, m) in TERRAIN:
             f.write('\t{ %.1f, %.1f, %.1f, %.1f, "%s" },\n' % (x + ox, y + oy, z + oz, r, m))
+        # v54 blocks (rivers): { "block", x, y, z, sx, sy, sz, material }
+        for (x, y, z, sx, sy, sz, m) in TERRAIN_BLOCKS:
+            f.write('\t{ "block", %.1f, %.1f, %.1f, %.1f, %.1f, %.1f, "%s" },\n' % (x + ox, y + oy, z + oz, sx, sy, sz, m))
         f.write("}\n")
     with open(os.path.join(shared_dir, "CartRooms.luau"), "w", encoding="utf-8", newline="\n") as f:
         f.write("-- Generated by tools/cart_tour53.py: the Specialties Cart Ride valleys in ride order.\n")

@@ -178,16 +178,18 @@ RunService.Heartbeat:Connect(function()
 			banner.Text = ("☕ الجولة الجاية بعد %d"):format(left)
 			hint.Visible = false
 		elseif phase == "starting" then
-			banner.Text = "🎲 " .. title
+			banner.Text = ("🎲 %s  •  تبدأ بعد %d"):format(title, left)
 			hint.Text = workspace:GetAttribute("ArcadeHint") or ""
 			hint.Visible = true
 		elseif phase == "running" then
 			banner.Text = ("%s  •  ⏱ %d"):format(title, left)
 			local score = player:GetAttribute("RoundScore")
-			hint.Text = ("%s   👥 %d%s"):format(
+			local combo = player:GetAttribute("Combo") -- ATP Rush streak multiplier
+			hint.Text = ("%s   👥 %d%s%s"):format(
 				workspace:GetAttribute("ArcadeMutation") or "",
 				workspace:GetAttribute("ArcadeAlive") or 0,
-				score and score > 0 and ("   ⭐ " .. score) or ""
+				score and score > 0 and ("   ⭐ " .. score) or "",
+				combo and combo > 1 and ("   🔥 ×" .. combo) or ""
 			)
 			hint.Visible = true
 		elseif phase == "results" then

@@ -176,8 +176,8 @@ local function playRound(players)
 	for _, p in ipairs(players) do
 		announce:FireClient(p, ("%s • المستوى %d\n%s"):format(game_.ar, tier, mut.ar), "start")
 	end
-	setPhase("starting", 3)
-	task.wait(3)
+	setPhase("starting", 5) -- v54: 5 s so the one-line rules can actually be read (countdown on the HUD)
+	task.wait(5)
 	applyMutation(mut, players, true)
 	ctx.running = true
 	game_.start(ctx)

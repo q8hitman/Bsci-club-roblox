@@ -375,10 +375,16 @@ def landmark(j, x, z, top):
 def level_arch(k, c, final=False):
     z = c["z"]
     y = c["y"]
-    for s in (-1, 1):
-        box("Post", (0.6, 9, 0.6), (c["x"] + s * 7.4, y + 4.5, z), (60, 60, 66), "Metal", collide=False)
-    sign("LevelSign", "FINISH" if final else "LEVEL %d" % k, (c["x"], y + 9.5, z), (15.6, 3.2, 0.5), "Front",
-         color=(255, 255, 255), bg=(24, 70, 48) if not final else (150, 110, 20))
+    # v54: a small number plate on one post instead of a wide board (the owner dislikes sign clutter); FINISH stays big
+    if final:
+        for s in (-1, 1):
+            box("Post", (0.6, 9, 0.6), (c["x"] + s * 7.4, y + 4.5, z), (60, 60, 66), "Metal", collide=False)
+        sign("LevelSign", "FINISH", (c["x"], y + 9.5, z), (15.6, 3.2, 0.5), "Front", color=(255, 255, 255),
+             bg=(150, 110, 20))
+        return
+    box("Post", (0.5, 5.5, 0.5), (c["x"] + 7.4, y + 2.75, z), (60, 60, 66), "Metal", collide=False)
+    sign("LevelSign", str(k), (c["x"] + 7.4, y + 6.4, z), (2.6, 1.8, 0.3), "Front", color=(255, 255, 255),
+         bg=(24, 70, 48))
 
 
 def zone_gate(j, c):
