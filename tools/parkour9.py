@@ -376,8 +376,17 @@ def k_wind(c, th, t, k):
         G.part("FanRing", (1.2, 7, 7), (c["x"] - side * 15, c["y"] + 4, zz), (60, 64, 72), "SmoothPlastic", shape="Cylinder",
                collide=False)
         box("FanBox", (2, 7.4, 7.4), (c["x"] - side * 15.6, c["y"] + 4, zz), (90, 96, 106), "Metal", collide=False)
-    sign("WindSign", "💨 رياح جانبية! امشِ لما تهدأ", (c["x"] - side * 15, c["y"] + 10, z0 - L / 2 + 2), (12, 2.4, 0.4), "Back",
-         bg=(40, 70, 100))
+        # v59: the fan's own light tells the rhythm (Zones.client): green calm, amber 0.7 s before a gust, red while it blows
+        G.part("FanLight", (0.3, 4.2, 4.2), (c["x"] - side * 14.3, c["y"] + 4, zz), (90, 220, 120), "Neon", shape="Cylinder",
+               collide=False, shadow=False)
+    # v59: glass windbreaks on the fan side of the beam: shelter behind one during a gust, run to the next when it is
+    # calm (the old sign said "walk when it calms" but nothing showed when that was, so players crossed by luck)
+    for q in range(1, 4):
+        zz = z0 - L / 2 + q * 10
+        G.part("WindShield", (0.6, 3.2, 3.6), (c["x"] - side * (bw / 2 + 0.5), c["y"] + 1.6, zz), (170, 220, 240), "Glass",
+               transp=0.35, collide=True)
+        box("WindShieldFrame", (0.7, 0.3, 3.8), (c["x"] - side * (bw / 2 + 0.5), c["y"] + 3.3, zz), (90, 96, 106), "Metal",
+            collide=False)
     M2.set_c(c, c["x"], c["y"], z0, L)
     M2._land(c, th, 10, 2)
 

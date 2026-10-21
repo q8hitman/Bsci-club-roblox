@@ -73,22 +73,38 @@ def virus_arena():
 
 
 def graduation():
-    """sail plaza: a little stage with a KU backdrop; standing on the gold pad = graduation photo"""
-    cx, cz = 92.0, 46.0
+    """sail plaza: a little stage with a KU backdrop; standing on the gold pad = graduation photo.
+    v59 (owner): it sat right against the garden walkway; now it stands across the lawn, just before the eastern
+    palms, facing the walkway (front = west), with rows of guest chairs in front so it reads as a ceremony."""
+    cx, cz = 136.0, 16.0
+    GREEN_ = (24, 80, 56)
     with G.Group("GraduationStage"):
-        rect("GradStage", cx - 14, cx + 14, 0, 2, cz - 6, cz + 6, (60, 64, 74), "WoodPlanks")
+        rect("GradStage", cx - 6, cx + 6, 0, 2, cz - 14, cz + 14, (60, 64, 74), "WoodPlanks")
         for k in range(3):
-            rect("GradStep", cx - 4, cx + 4, 0, 0.7 * (k + 1), cz + 6 + (2 - k) * 1.6, cz + 7.6 + (2 - k) * 1.6, (60, 64, 74), "WoodPlanks")
-        rect("GradBackdrop", cx - 14, cx + 14, 2, 20, cz - 6.4, cz - 5.8, (24, 80, 56), "Fabric")
-        A.logo_board(cx + 8, 15.5, cz - 5.6, R=0.8, nx=0.0, nz=1.0)
-        sign("GradText", "🎓 جامعة الكويت • كلية العلوم\nحفل التخرج", (cx - 4, 14, cz - 5.6), (14, 5, 0.3), "Back", bg=(24, 80, 56))
+            x1 = cx - 6 - (2 - k) * 1.6
+            rect("GradStep", x1 - 1.6, x1, 0, 0.7 * (k + 1), cz - 4, cz + 4, (60, 64, 74), "WoodPlanks")
+        rect("GradBackdrop", cx + 5.8, cx + 6.4, 2, 20, cz - 14, cz + 14, GREEN_, "Fabric")
+        A.logo_board(cx + 5.6, 15.5, cz - 8, R=0.8, nx=-1.0, nz=0.0)
+        sign("GradText", "جامعة الكويت • كلية العلوم" + chr(10) + "حفل التخرج", (cx + 5.6, 14, cz + 4), (0.3, 5, 14), "Left",
+             bg=GREEN_)
         G.part("GradPad", (6, 0.4, 6), (cx, 2.2, cz), (230, 190, 70), "Neon", transp=0.15, shadow=False)
-        sign("GradHint", "قف على الذهبي وخذ صورة تخرجك 📸", (cx - 10, 3.6, cz + 6.2), (8, 1.6, 0.3), "Back", bg=(150, 110, 20))  # beside, not in front of the camera
+        sign("GradHint", "قف على الذهبي وخذ صورة تخرجك", (cx - 6.2, 3.6, cz + 10), (0.3, 1.6, 8), "Left", bg=(150, 110, 20))
         for s_ in (-1, 1):
             for k in range(4):
-                ball("Balloon", cx + s_ * (12 + (k % 2)), 6 + k * 3, cz - 4 + (k % 2) * 2, 2.4,
+                ball("Balloon", cx + 4 - (k % 2) * 2, 6 + k * 3, cz + s_ * (12 + (k % 2)), 2.4,
                      [(250, 222, 170), (205, 232, 60), (220, 165, 238), (160, 218, 236)][k], "SmoothPlastic", collide=False)
-            vcyl("BalloonString", cx + s_ * 12, 2, 14, cz - 4, 0.1, (240, 240, 240), "SmoothPlastic", collide=False)
+            vcyl("BalloonString", cx + 4, 2, 14, cz + s_ * 12, 0.1, (240, 240, 240), "SmoothPlastic", collide=False)
+        # guests: two blocks of white chairs facing the stage, with a centre aisle to the steps
+        for row in range(3):
+            x = cx - 16 - row * 4
+            for side in (-1, 1):
+                for k in range(3):
+                    z = cz + side * (5 + k * 3.2)
+                    rect("GuestSeat", x - 1, x + 1, 1.4, 1.8, z - 1, z + 1, (245, 245, 242), "SmoothPlastic")
+                    rect("GuestBack", x - 1.2, x - 1, 1.8, 4.2, z - 1, z + 1, (245, 245, 242), "SmoothPlastic", collide=False)
+                    for dz in (-0.8, 0.8):
+                        rect("GuestLeg", x - 0.15, x + 0.15, 0, 1.4, z + dz - 0.1, z + dz + 0.1, (180, 182, 186), "Metal",
+                             collide=False)
 
 
 def secret_roof():

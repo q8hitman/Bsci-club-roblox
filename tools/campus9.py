@@ -136,17 +136,7 @@ def lobby():
             text=dict(face="Front", text="أهلاً بكم في كلية العلوم\nWelcome to the College of Science" if x < 0 else
                       "📅 فعاليات النادي تنزل على ديسكورد\ndiscord.gg/8hw9hBn27", color=(255, 255, 255), bg=(20, 50, 80), bg_t=0.0))
         vcyl("ScreenPole", x, 0, 4, -140, 0.6, (90, 90, 96), "Metal", collide=False)
-    # memory wall behind the portal
-    rect("MemoryWall", -24, 24, 0, 13, -97, -96, (246, 242, 234), "SmoothPlastic")
-    sign("MemoryTitle", "لوحة الذكريات 📸 | Memory Wall", (0, 11.5, -97.2), (26, 2.2, 0.3), "Front", bg=CLUB)
-    memories = ["أول يوم بالكلية", "دفعة 2015", "رحلة المختبر", "يوم التخرّج 🎓", "ليلة الميد ترم", "معرض النادي",
-                "فطور جماعي", "دفعة 2020", "بطولة الكلية", "حفلة الخريجين"]
-    for i, m in enumerate(memories):
-        r, q = divmod(i, 5)
-        x = -18 + q * 9
-        col = A.HEXES[(i + r) % 5][1]
-        box("Photo", (7, 3.6, 0.2), (x, 7.6 - r * 4.6, -97.2), col, "SmoothPlastic", collide=False,
-            text=dict(face="Front", text=m, color=(40, 40, 40), bg=col, bg_t=0.0))
+    # v59 (owner): the memory wall, its title and the ten memory cards were removed
     for x in (-52, 52):
         for k in range(2):
             box("Vending", (4, 9, 3), (x + k * 4.4 * (1 if x < 0 else -1), 4.5, -96), [(200, 40, 40), (40, 90, 170)][k],
