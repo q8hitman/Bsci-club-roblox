@@ -20,6 +20,8 @@ For whoever continues: Claude Code, Codex, or a person. **Continue this project.
 | **DNA extraction (5th lab bench)** | Mash the strawberries with buffer, filter, layer ice-cold ethanol, DNA threads appear, wind them onto the rod | Studio QA hook: +6 research |
 | **Petri Floor** | Tiles sink and fade instead of vanishing | lint |
 | **Arcade vote** | `ArcadeVote.client`: during the break, players in the lobby vote between three games; the most votes wins | Studio: a real click voted for Last Cell, and Last Cell started |
+| **Two clients on the streamed version** | `tools/studio_tests/v53.*` rerun | **Pass:** own carts, each client sees the other's cart moving (about 308 studs), Gram +6 each, First Day per player |
+| **Pacing variants + slot canyons** | Per-world spiral turns, hill count and height (`VARIANT`); canyon walls with chockstones | Route 85,547 studs; canyon seen from the train in Studio |
 | **Full ride on the 84k route** | | Studio at 120: all 8 valleys. The loaded window slid {1,2} → {2,3,4} → … → {6,7,8}; the end card took the player back to campus; valleys unloaded; 0 errors |
 
 **Important for the next developer:**
