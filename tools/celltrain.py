@@ -126,17 +126,40 @@ def label_board(deg, y, text):
 
 
 def mito(cx, cy, cz, yaw, L=60, d=24):
+    """v53: double membrane. A see-through outer membrane, the inner membrane folded into cristae (shelves growing from
+    alternate walls), and the glowing matrix between them. One Model each so CellLife.client can move it slowly."""
     ry = math.radians(yaw)
     ux, uz = math.cos(ry), -math.sin(ry)
-    G.part("Mito", (L, d, d), (cx, cy, cz), (255, 150, 70), "SmoothPlastic", shape="Cylinder", rot=(0, yaw, 0), collide=False)
-    G.part("MitoMatrix", (L * 0.9, d * 0.55, d * 0.55), (cx, cy, cz), (255, 210, 120), "Neon", shape="Cylinder", rot=(0, yaw, 0),
-           transp=0.35, collide=False, shadow=False)
-    for e in (-1, 1):
-        ball("MitoEnd", cx + e * ux * L / 2, cy, cz + e * uz * L / 2, d, (250, 150, 80), "SmoothPlastic", collide=False)
-    for q in range(6):
-        t = (q - 2.5) * (L / 7)
-        box("Crista", (2, d * 0.8, d * 0.9), (cx + ux * t, cy, cz + uz * t), (210, 100, 40), "SmoothPlastic", rot=(0, yaw, 0),
-            collide=False)
+    with G.Group("MitoModel", "Model"):
+        G.part("Mito", (L, d, d), (cx, cy, cz), (255, 170, 100), "SmoothPlastic", shape="Cylinder", rot=(0, yaw, 0),
+               transp=0.55, collide=False)
+        for e in (-1, 1):
+            ball("MitoEnd", cx + e * ux * L / 2, cy, cz + e * uz * L / 2, d, (255, 170, 100), "SmoothPlastic", transp=0.55,
+                 collide=False)
+        G.part("MitoInner", (L * 0.96, d * 0.84, d * 0.84), (cx, cy, cz), (240, 120, 50), "SmoothPlastic", shape="Cylinder",
+               rot=(0, yaw, 0), transp=0.25, collide=False)
+        G.part("MitoMatrix", (L * 0.9, d * 0.4, d * 0.4), (cx, cy, cz), (255, 214, 130), "Neon", shape="Cylinder",
+               rot=(0, yaw, 0), transp=0.3, collide=False, shadow=False)
+        n = 7
+        for q in range(n):
+            t = (q - (n - 1) / 2) * (L * 0.8 / n)
+            side = 1 if q % 2 else -1
+            box("Crista", (1.6, d * 0.5, d * 0.78), (cx + ux * t, cy + side * d * 0.17, cz + uz * t), (200, 90, 30),
+                "SmoothPlastic", rot=(0, yaw, 0), collide=False)
+
+
+def radial_rot(dx, dy, dz):
+    """rot for a Cylinder part whose axis (local X) points along the unit vector (dx, dy, dz)"""
+    b = math.degrees(math.asin(max(-1.0, min(1.0, -dz))))
+    c = math.degrees(math.atan2(dy, dx))
+    return (0, b, c)
+
+
+def tube(name, a, b, d, col, mat="Neon", transp=0.0):
+    dx, dy, dz = b[0] - a[0], b[1] - a[1], b[2] - a[2]
+    L = math.sqrt(dx * dx + dy * dy + dz * dz) or 1.0
+    G.part(name, (L, d, d), ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2), col, mat, shape="Cylinder",
+           rot=radial_rot(dx / L, dy / L, dz / L), transp=transp, collide=False, shadow=False)
 
 
 def cell_world():
@@ -164,12 +187,24 @@ def cell_world():
             ball("Cytosol", rng.uniform(-ROOM + 20, ROOM - 20), rng.uniform(10, HEIGHT - 20), rng.uniform(-ROOM + 20, ROOM - 20),
                  rng.uniform(1.2, 3), (200, 160, 255), "Neon", collide=False, shadow=False)
         # organelles (big, well spaced, inside the track loop)
-        ball("Nucleus", 0, 95, 0, 120, (150, 80, 210), "SmoothPlastic", transp=0.15, collide=False)
-        ball("Nucleolus", 14, 100, -10, 44, (80, 30, 130), "SmoothPlastic", collide=False)
-        for q in range(26):
-            a, b = rng.uniform(0, 6.28), rng.uniform(-1.3, 1.3)
-            ball("NuclearPore", 60 * math.cos(a) * math.cos(b), 95 + 60 * math.sin(b), 60 * math.sin(a) * math.cos(b), 5,
-                 (60, 20, 90), "SmoothPlastic", collide=False)
+        # v53 nucleus: outer + inner membrane (the envelope), pore complexes through both, chromatin threads inside
+        ball("Nucleus", 0, 95, 0, 124, (160, 90, 220), "SmoothPlastic", transp=0.6, collide=False)
+        ball("NucleusInner", 0, 95, 0, 114, (130, 70, 200), "SmoothPlastic", transp=0.45, collide=False)
+        ball("Nucleolus", 14, 100, -10, 40, (80, 30, 130), "SmoothPlastic", collide=False)
+        for q in range(30):
+            a, b = rng.uniform(0, 6.28), rng.uniform(-1.2, 1.2)
+            nx, ny, nz = math.cos(a) * math.cos(b), math.sin(b), math.sin(a) * math.cos(b)
+            G.part("NuclearPore", (2.4, 8, 8), (62 * nx, 95 + 62 * ny, 62 * nz), (60, 20, 90), "SmoothPlastic",
+                   shape="Cylinder", rot=radial_rot(nx, ny, nz), collide=False)
+            G.part("PoreChannel", (2.8, 3, 3), (62 * nx, 95 + 62 * ny, 62 * nz), (255, 200, 120), "Neon", shape="Cylinder",
+                   rot=radial_rot(nx, ny, nz), collide=False, shadow=False)
+        for q in range(8):
+            x, y, z = rng.uniform(-30, 30), 95 + rng.uniform(-30, 30), rng.uniform(-30, 30)
+            for k in range(12):
+                x2, y2, z2 = x + rng.uniform(-6, 6), y + rng.uniform(-6, 6), z + rng.uniform(-6, 6)
+                if math.sqrt(x2 * x2 + (y2 - 95) ** 2 + z2 * z2) < 48:
+                    tube("Chromatin", (x, y, z), (x2, y2, z2), 1.6, (240, 150, 255), "Neon")
+                    x, y, z = x2, y2, z2
         mito(*polar(140, -20, 55)[::1], yaw=30)
         mito(*polar(140, 200, 60)[::1], yaw=-40, L=50, d=20)
         mito(*polar(110, -40, 120)[::1], yaw=70, L=44, d=18)
@@ -185,7 +220,7 @@ def cell_world():
             qx, qy, qz = px + rng.uniform(-20, 20), rng.uniform(40, 80), pz + rng.uniform(-20, 20)
             ball("Peroxisome", qx, qy, qz, 12, (120, 220, 200), "Glass", transp=0.35, collide=False)
             box("PeroxisomeCore", (4, 4, 4), (qx, qy, qz), (40, 120, 110), "Neon", collide=False, shadow=False)
-        # rough ER: wavy sheets studded with ribosomes
+        # rough ER: wavy sheets studded with ribosomes; v53: flattened sacs run from the nuclear envelope out to them
         for q in range(7):
             x, _, z = polar(120 + (q % 2) * 10, 10 + q * 7, 0)
             box("RoughER", (4, 40, 34), (x, 60 + (q % 3) * 6, z), (130, 140, 230), "SmoothPlastic", collide=False,
@@ -193,23 +228,47 @@ def cell_world():
             for d in range(10):
                 ball("Ribosome", x + rng.uniform(-3, 3), 44 + rng.uniform(0, 40), z + rng.uniform(-15, 15), 2.6, (40, 30, 70),
                      "SmoothPlastic", collide=False)
+        for q in range(4):
+            deg = 14 + q * 11
+            a, b = polar(58, deg, 82 - q * 5), polar(118, deg, 70 - q * 3)
+            tube("RERLink", a, b, 7, (130, 140, 230), "SmoothPlastic")
+            for k in range(8):
+                f = (k + 0.5) / 8
+                ball("Ribosome", a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f + 3.6, a[2] + (b[2] - a[2]) * f, 2.4,
+                     (40, 30, 70), "SmoothPlastic", collide=False)
         # free ribosome cluster
         cx, _, cz = polar(150, 62, 0)
         for q in range(40):
             ball("FreeRibosome", cx + rng.uniform(-18, 18), rng.uniform(40, 80), cz + rng.uniform(-18, 18), 3, (40, 30, 70),
                  "SmoothPlastic", collide=False)
-        # golgi stack
+        # v53 Golgi: curved cisternae, cis face (bottom, blue, receives from the ER) to trans face (top, orange, ships out)
         gx, _, gz = polar(145, 142, 0)
         for q in range(7):
-            disc("Golgi", gx, 40 + q * 6, gz, 60 - q * 4, 3.4, (250, 200, 110), "SmoothPlastic", collide=False)
+            f = q / 6
+            col = (int(130 + 125 * f), int(170 + 0 * f), int(255 - 165 * f))
+            y = 40 + q * 6
+            r = 26 - q * 1.5
+            disc("Golgi", gx, y, gz, r * 1.2, 3.0, col, "SmoothPlastic", collide=False)
+            for k in range(10):   # the rim curls up: a shallow bowl
+                a = k * math.pi / 5
+                box("GolgiRim", (3.0, 2.6, r * 0.66), (gx + math.cos(a) * r * 0.78, y + 1.6, gz + math.sin(a) * r * 0.78), col,
+                    "SmoothPlastic", rot=(0, -math.degrees(a), 24), collide=False)
         for q in range(8):
-            ball("Vesicle", gx + rng.uniform(-36, 36), rng.uniform(40, 90), gz + rng.uniform(-36, 36), 7, (150, 220, 255), "Glass",
+            a = rng.uniform(0, 6.28)
+            ball("Vesicle", gx + math.cos(a) * 24, rng.uniform(74, 86), gz + math.sin(a) * 24, 6, (150, 220, 255), "Glass",
                  transp=0.3, collide=False)
-        # lysosomes
+        # lysosomes (v53: smaller than a mitochondrion's width)
         lx, _, lz = polar(150, 178, 0)
         for q in range(7):
-            ball("Lysosome", lx + rng.uniform(-24, 24), rng.uniform(40, 80), lz + rng.uniform(-24, 24), 18, (180, 90, 230),
+            ball("Lysosome", lx + rng.uniform(-24, 24), rng.uniform(40, 80), lz + rng.uniform(-24, 24), 12, (180, 90, 230),
                  "SmoothPlastic", collide=False)
+        # v53 microtubules (the cell's rails) and the secretion route the vesicles travel: rough ER -> Golgi -> membrane
+        route = [polar(120, 30, 72), polar(112, 70, 78), polar(112, 110, 80), polar(132, 142, 38),
+                 polar(160, 142, 84), polar(240, 142, 96), polar(314, 142, 96)]
+        for a, b in zip(route, route[1:]):
+            tube("Microtubule", a, b, 1.0, (210, 255, 230), "Neon")
+        for i, pnt in enumerate(route, 1):
+            G.part("CellPath|%d" % i, (1, 1, 1), pnt, (0, 0, 0), "SmoothPlastic", transp=1, collide=False, shadow=False)
         # centrioles
         ox, _, oz = polar(150, 222, 0)
         G.part("Centriole", (40, 12, 12), (ox, 60, oz), (120, 220, 140), "SmoothPlastic", shape="Cylinder", collide=False)
