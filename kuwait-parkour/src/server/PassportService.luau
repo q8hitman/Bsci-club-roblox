@@ -39,6 +39,24 @@ function Service.refresh(player)
 			Profiles.award(player, "puzzle_master")
 		end
 	end
+	-- v53 "First Day at the College": four short optional steps, read from the stamps the game already verifies.
+	-- FirstDay = "1010"-style string for FirstDay.client (HQ visit, arcade round, lab experiment, a train ride).
+	local st = s.passport.stamps
+	local steps = { -- booleans: a nil would end ipairs early
+		(s.passport.visits or {}).HQ ~= nil,
+		st["activity:arcade"] ~= nil,
+		st["activity:lab"] ~= nil,
+		st["train:cart"] ~= nil or st["train:cell"] ~= nil,
+	}
+	local flags, done = "", 0
+	for _, ok in ipairs(steps) do
+		flags ..= ok and "1" or "0"
+		done += ok and 1 or 0
+	end
+	player:SetAttribute("FirstDay", flags)
+	if done == #steps and Profiles.award then
+		Profiles.award(player, "firstday")
+	end
 	return data
 end
 function Service.record(player, kind, id)
