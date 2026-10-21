@@ -33,15 +33,15 @@ gui.Parent = player:WaitForChild("PlayerGui")
 local panel = Instance.new("Frame")
 panel.AnchorPoint = Vector2.new(1, 0) -- right side, so the picture board in the middle stays visible
 panel.Position = UDim2.fromScale(0.985, 0.2)
-panel.Size = UDim2.fromScale(0.36, 0.48)
+panel.Size = UDim2.fromScale(0.27, 0.36) -- v59: smaller, the studio screen is the star
 panel.BackgroundColor3 = Color3.fromRGB(24, 20, 48)
-panel.BackgroundTransparency = 0.15
+panel.BackgroundTransparency = 0.3
 panel.Parent = gui
 Instance.new("UICorner", panel).CornerRadius = UDim.new(0.08, 0)
 local stroke = Instance.new("UIStroke", panel)
 stroke.Color, stroke.Thickness = Color3.fromRGB(200, 120, 255), 2
 local limit = Instance.new("UISizeConstraint", panel)
-limit.MaxSize = Vector2.new(440, 360)
+limit.MaxSize = Vector2.new(340, 270)
 
 local function text(y, h, color)
 	local t = Instance.new("TextLabel")

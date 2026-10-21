@@ -23,14 +23,20 @@ local mainScreen, scoreBoard = find("MainScreen"), find("ScoreBoard")
 local teamScreens = { Red = find("TeamScreen|Red"), Blue = find("TeamScreen|Blue") }
 local pictureBoard = find("PictureBoard")
 local pods, covers = {}, {}
+local podLights = {} -- v59 lit strip on each podium (tools/gameshow.py)
 for i = 1, 4 do
 	pods[i] = find("AnswerPod|" .. i)
+	podLights[i] = find("PodLight|" .. i)
 end
 for i = 1, 25 do
 	covers[i] = find("PictureCover|" .. i)
 end
 
 local LETTERS = { "A", "B", "C", "D" }
+-- v59: "A) <Arabic>" rendered as "<Arabic>A)" (mixed direction); the Arabic text goes first, the pod letter after it
+local function opt(i, text)
+	return text .. "  •  " .. LETTERS[i]
+end
 local CATS = { "bio", "general", "games", "consoles" }
 local ROUNDS = { "picture", "category", "memory", "picture", "category", "memory" }
 local SAFETY = 40 -- seconds: only stops an AFK player from stalling everyone
@@ -211,7 +217,15 @@ local function flashPods(correct)
 			pod.Material = i == correct and Enum.Material.Neon or Enum.Material.SmoothPlastic
 		end
 	end
+	for i, light in pairs(podLights) do
+		local base = light:GetAttribute("Base") or light.Color
+		light:SetAttribute("Base", base)
+		light.Color = i == correct and Color3.fromRGB(120, 255, 160) or Color3.fromRGB(40, 40, 48)
+	end
 	task.delay(2.6, function()
+		for _, light in pairs(podLights) do
+			light.Color = light:GetAttribute("Base") or light.Color
+		end
 		for _, pod in ipairs(pods) do
 			if pod then
 				pod.Color = pod:GetAttribute("Base") or pod.Color
@@ -268,7 +282,7 @@ local function pictureRound(n)
 	show.revealed = 0
 	local lines = { ("🖼️ خمن الصورة • جولة %d/%d"):format(n, #ROUNDS) }
 	for i, o in ipairs(opts) do
-		table.insert(lines, LETTERS[i] .. ") " .. o)
+		table.insert(lines, opt(i, o))
 	end
 	setText(mainScreen, table.concat(lines, "\n"))
 	local nextReveal = 1.2
@@ -284,7 +298,7 @@ local function pictureRound(n)
 	for _, c in ipairs(covers) do
 		c.Transparency = 1
 	end
-	setText(mainScreen, ("✅ الجواب: %s) %s"):format(LETTERS[correct], item.right))
+	setText(mainScreen, "✅ الجواب: " .. opt(correct, item.right))
 	settle(correct, function(a)
 		return math.max(3, 10 - math.floor(a.at / 3)) -- the earlier, the more points
 	end)
@@ -294,7 +308,7 @@ local function categoryRound(n)
 	-- 1) vote a category on the pods
 	local lines = { ("📚 تحدي الفئة • جولة %d/%d"):format(n, #ROUNDS), "اختاروا الفئة:" }
 	for i, c in ipairs(CATS) do
-		table.insert(lines, LETTERS[i] .. ") " .. Bank.categories[c])
+		table.insert(lines, opt(i, Bank.categories[c]))
 	end
 	setText(mainScreen, table.concat(lines, "\n"))
 	local votes = ask()
@@ -316,12 +330,12 @@ local function categoryRound(n)
 	local opts, correct = shuffledOptions(item)
 	local q = { Bank.categories[cat] .. ("  •  صعوبة %d"):format(item.diff), clean(item.q) }
 	for i, o in ipairs(opts) do
-		table.insert(q, LETTERS[i] .. ") " .. clean(o))
+		table.insert(q, opt(i, clean(o)))
 	end
 	setText(mainScreen, table.concat(q, "\n"))
 	task.wait(0.6)
 	ask()
-	setText(mainScreen, ("✅ الجواب: %s) %s"):format(LETTERS[correct], clean(item.right)))
+	setText(mainScreen, "✅ الجواب: " .. opt(correct, clean(item.right)))
 	local pts = ({ 5, 8, 10 })[item.diff] or 5
 	settle(correct, function()
 		return pts
@@ -353,17 +367,14 @@ local function memoryRound(n)
 		clean(item.q),
 	}
 	for i, o in ipairs(opts) do
-		table.insert(lines, LETTERS[i] .. ") " .. clean(o))
+		table.insert(lines, opt(i, clean(o)))
 	end
 	setText(mainScreen, table.concat(lines, "\n"))
 	ask()
 	for _, c in ipairs(covers) do
 		c.Transparency = 1
 	end
-	setText(
-		mainScreen,
-		("✅ السلسلة: %s\nالجواب: %s) %s"):format(item.seq, LETTERS[correct], clean(item.right))
-	)
+	setText(mainScreen, ("✅ السلسلة: %s\nالجواب: %s"):format(item.seq, opt(correct, clean(item.right))))
 	settle(correct, function(a)
 		return math.max(5, 10 - math.floor((a.at or 0) / 4))
 	end)
@@ -510,3 +521,32 @@ for _, c in ipairs(covers) do
 end
 setText(mainScreen, "🎮 BSC Game Show\nاضغط «ابدأ الحلقة» على مكتب المقدم")
 refreshBoards()
+
+-- v59 Studio-only QA hook (like ServerStorage.Labs54QA): lets tools/studio_tests/gameshow59 start a show and press the
+-- same pod for every contestant at the same instant, to check a Red/Blue tie end to end. Never exists in a live server.
+if game:GetService("RunService"):IsStudio() then
+	local qa = Instance.new("BindableFunction")
+	qa.Name = "GameShowQA"
+	qa.OnInvoke = function(action, arg)
+		if action == "start" and not show then
+			task.spawn(function()
+				local ok, err = pcall(runShow, arg)
+				if not ok then
+					warn("Game show failed: " .. tostring(err))
+					show = nil
+				end
+			end)
+			return true
+		elseif action == "state" then
+			return show
+				and { asking = show.asking, red = show.teamScore.Red, blue = show.teamScore.Blue, teams = show.teams }
+		elseif action == "answerAll" and show and show.asking then
+			for _, p in ipairs(participants()) do
+				selectPod(p, arg)
+			end
+			return true
+		end
+		return false
+	end
+	qa.Parent = game:GetService("ServerStorage")
+end
