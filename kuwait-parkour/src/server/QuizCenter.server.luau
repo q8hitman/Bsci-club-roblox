@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Profiles = require(script.Parent.Profiles)
 local Questions = require(script.Parent.Questions)
+local History = require(script.Parent.QuestionHistory)
 local QuizBank = require(script.Parent.QuizBank)
 local Practical = require(script.Parent.QuizPractical)
 local mapFolder = workspace:WaitForChild("Map")
@@ -46,22 +47,17 @@ local function unlocked(s, spec, level)
 	return level == 1 or best(s, spec, level - 1) >= UNLOCK
 end
 
-local function pickItems(spec, level)
+local function pickItems(player, spec, level)
 	if spec == PRACTICAL then
 		return Practical.session(rng)
 	end
 	local pool = level == 1 and Questions[spec].items or QuizBank[spec][level]
-	local idx = {}
-	for i = 1, #pool do
-		idx[i] = i
-	end
-	for i = #idx, 2, -1 do
-		local j = rng:NextInteger(1, i)
-		idx[i], idx[j] = idx[j], idx[i]
-	end
-	local items = {}
-	for k = 1, math.min(PER_SESSION, #pool) do
-		table.insert(items, pool[idx[k]])
+	-- v61: unseen questions first (shared with the HQ stations and the Exam Hall, which use the same level-1 bank)
+	local items = History.pickMany({ player }, pool, PER_SESSION, function(it)
+		return it[1]
+	end, rng)
+	for _, it in ipairs(items) do
+		History.mark(player, it[1])
 	end
 	return items
 end
@@ -168,7 +164,7 @@ fn.OnServerInvoke = function(player, action, a, b)
 		local sess = {
 			spec = spec,
 			level = level,
-			items = pickItems(spec, level),
+			items = pickItems(player, spec, level),
 			i = 1,
 			correct = 0,
 			rewarded = rewarded,

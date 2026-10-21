@@ -8,6 +8,7 @@ local Profiles = require(script.Parent.Profiles)
 local Passport = require(script.Parent.PassportService)
 local Teleport = require(script.Parent.Teleport)
 local Questions = require(script.Parent.Questions)
+local History = require(script.Parent.QuestionHistory)
 local notify = ReplicatedStorage:WaitForChild("Notify")
 local hall = workspace:WaitForChild("Map"):WaitForChild("ExamHall")
 
@@ -62,7 +63,7 @@ local function zoneOf(player)
 	return nil
 end
 
-local function pickQuestions()
+local function pickQuestions(players)
 	local pool = {}
 	for _, bank in ipairs(Questions) do
 		for _, item in ipairs(bank.items) do
@@ -72,13 +73,12 @@ local function pickQuestions()
 			)
 		end
 	end
-	for i = #pool, 2, -1 do
-		local j = math.random(1, i)
-		pool[i], pool[j] = pool[j], pool[i]
-	end
-	local out = {}
-	for i = 1, math.min(QUESTIONS_PER_EXAM, #pool) do
-		table.insert(out, pool[i])
+	-- v61: the questions the fewest players in the hall have already seen in any mode
+	local out = History.pickMany(players, pool, QUESTIONS_PER_EXAM, function(it)
+		return it.q
+	end)
+	for _, it in ipairs(out) do
+		History.markAll(players, it.q)
 	end
 	return out
 end
@@ -125,7 +125,7 @@ task.spawn(function()
 end)
 
 local function runExam(players)
-	local questions = pickQuestions()
+	local questions = pickQuestions(players)
 	local alive = {}
 	for _, p in ipairs(players) do
 		alive[p] = true

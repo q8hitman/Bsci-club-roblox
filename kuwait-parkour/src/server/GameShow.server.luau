@@ -10,6 +10,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Profiles = require(script.Parent.Profiles)
 local Passport = require(script.Parent.PassportService)
 local Bank = require(script.Parent.GameShowBank)
+local History = require(script.Parent.QuestionHistory)
 local studio = workspace:WaitForChild("Map"):FindFirstChild("GameShowStudio", true)
 if not studio then
 	return
@@ -84,6 +85,8 @@ local function playersInside()
 	return list
 end
 
+local participants -- forward: defined with the show state below
+
 -- no repeats until a pool runs out
 local used = {}
 local function pick(pool, key, filter)
@@ -102,8 +105,14 @@ local function pick(pool, key, filter)
 			end
 		end
 	end
-	local i = fresh[math.random(1, #fresh)]
+	-- v61: among the unused ones, the question the fewest contestants have seen in any mode (Exam Hall, quiz...)
+	local players = participants()
+	local i = History.pick(players, fresh, function(k)
+		local it = pool[k]
+		return it.q or it.pic
+	end) or fresh[math.random(1, #fresh)]
 	used[key][i] = true
+	History.markAll(players, pool[i].q or pool[i].pic)
 	return pool[i]
 end
 
@@ -170,7 +179,7 @@ local function addPlayer(p)
 end
 
 -- active participants (still in the game and in the studio)
-local function participants()
+function participants()
 	local list = {}
 	for p in pairs(show.score) do
 		if p.Parent and inside(p) then

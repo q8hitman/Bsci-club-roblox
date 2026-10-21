@@ -286,7 +286,7 @@ if game:GetService("RunService"):IsStudio() then
 			end
 		elseif op == "wrong" and st and st.panels then
 			for i, panel in ipairs(st.panels) do
-				panel.pick = table.find(BASES, st:need(i) or "A") % 4 + 1
+				panel.pick = (table.find(BASES, st:need(i) or "A") or 1) % 4 + 1
 			end
 			st:activate()
 		elseif op == "reset" then

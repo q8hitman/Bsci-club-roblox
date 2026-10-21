@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage.Shared.LevelConfig)
 local Codes = require(script.Parent.Codes)
 local Questions = require(script.Parent.Questions)
+local History = require(script.Parent.QuestionHistory)
 local Zones = require(ReplicatedStorage.Shared.Zones) -- generated with the map: { {start, finish, ...}, ... }
 local Profiles = require(script.Parent.Profiles)
 local Passport = require(script.Parent.PassportService)
@@ -218,7 +219,11 @@ local quizRng = Random.new()
 
 local function buildQuestion(player, level, bankIndex)
 	local bank = Questions[math.clamp(bankIndex, 1, #Questions)]
-	local item = bank.items[quizRng:NextInteger(1, #bank.items)]
+	-- v61: the question this player has not seen yet (was a random draw with repeats)
+	local item = History.pick({ player }, bank.items, function(it)
+		return it[1]
+	end, quizRng)
+	History.mark(player, item[1])
 	local order = { 1, 2, 3 }
 	for i = 3, 2, -1 do
 		local j = quizRng:NextInteger(1, i)
