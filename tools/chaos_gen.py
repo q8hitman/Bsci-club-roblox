@@ -46,7 +46,8 @@ def arena_spawns(name, cx, cz, r, y):
 
 
 def petri_floor(cx=300.0, cz=0.0):
-    """two layers of hexagonal tiles; each tile drops shortly after someone steps on it"""
+    """two layers of hexagonal agar tiles in a glass petri dish; each tile drops shortly after someone steps on it.
+    v61 (owner: minigames look plain): agar colours (was pastel confetti), a glass dish wall and a lid overhead."""
     with G.Group("Arena_PetriFloor"):
         for layer, ly in enumerate((Y, Y - 26)):
             R, d = 7, 6.2
@@ -56,47 +57,77 @@ def petri_floor(cx=300.0, cz=0.0):
                         continue
                     x = cx + d * (q + r / 2)
                     z = cz + d * r * math.sqrt(3) / 2
-                    col = PASTEL[(q * 2 + r + layer) % 5]
+                    k = ((q * 3 + r * 5) % 4) * 4
+                    col = (238 - k, 226 - k, 196 - k) if layer == 0 else (212 - k, 190 - k, 150 - k)
                     G.part("FallTile", (1, d * 1.1, d * 1.1), (x, ly - 0.5, z), col, "SmoothPlastic", shape="Cylinder",
                            rot=(0, 0, 90))
+        n, rw = 48, 52.0
+        for i in range(n):   # the dish wall (decor, no collision: falling off the edge stays possible)
+            a = i * 2 * math.pi / n
+            G.part("DishWall", (1, 40, 2 * math.pi * rw / n + 0.3), (cx + rw * math.cos(a), Y - 24, cz + rw * math.sin(a)),
+                   (215, 235, 245), "Glass", transp=0.7, rot=(0, -math.degrees(a), 0), collide=False, shadow=False)
+            G.part("DishRim", (1.4, 0.8, 2 * math.pi * rw / n + 0.3), (cx + rw * math.cos(a), Y - 3.6, cz + rw * math.sin(a)),
+                   (240, 248, 252), "SmoothPlastic", rot=(0, -math.degrees(a), 0), collide=False, shadow=False)
+        disc("PetriLid", cx, Y + 48, cz, 112, 1, (220, 240, 250), "Glass", transp=0.88, collide=False, shadow=False)
+        for i, (a, rr, dd, col) in enumerate(((0.4, 47.5, 5, (250, 240, 210)), (1.9, 48.5, 3.6, (240, 190, 90)),
+                                             (3.1, 47.8, 4.4, (230, 140, 170)), (4.4, 48.2, 3, (250, 240, 210)),
+                                             (5.5, 47.6, 4.8, (240, 190, 90)))):
+            disc("Colony", cx + rr * math.cos(a), Y - 5, cz + rr * math.sin(a), dd, 0.6, col, "SmoothPlastic", collide=False,
+                 shadow=False)
         disc("PetriGlass", cx, Y - 70, cz, 120, 2, (200, 230, 240), "Glass", transp=0.5, collide=False)
         G.part("KillFloor|PetriFloor", (200, 2, 200), (cx, Y - 60, cz), (255, 80, 80), "Neon", transp=0.6, collide=False)
         arena_spawns("PetriFloor", cx, cz, 24, Y)
 
 
 def atp_rush(cx=-300.0, cz=0.0):
-    """open arena with cover; glowing ATP orbs spawn on the OrbSpots"""
+    """open arena with cover; glowing ATP orbs spawn on the OrbSpots. v61: inside a mitochondrion - a dark matrix
+    floor (the orbs pop against it), cristae folds as the ramps and pillars, the pink double membrane as the wall."""
     with G.Group("Arena_ATPRush"):
-        disc("RushFloor", cx, Y - 1, cz, 120, 2, (60, 90, 140), "SmoothPlastic")
+        disc("RushFloor", cx, Y - 1, cz, 120, 2, (96, 44, 58), "SmoothPlastic")
         for i in range(24):
             a = rng.uniform(0, 2 * math.pi)
             rr = rng.uniform(8, 52)
             G.part("OrbSpot", (1, 1, 1), (cx + rr * math.cos(a), Y + 2.5, cz + rr * math.sin(a)), (0, 0, 0), "SmoothPlastic",
                    transp=1, collide=False, shadow=False)
+        CRISTA = ((232, 130, 120), (214, 104, 104))
         for i in range(8):
             a = i * math.pi / 4 + 0.2
-            box("RushRamp", (10, 1, 16), (cx + 34 * math.cos(a), Y + 2, cz + 34 * math.sin(a)), PASTEL[i % 5], "SmoothPlastic",
+            box("RushRamp", (10, 1, 16), (cx + 34 * math.cos(a), Y + 2, cz + 34 * math.sin(a)), CRISTA[i % 2], "SmoothPlastic",
                 rot=(-14, -math.degrees(a) + 90, 0))
-            vcyl("RushPillar", cx + 18 * math.cos(a + 0.4), Y, Y + 8, cz + 18 * math.sin(a + 0.4), 4, PASTEL[(i + 2) % 5],
+            vcyl("RushPillar", cx + 18 * math.cos(a + 0.4), Y, Y + 8, cz + 18 * math.sin(a + 0.4), 4, CRISTA[(i + 1) % 2],
                  "SmoothPlastic")
+            ball("RushPillarCap", cx + 18 * math.cos(a + 0.4), Y + 8, cz + 18 * math.sin(a + 0.4), 4, CRISTA[(i + 1) % 2],
+                 "SmoothPlastic", collide=False, shadow=False)
         n = 40
         for i in range(n):
             a = i * 2 * math.pi / n
             G.part("RushWall", (1.5, 10, 2 * math.pi * 60 / n + 0.5), (cx + 60 * math.cos(a), Y + 5, cz + 60 * math.sin(a)),
-                   (120, 200, 255), "SmoothPlastic", transp=0.5, rot=(0, -math.degrees(a), 0))
+                   (240, 150, 140), "SmoothPlastic", transp=0.35, rot=(0, -math.degrees(a), 0))
+            G.part("RushOuterMembrane", (1.2, 12, 2 * math.pi * 63 / n + 0.5), (cx + 63 * math.cos(a), Y + 6,
+                   cz + 63 * math.sin(a)), (250, 190, 170), "SmoothPlastic", transp=0.5, rot=(0, -math.degrees(a), 0),
+                   collide=False, shadow=False)
         G.part("KillFloor|ATPRush", (200, 2, 200), (cx, Y - 40, cz), (255, 80, 80), "Neon", transp=0.6, collide=False)
         arena_spawns("ATPRush", cx, cz, 20, Y)
 
 
 def enzyme_sweeper(cx=0.0, cz=300.0):
-    """round platform; the server spins kill bars around the hub, faster and faster"""
+    """round platform; the server spins kill bars around the hub, faster and faster. v61: the hub is the enzyme (a
+    purple globule with its active-site pocket), the floor tiles are substrate, a lipid rim marks the edge."""
     with G.Group("Arena_EnzymeSweeper"):
-        disc("SweepFloor", cx, Y - 1, cz, 70, 2, (70, 80, 110), "SmoothPlastic")
+        disc("SweepFloor", cx, Y - 1, cz, 70, 2, (92, 80, 140), "SmoothPlastic")
+        disc("SweepRing", cx, Y + 0.03, cz, 30, 0.06, (120, 106, 172), "SmoothPlastic", collide=False, shadow=False)
         for i in range(12):
             a = i * 2 * math.pi / 12
-            disc("SweepTile", cx + 22 * math.cos(a), Y + 0.04, cz + 22 * math.sin(a), 6, 0.08, PASTEL[i % 5], "SmoothPlastic",
+            disc("SweepTile", cx + 22 * math.cos(a), Y + 0.04, cz + 22 * math.sin(a), 6, 0.08, (255, 214, 140), "SmoothPlastic",
                  collide=False, shadow=False)
-        vcyl("SweepHubBase", cx, Y, Y + 5, cz, 6, (60, 64, 74), "Metal")
+        vcyl("SweepHubBase", cx, Y, Y + 5, cz, 6, (150, 100, 210), "SmoothPlastic")
+        ball("EnzymeGlobule", cx, Y + 7, cz, 8, (170, 120, 230), "SmoothPlastic", collide=False)
+        ball("ActiveSite", cx + 3.2, Y + 7.6, cz, 3, (60, 30, 90), "SmoothPlastic", collide=False, shadow=False)
+        ball("Substrate", cx + 4.6, Y + 7.6, cz, 1.8, (255, 214, 140), "Neon", collide=False, shadow=False)
+        for i in range(44):
+            a = i * 2 * math.pi / 44
+            ball("SweepRim", cx + 35.4 * math.cos(a), Y - 0.6, cz + 35.4 * math.sin(a), 1.8,
+                 (255, 196, 120) if i % 2 else (255, 150, 170), "SmoothPlastic", collide=False, shadow=False)
         G.part("SweepHub", (2, 2, 2), (cx, Y + 2.2, cz), (0, 0, 0), "SmoothPlastic", transp=1, collide=False, shadow=False)
         G.part("KillFloor|EnzymeSweeper", (200, 2, 200), (cx, Y - 40, cz), (255, 80, 80), "Neon", transp=0.6, collide=False)
         arena_spawns("EnzymeSweeper", cx, cz, 26, Y)
@@ -134,48 +165,57 @@ def last_cell(cx=0.0, cz=-300.0):
 
 
 def lab_rush(cx=-300.0, cz=300.0):
-    """v38 "Lab Rush" (co-op): a bright fantasy lab. The server (Minigames/LabRush.luau) adds ProximityPrompts to the
-    named stations at run time: DNABin|A/T/G/C + DNAConsole, MutIngredient|1..3 + MutMachine + MutOutput,
-    SorterBelt + SortBin|1..3, ReactorLever|1..2 + ReactorCore, and writes the orders on OrderBoard."""
+    """v38 "Lab Rush" (co-op), v61 real-science stations: a bright teaching lab. The server (Minigames/LabRush.luau)
+    adds ProximityPrompts to the named stations at run time: DNABin|A/T/G/C + DNAConsole (complementary strand),
+    MutIngredient|1..3 (enzyme shelves) + MutMachine (reaction tube) + MutOutput, SorterBelt + SortBin|1..2 (Gram
+    stain / shape), ReactorLever|1..2 (centrifuge tubes) + ReactorCore (rotor), and writes the orders on OrderBoard."""
     W, D = 84.0, 64.0
     with G.Group("Arena_LabRush"):
-        box("LabFloor", (W, 2, D), (cx, Y - 1, cz), (232, 238, 240), "SmoothPlastic")
+        box("LabFloor", (W, 2, D), (cx, Y - 1, cz), (226, 232, 236), "SmoothPlastic")
         for i in range(-3, 4):   # floor stripes
             box("LabStripe", (0.6, 0.06, D - 4), (cx + i * 12, Y + 0.03, cz), (180, 220, 230), "SmoothPlastic", collide=False,
                 shadow=False)
         for sx, sz, sw, sd in ((0, -D / 2, W, 1), (0, D / 2, W, 1), (-W / 2, 0, 1, D), (W / 2, 0, 1, D)):
-            box("LabWall", (sw, 4, sd), (cx + sx, Y + 2, cz + sz), (90, 170, 200), "SmoothPlastic")
-        G.part("OrderBoard", (40, 10, 0.6), (cx, Y + 9, cz - D / 2 + 0.6), (20, 30, 44), "SmoothPlastic",
-               text=dict(face="Back", text="🧪 Lab Rush", color=(255, 255, 255), bg=(20, 30, 44), bg_t=0.0))
-        vcyl("BoardLeg", cx - 16, Y, Y + 4.4, cz - D / 2 + 0.6, 0.8, (60, 64, 74), "Metal", collide=False)
-        vcyl("BoardLeg", cx + 16, Y, Y + 4.4, cz - D / 2 + 0.6, 0.8, (60, 64, 74), "Metal", collide=False)
-        # DNA mixer (west): four base bins and the console
+            box("LabWall", (sw, 12, sd), (cx + sx, Y + 6, cz + sz), (232, 238, 242), "SmoothPlastic")
+            box("LabWallStripe", (sw + 0.2 if sd < 2 else sw, 1, sd + 0.2 if sw < 2 else sd), (cx + sx, Y + 3, cz + sz),
+                (60, 170, 190), "SmoothPlastic", collide=False, shadow=False)
+        G.part("OrderBoard", (40, 10, 0.6), (cx, Y + 6.5, cz - D / 2 + 1), (20, 30, 44), "SmoothPlastic",
+               text=dict(face="Back", text="🧪 مختبر السباق\nLab Rush", color=(255, 255, 255), bg=(20, 30, 44), bg_t=0.0))
+        # DNA strand (west): four base bins and the console
         dx, dz = cx - 28, cz - 12
-        for i, (L, col) in enumerate((("A", (230, 80, 80)), ("T", (80, 140, 230)), ("G", (80, 200, 110)), ("C", (240, 200, 60)))):
+        for i, (L, col) in enumerate((("A", (220, 70, 70)), ("T", (235, 190, 50)), ("G", (70, 180, 90)), ("C", (70, 130, 230)))):
             G.part("DNABin|" + L, (4, 3, 4), (dx - 6 + i * 4.6, Y + 1.5, dz), col, "SmoothPlastic",
                    text=dict(face="Back", text=L, color=(255, 255, 255), bg=col, bg_t=0.0))
         G.part("DNAConsole", (12, 4, 3), (dx + 1, Y + 2, dz - 6), (60, 64, 80), "SmoothPlastic",
-               text=dict(face="Back", text="🧬 DNA Mixer\nخلّاط الـDNA", color=(255, 255, 255), bg=(60, 64, 80), bg_t=0.0))
-        # mutation machine (east): three ingredient shelves, the machine and an output pad
+               text=dict(face="Back", text="🧬 الشريط المكمّل\nA ⇄ T   G ⇄ C", color=(255, 255, 255), bg=(60, 64, 80),
+                         bg_t=0.0))
+        # enzyme bench (east): three enzyme bottles, the reaction tube and its output tray
         mx, mz = cx + 26, cz - 12
-        for i, col in enumerate(((255, 170, 60), (170, 120, 255), (90, 220, 200))):
-            G.part("MutIngredient|%d" % (i + 1), (3.4, 3.4, 3.4), (mx - 7 + i * 7, Y + 1.7, mz + 4), col, "SmoothPlastic")
-        G.part("MutMachine", (8, 7, 6), (mx, Y + 3.5, mz - 5), (200, 90, 160), "SmoothPlastic",
-               text=dict(face="Back", text="🧪 Mutation Machine\nآلة الطفرات", color=(255, 255, 255), bg=(200, 90, 160), bg_t=0.0))
+        box("EnzymeShelf", (22, 1, 5), (mx, Y + 0.5, mz + 4), (150, 120, 90), "WoodPlanks")
+        for i, (name, col) in enumerate((("أميليز", (120, 180, 255)), ("بروتياز", (255, 140, 140)), ("ليبيز", (255, 210, 90)))):
+            G.part("MutIngredient|%d" % (i + 1), (3.4, 3.4, 3.4), (mx - 7 + i * 7, Y + 2.7, mz + 4), col, "SmoothPlastic",
+                   text=dict(face="Back", text=name, color=(30, 30, 40), bg=col, bg_t=1.0))
+            vcyl("BottleNeck", mx - 7 + i * 7, Y + 4.4, Y + 5.6, mz + 4, 1.4, (235, 240, 245), "SmoothPlastic", collide=False)
+        G.part("MutMachine", (8, 7, 6), (mx, Y + 3.5, mz - 5), (70, 150, 180), "SmoothPlastic",
+               text=dict(face="Back", text="🧪 أنبوب التفاعل\nEnzyme tube", color=(255, 255, 255), bg=(70, 150, 180), bg_t=0.0))
+        vcyl("ReactionTube", mx - 5.5, Y, Y + 9, mz - 5, 2.4, (210, 240, 250), "Glass", transp=0.4, collide=False)
         disc("MutOutput", mx + 9, Y + 0.1, mz - 5, 5, 0.2, (255, 230, 120), "Neon", collide=False, shadow=False)
-        # sample sorter (south-west): belt start + three bins
+        # Gram sorter (south-west): belt start + two bins (labels are set by the server per rule)
         sx_, sz_ = cx - 22, cz + 16
         box("SorterBeltBase", (16, 1.2, 4), (sx_, Y + 0.6, sz_), (70, 74, 84), "SmoothPlastic")
         G.part("SorterBelt", (2, 0.4, 2), (sx_ - 6, Y + 1.4, sz_), (0, 0, 0), "SmoothPlastic", transp=1, collide=False, shadow=False)
-        for i, (sym, col) in enumerate((("●", (230, 80, 80)), ("■", (80, 140, 230)), ("▮", (240, 200, 60)))):
-            G.part("SortBin|%d" % (i + 1), (4.4, 3.4, 4.4), (sx_ - 6 + i * 6, Y + 1.7, sz_ + 7), col, "SmoothPlastic",
+        for i, (sym, col) in enumerate((("🟣", (130, 60, 170)), ("🩷", (235, 120, 170)))):
+            G.part("SortBin|%d" % (i + 1), (5, 3.4, 4.4), (sx_ - 4 + i * 8, Y + 1.7, sz_ + 7), col, "SmoothPlastic",
                    text=dict(face="Front", text=sym, color=(255, 255, 255), bg=col, bg_t=0.0))
-        # lab reactor (south-east): two levers far apart + the core between them
+        # centrifuge (south-east): two tube holders on opposite sides of the rotor
         rx, rz = cx + 24, cz + 18
+        vcyl("CentrifugeBody", rx, Y, Y + 3.6, rz + 4, 9, (232, 236, 242), "SmoothPlastic")
+        vcyl("CentrifugeBowl", rx, Y + 3.6, Y + 3.8, rz + 4, 7, (60, 64, 74), "Metal", collide=False)
+        G.part("ReactorCore", (8, 0.6, 1.6), (rx, Y + 4.2, rz + 4), (120, 255, 200), "Neon", collide=False, shadow=False)
         for i, ox in enumerate((-14, 14)):
-            G.part("ReactorLever|%d" % (i + 1), (2, 4, 2), (rx + ox, Y + 2, rz), (250, 140, 60), "SmoothPlastic")
+            G.part("ReactorLever|%d" % (i + 1), (4, 1.6, 1.6), (rx + ox, Y + 3, rz), (120, 200, 255), "Glass", shape="Cylinder",
+                   rot=(0, 0, 90), transp=0.2)
             box("LeverBase", (4, 1, 4), (rx + ox, Y + 0.5, rz), (60, 64, 74), "Metal")
-        ball("ReactorCore", rx, Y + 4, rz + 4, 6, (120, 255, 200), "Neon", transp=0.2, shadow=False)
         G.part("KillFloor|LabRush", (200, 2, 200), (cx, Y - 40, cz), (255, 80, 80), "Neon", transp=0.6, collide=False)
         for i in range(8):
             G.part("ArenaSpawn", (2, 1, 2), (cx - 14 + i * 4, Y + 0.5, cz + 4), (0, 0, 0), "SmoothPlastic", transp=1,
