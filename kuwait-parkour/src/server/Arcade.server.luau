@@ -118,14 +118,87 @@ local function addResearch(p, n)
 	end
 end
 
-local function playRound(players)
+-- v56 vote: during the intermission three games are offered and players in the lobby vote (ArcadeVote.client).
+-- Most votes wins; a tie or no votes picks at random among the leaders. workspace attributes carry the state:
+-- ArcadeVoteOptions = "id|name;id|name;id|name", ArcadeVotes = "n,n,n".
+local voteEvent = Instance.new("RemoteEvent")
+voteEvent.Name = "ArcadeVote"
+voteEvent.Parent = ReplicatedStorage
+local vote = nil -- { options = {game,...}, ballots = { [Player] = index } }
+
+local function publishVotes()
+	if not vote then
+		workspace:SetAttribute("ArcadeVoteOptions", "")
+		workspace:SetAttribute("ArcadeVotes", "")
+		return
+	end
+	local counts = {}
+	for i = 1, #vote.options do
+		counts[i] = 0
+	end
+	for p, i in pairs(vote.ballots) do
+		if p.Parent then
+			counts[i] += 1
+		end
+	end
+	local opts = {}
+	for _, g in ipairs(vote.options) do
+		table.insert(opts, g.id .. "|" .. g.ar)
+	end
+	workspace:SetAttribute("ArcadeVoteOptions", table.concat(opts, ";"))
+	workspace:SetAttribute("ArcadeVotes", table.concat(counts, ","))
+	return counts
+end
+
+local function openVote()
+	local pool = {}
+	for _, g in ipairs(games) do
+		if g ~= lastGame or #games <= 3 then
+			table.insert(pool, g)
+		end
+	end
+	for i = #pool, 2, -1 do
+		local j = math.random(1, i)
+		pool[i], pool[j] = pool[j], pool[i]
+	end
+	vote = { options = { table.unpack(pool, 1, math.min(3, #pool)) }, ballots = {} }
+	publishVotes()
+end
+
+local function closeVote()
+	if not vote then
+		return nil
+	end
+	local counts = publishVotes()
+	local best, leaders = -1, {}
+	for i, n in ipairs(counts) do
+		if n > best then
+			best, leaders = n, { i }
+		elseif n == best then
+			table.insert(leaders, i)
+		end
+	end
+	local chosen = vote.options[leaders[math.random(1, #leaders)]]
+	vote = nil
+	publishVotes()
+	return chosen
+end
+
+voteEvent.OnServerEvent:Connect(function(player, index)
+	if vote and typeof(index) == "number" and vote.options[index] and inLobby(player) then
+		vote.ballots[player] = index
+		publishVotes()
+	end
+end)
+
+local function playRound(players, voted)
 	local choices = {}
 	for _, g in ipairs(games) do
 		if g ~= lastGame or #games == 1 then
 			table.insert(choices, g)
 		end
 	end
-	local game_ = choices[math.random(1, #choices)]
+	local game_ = voted or choices[math.random(1, #choices)]
 	-- Studio-only test hook: workspace attribute ArcadeForce = "<id>" plays that game next (ignored on live servers)
 	local force = RunService:IsStudio() and workspace:GetAttribute("ArcadeForce")
 	if force then
@@ -406,6 +479,7 @@ task.spawn(function()
 		else
 			emptySince = nil
 			setPhase("intermission", INTERMISSION)
+			openVote()
 			setBoard(
 				("⏳ الجولة تبدأ خلال %d ثانية!\n⭐ المستوى الحالي: %d/3\n👑 آخر فوز: %s"):format(
 					INTERMISSION,
@@ -414,6 +488,7 @@ task.spawn(function()
 				)
 			)
 			task.wait(INTERMISSION)
+			local voted = closeVote()
 			here = {}
 			for _, p in ipairs(Players:GetPlayers()) do
 				if inLobby(p) then
@@ -421,7 +496,7 @@ task.spawn(function()
 				end
 			end
 			if #here >= MIN_PLAYERS then
-				local ok, err = pcall(playRound, here)
+				local ok, err = pcall(playRound, here, voted)
 				if ok then
 					tier = math.min(tier + 1, 3)
 				end

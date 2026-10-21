@@ -235,3 +235,9 @@ Portals are parts named `Portal|<Kind>`. `destinations` lives in `src/server/Mai
 - Wet lab = tools/labs54.py + Labs54.server + Bench54.client (Item|/Slot|/Use| naming, Studio-only QA hook
   ServerStorage.Labs54QA). Cart Ride = grand valleys in cart_tour53 (LEGZ/CELLZ, 48k studs), captions instead of
   boards, CartTerrain blocks for rivers. Cart keys: Enter/V. Studio MCP Luau runs in a separate _G (use keys/clicks).
+
+## v56 (2026-10-21, local only, NOT published). Branch dev/v54-labs-cartride. Full state: docs/DEVELOPMENT_HANDOFF.md
+- Cart valleys stream on the client: cart_tour53.route_parts -> Shared/CartScenery/V1..8 (text lines), built by
+  CartScenery.client (current +-1 valley). Server Map ~20.9k parts. Route 84k studs, ~32 min at default speed.
+  Edit valleys only via tools/cart_tour53.py; server-needed valley parts must be listed in SERVER_KEEP.
+- Help.client (؟ button) replaces how-to boards. DNA extraction bench (5th). Arcade vote (ArcadeVote.client).

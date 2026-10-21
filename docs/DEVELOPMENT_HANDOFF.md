@@ -1,4 +1,4 @@
-# BSC Island: development handoff (v55, 2026-10-21)
+# BSC Island: development handoff (v56, 2026-10-21)
 
 For whoever continues: Claude Code, Codex, or a person. **Continue this project. Do not restart or redesign it.**
 
@@ -7,8 +7,24 @@ For whoever continues: Claude Code, Codex, or a person. **Continue this project.
 |---|---|
 | Repo | `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full` (GitHub `q8hitman/Bsci-club-roblox`) |
 | Branch | `dev/v54-labs-cartride`, created from `dev/v53-release-push` at `6aac766`. Neither branch is merged into `main`. |
-| Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v55.rbxlx` (not published). v54, v53 and every older build and backup are untouched. |
+| Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v56.rbxlx` (not published). v55 and every older build and backup are untouched. |
 | Studio | Session `KuwaitParkour_v53.rbxlx`, hot-swapped to the v54 code. It is unsaved; the file on disk is newer. |
+
+## 0. v56 (same branch): what changed, and how it works
+| Area | What | Evidence |
+|---|---|---|
+| **Cart Ride streaming** | The eight valleys are no longer in the Map:<br>• `tools/cart_tour53.route_parts` sends every valley part to `Shared/CartScenery/V1..8` (one text line per part, tab-separated)<br>• `CartScenery.client` builds the valley you are in plus its neighbours, 350 parts per frame, one valley at a time, and destroys the far ones<br>• the server keeps only the station, portals and the finish deck<br>• ride event props are looked up in `workspace.CartScenery` | Server Map: **40.4k → 20.9k parts** (Map.rbxmx 30 → 16 MB).<br>On the client, 2-3 valleys are loaded (about 6-13k parts).<br>Studio: 60 fps average, worst frame 25-28 ms while a valley builds. |
+| **Route 84,181 studs** | Five legs per valley (`LEGZ` 900, `CELLZ` 1120):<br>• spiral climb and overlook<br>• the highline: a long high bridge over the river, two S-bends<br>• a slot canyon, then rolling hills<br>• the hero set piece and a mesa tunnel<br>• a double spiral home | 0 clashes.<br>`tools/cart_ride_time.py`: **41 min @35, 32 @45 (default), 24 @60, 17 @90, 14 @120** |
+| **Walls and horizon** | Stepped three-layer strata cliffs with crags, layered ridges | Seen from the train in Studio |
+| **Help instead of boards** | `Help.client`: a ؟ button with tips for the current area. The HQ, Arcade and Challenge Center how-to boards and the cart station controls board were removed | Code + lint |
+| **DNA extraction (5th lab bench)** | Mash the strawberries with buffer, filter, layer ice-cold ethanol, DNA threads appear, wind them onto the rod | Studio QA hook: +6 research |
+| **Petri Floor** | Tiles sink and fade instead of vanishing | lint |
+| **Arcade vote** | `ArcadeVote.client`: during the break, players in the lobby vote between three games; the most votes wins | Studio: a real click voted for Last Cell, and Last Cell started |
+| **Full ride on the 84k route** | | Studio at 120: all 8 valleys. The loaded window slid {1,2} → {2,3,4} → … → {6,7,8}; the end card took the player back to campus; valleys unloaded; 0 errors |
+
+**Important for the next developer:**
+- To edit a valley, edit `tools/cart_tour53.py` and regenerate. Never edit `Shared/CartScenery/*.luau` by hand.
+- Anything a server script must touch inside a valley has to be named in `SERVER_KEEP`.
 
 ## 1a. Done in v55 (same branch `dev/v54-labs-cartride`)
 | Feature | Static | Studio solo | Multiplayer | Phone |
@@ -162,6 +178,6 @@ Smaller items:
 ## 9. Exact prompt to start Codex
 From the repo root:
 ```
-"C:\Users\User\AppData\Local\OpenAI\Codex\bin\896a0166b774037a\codex.exe" exec -C "C:\Users\User\Desktop\KuwaitParkour\BSC_project_full" "Continue BSC Island development. Read docs/DEVELOPMENT_HANDOFF.md first, then CLAUDE.md and BSC_RESUME.md. Work on branch dev/v54-labs-cartride from the latest commit. Follow section 5 (next steps) in order, respect section 6 (owner decisions) and ask before anything in section 7. Build with the commands in section 2, never overwrite older .rbxlx builds (next build is KuwaitParkour_v56.rbxlx), commit after each verified milestone, and never publish."
+"C:\Users\User\AppData\Local\OpenAI\Codex\bin\896a0166b774037a\codex.exe" exec -C "C:\Users\User\Desktop\KuwaitParkour\BSC_project_full" "Continue BSC Island development. Read docs/DEVELOPMENT_HANDOFF.md first, then CLAUDE.md and BSC_RESUME.md. Work on branch dev/v54-labs-cartride from the latest commit. Follow section 5 (next steps) in order, respect section 6 (owner decisions) and ask before anything in section 7. Build with the commands in section 2, never overwrite older .rbxlx builds (next build is KuwaitParkour_v57.rbxlx), commit after each verified milestone, and never publish."
 ```
 Or paste the same text into the existing Codex thread `01a14bdc-a4d3-7360-a7e5-eacb9a8c4924` in the Codex app.

@@ -2,6 +2,7 @@
 -- clusters yellow and drop them (faster each tier), and antibiotic pads regrow the dropped tiles around them.
 -- Last one(s) standing win; antibiotics also give points (tie-break + research reward via Arcade).
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
 
 local M = {
 	id = "PetriFloor",
@@ -25,20 +26,30 @@ function M.start(ctx)
 			return
 		end
 		t.down = true
-		t.part.Transparency = 1
 		t.part.CanCollide = false
+		-- v56: the tile sinks and fades (readable) instead of vanishing; collision is already off, so it is fair
+		t.tween = TweenService:Create(
+			t.part,
+			TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+			{ CFrame = t.home * CFrame.new(0, -7, 0), Transparency = 1 }
+		)
+		t.tween:Play()
 	end
 	local function restore(t)
 		t.down = false
 		t.busy = false
 		t.pill = false
+		if t.tween then
+			t.tween:Cancel()
+		end
+		t.part.CFrame = t.home
 		t.part.Transparency = 0
 		t.part.CanCollide = true
 		t.part.Color = t.color
 	end
 	for _, tile in ipairs(ctx.arena:GetChildren()) do
 		if tile.Name == "FallTile" then
-			local t = { part = tile, color = tile.Color }
+			local t = { part = tile, color = tile.Color, home = tile.CFrame }
 			table.insert(ctx.tiles, t)
 			ctx.connect(tile.Touched:Connect(function(hit)
 				if not ctx.running or t.down or t.busy then
@@ -119,6 +130,10 @@ end
 
 function M.stop(ctx)
 	for _, t in ipairs(ctx.tiles or {}) do
+		if t.tween then
+			t.tween:Cancel()
+		end
+		t.part.CFrame = t.home
 		t.part.Transparency = 0
 		t.part.CanCollide = true
 		t.part.Color = t.color
