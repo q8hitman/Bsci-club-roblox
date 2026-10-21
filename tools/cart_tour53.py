@@ -725,13 +725,13 @@ RAIL_PROPS = {
     "micro": lambda x, z: disc("ColonyDot", x, GROUND_Y + 0.2, z, rng.uniform(6, 14), 0.5,
                                rng.choice([(250, 240, 205), (240, 190, 90), (230, 140, 170)]), "SmoothPlastic", collide=False),
     "biochem": lambda x, z: CR._tube(x, GROUND_Y, z),
-    "animal": lambda x, z: (CR._cactus if rng.random() < 0.6 else CR._palm)(x, GROUND_Y, z),
+    "animal": lambda x, z: CR._cactus(x, GROUND_Y, z) if rng.random() < 0.6 else _bigpalm(x, z),
     "plant": lambda x, z: (CR._flower if rng.random() < 0.7 else CR._leaf)(x, GROUND_Y, z),
     "molecular": lambda x, z: sign("Codon", rng.choice(["AUG", "UAA", "GCC", "A-T", "G-C", "5'→3'"]),
                                    (x, GROUND_Y + rng.uniform(8, 22), z), (8, 3, 0.4), "Front", bg=(20, 60, 50),
                                    color=(120, 255, 180)),
     "forensic": lambda x, z: CR._tape(x, GROUND_Y, z),
-    "agri": lambda x, z: CR._palm(x, GROUND_Y, z),
+    "agri": lambda x, z: _bigpalm(x, z),
     "biotech": lambda x, z: CR._bioreactor(x, GROUND_Y, z),
 }
 
@@ -808,6 +808,131 @@ def grand_features(t, clear, k, key):
                 TERRAIN.append((rx + s_ * 30, Y - 4, z + rng.uniform(-15, 15), rng.uniform(9, 13), "Sand"))
 
 
+PATCH = {   # ground patch colours per world: breaks the flat floor into readable zones
+    "micro": [(244, 226, 160), (226, 204, 128)], "biochem": [(210, 200, 232), (232, 226, 246)],
+    "animal": [(226, 200, 146), (196, 168, 116)], "plant": [(110, 170, 86), (84, 140, 66)],
+    "molecular": [(32, 40, 78), (20, 26, 52)], "forensic": [(80, 82, 96), (60, 62, 72)],
+    "agri": [(156, 118, 76), (120, 92, 58)], "biotech": [(214, 230, 236), (236, 244, 248)],
+}
+
+
+def _bigpalm(x, z, h=None):
+    """a date palm at the valley's scale (CR._palm is 14-20 tall: invisible from the bridges)"""
+    h = h or rng.uniform(40, 56)
+    lean = rng.uniform(-6, 6)
+    vcyl("PalmTrunk", x, GROUND_Y, GROUND_Y + h, z, 3.2, (150, 118, 82), "Wood", collide=False)
+    for q in range(3):
+        vcyl("PalmRing", x, GROUND_Y + h * (0.3 + q * 0.22), GROUND_Y + h * (0.3 + q * 0.22) + 1, z, 3.6,
+             (128, 98, 66), "Wood", collide=False)
+    for a in range(9):
+        yaw = a * 40.0 + lean
+        L = 20.0
+        dx = math.sin(math.radians(yaw)) * L * 0.42
+        dz = math.cos(math.radians(yaw)) * L * 0.42
+        box("Frond", (5, 0.5, L), (x + dx, GROUND_Y + h - 2.5, z + dz), (78, 148, 72), "Grass", collide=False,
+            rot=(28, yaw, 0))
+    ball("Dates", x, GROUND_Y + h - 3.5, z, 3.4, (170, 100, 40), "SmoothPlastic", collide=False)
+
+
+def _tree(x, z, h, crown, col):
+    vcyl("GiantTrunk", x, GROUND_Y, GROUND_Y + h, z, h * 0.09, (110, 80, 52), "Wood", collide=False)
+    for q in range(3):
+        a = q * 2.1
+        ball("GiantCrown", x + math.cos(a) * crown * 0.3, GROUND_Y + h + q * 3, z + math.sin(a) * crown * 0.3,
+             crown * (1 - q * 0.15), col, "Grass", collide=False)
+
+
+def districts(t, clear, k, key):
+    """v55: a second themed area in every valley + ground patches (cheap, big shapes that read from the train)"""
+    Y = GROUND_Y
+    for q in range(5):
+        spot = place(clear, 0, 0, 0, 90)
+        if spot:
+            disc("GroundPatch", spot[0], Y + 0.12, spot[1], rng.uniform(160, 260), 0.2, PATCH[key][q % 2],
+                 GROUND[key][1], collide=False, shadow=False)
+    spot = place(clear, 0, 0, 0, 110)
+    if not spot:
+        return
+    x, z = spot
+    if key == "micro":
+        # a streak plate: zig-zag lines of colonies thinning out (how microbiologists isolate one colony)
+        for line in range(4):
+            for q in range(10 - line * 2):
+                px = x - 90 + line * 55 + (q % 2) * 18
+                pz = z - 80 + q * 18
+                d = 9 - line * 1.8
+                ball("StreakColony", px, Y, pz, d, (250, 236, 200) if line < 3 else (240, 190, 90), "SmoothPlastic",
+                     collide=False)
+        label("🧫 تخطيط الطبق: نخفف البكتيريا عشان نعزل مستعمرة وحدة", x, Y + 10, z, x, z)
+    elif key == "biochem":
+        for q in range(9):
+            a = q * math.pi * 2 / 9
+            bx, bz = x + math.cos(a) * 60, z + math.sin(a) * 60
+            vcyl("GiantBeaker", bx, Y, Y + 34, bz, 22, (220, 236, 245), "Glass", transp=0.5, collide=False)
+            vcyl("BeakerLiquid", bx, Y + 0.5, Y + 18, bz, 20,
+                 [(255, 90, 90), (255, 170, 80), (250, 230, 90), (120, 220, 110), (90, 190, 240), (120, 120, 240),
+                  (180, 110, 230), (230, 110, 200), (200, 200, 200)][q], "Neon", transp=0.35, collide=False,
+                 shadow=False)
+        label("🧪 مقياس الأس الهيدروجيني: من حمضي (أحمر) إلى قاعدي (بنفسجي)", x, Y + 10, z, x, z)
+    elif key == "animal":
+        TERRAIN_BLOCKS.append((x, Y + 1.0, z, 120.0, 4.0, 90.0, "Water"))
+        for q in range(16):   # soft sand banks round the pond
+            a = q * math.pi * 2 / 16
+            TERRAIN.append((x + math.cos(a) * 64, Y - 5, z + math.sin(a) * 50, rng.uniform(12, 16), "Sand"))
+        for q in range(12):
+            a = q * math.pi * 2 / 12
+            _bigpalm(x + math.cos(a) * 86, z + math.sin(a) * 68)
+        for q in range(4):
+            CR._camel(x + rng.uniform(-40, 40), Y, z + 70 + rng.uniform(-6, 6))
+        label("🐪 الواحة: الجمل يتحمّل العطش أيام لأنه يحافظ على الماي بجسمه", x, Y + 10, z, x, z)
+    elif key == "plant":
+        for q in range(12):
+            tx, tz = x + rng.uniform(-100, 100), z + rng.uniform(-100, 100)
+            if clear.ok(tx, tz, 20):
+                _tree(tx, tz, rng.uniform(50, 90), rng.uniform(24, 34), rng.choice([(70, 150, 60), (90, 170, 70),
+                                                                                       (60, 130, 55)]))
+        label("🌳 الغابة: الأشجار تخزّن الكربون وتطلق الأكسجين", x, Y + 10, z, x, z)
+    elif key == "molecular":
+        for q in range(5):
+            cx_, cz_ = x + rng.uniform(-80, 80), z + rng.uniform(-80, 80)
+            col = [(255, 120, 200), (120, 220, 255), (180, 255, 140), (255, 210, 110), (190, 150, 255)][q]
+            for s in range(14):   # an alpha helix: a coiled ribbon of beads
+                a = s * 0.7
+                ball("ProteinHelix", cx_ + math.cos(a) * 6, Y + 40 + s * 2.6, cz_ + math.sin(a) * 6, 5, col, "Neon",
+                     collide=False, shadow=False)
+        label("🧬 البروتينات تلتف كلوالب ألفا: شكلها يحدد وظيفتها", x, Y + 10, z, x, z)
+    elif key == "forensic":
+        for q in range(4):
+            a = q * math.pi / 2 + 0.4
+            px, pz = x + math.cos(a) * 70, z + math.sin(a) * 70
+            vcyl("LightTower", px, Y, Y + 46, pz, 2.2, (60, 62, 70), "Metal", collide=False)
+            box("Floodlight", (6, 3, 3), (px, Y + 47, pz), (255, 250, 220), "Neon", collide=False, shadow=False,
+                light=(2, 70, (255, 246, 220)))
+        for q in range(3):
+            box("PoliceCar", (8, 3.4, 15), (x - 20 + q * 20, Y + 1.7, z + 30), (240, 240, 245), "SmoothPlastic",
+                collide=False)
+            box("PoliceStripe", (8.1, 1, 15.1), (x - 20 + q * 20, Y + 2.2, z + 30), (30, 60, 160), "SmoothPlastic",
+                collide=False)
+            box("Siren", (3, 0.8, 1.4), (x - 20 + q * 20, Y + 3.8, z + 30), (230, 50, 50) if q % 2 else (50, 90, 240),
+                "Neon", collide=False, shadow=False)
+        label("🚨 مسرح الجريمة: أول شي نحمي الأدلة من التلوث", x, Y + 10, z, x, z)
+    elif key == "agri":
+        for r_ in range(4):
+            for c_ in range(6):
+                _bigpalm(x - 80 + c_ * 32, z - 48 + r_ * 32)
+        box("Barn", (40, 24, 30), (x + 110, Y + 12, z), (170, 60, 50), "WoodPlanks", collide=False)
+        box("BarnRoof", (42, 4, 32), (x + 110, Y + 26, z), (90, 40, 34), "WoodPlanks", collide=False)
+        label("🌴 مزرعة نخيل: النخلة الوحدة ممكن تعطي أكثر من 100 كيلو تمر بالسنة", x, Y + 10, z, x, z)
+    elif key == "biotech":
+        for q in range(3):
+            ball("GreenDome", x - 70 + q * 70, Y, z, 56, (200, 240, 220), "Glass", transp=0.45, collide=False)
+            disc("DomeGarden", x - 70 + q * 70, Y + 0.3, z, 50, 0.6, (90, 170, 80), "Grass", collide=False)
+        for q in range(6):
+            box("SolarPanel", (14, 0.4, 8), (x - 60 + q * 24, Y + 4, z + 60), (30, 50, 110), "Glass", rot=(-25, 0, 0),
+                collide=False)
+        label("🌱 بيوت محمية: نزرع نباتات معدّلة وراثياً تتحمّل الحر والملوحة", x, Y + 10, z, x, z)
+
+
 def scenery(t, cells):
     CR.CUTS[:] = []
     CR.ISLAND_Y = GROUND_Y   # the landmark builders stand on CR.ISLAND_Y
@@ -818,6 +943,7 @@ def scenery(t, cells):
         with G.Group("CartScene%d" % k):
             STAGES[key](t, clear, (hi + lo) / 2, GROUND_Y)
             grand_features(t, clear, k, key)
+            districts(t, clear, k, key)
             rail_props(t, clear, k, key)
 
 

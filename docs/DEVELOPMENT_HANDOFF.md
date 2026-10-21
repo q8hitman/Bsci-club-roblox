@@ -1,4 +1,4 @@
-# BSC Island: development handoff (v54, 2026-10-21)
+# BSC Island: development handoff (v55, 2026-10-21)
 
 For whoever continues: Claude Code, Codex, or a person. **Continue this project. Do not restart or redesign it.**
 
@@ -7,8 +7,14 @@ For whoever continues: Claude Code, Codex, or a person. **Continue this project.
 |---|---|
 | Repo | `C:\Users\User\Desktop\KuwaitParkour\BSC_project_full` (GitHub `q8hitman/Bsci-club-roblox`) |
 | Branch | `dev/v54-labs-cartride`, created from `dev/v53-release-push` at `6aac766`. Neither branch is merged into `main`. |
-| Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v54.rbxlx` (not published). v53 and every older build and backup are untouched. |
+| Latest build | `Desktop\KuwaitParkour\KuwaitParkour_v55.rbxlx` (not published). v54, v53 and every older build and backup are untouched. |
 | Studio | Session `KuwaitParkour_v53.rbxlx`, hot-swapped to the v54 code. It is unsaved; the file on disk is newer. |
+
+## 1a. Done in v55 (same branch `dev/v54-labs-cartride`)
+| Feature | Static | Studio solo | Multiplayer | Phone |
+|---|---|---|---|---|
+| **Virus Tag solo opponent:** a virus particle (capsid + spike proteins) that:<br>• aims ahead of the player<br>• flashes red for 1 s, then dashes<br>• replicates halfway through<br>• is knocked back by the vaccine<br>• spawns far from the player<br>Rewards: 15 for surviving 45 s, otherwise 2 per 10 s | selene OK | **Standing still:** caught in 2.7 s<br>**Scripted fleeing player:** survived 23 s, saw the warning and the split | Rounds with 2+ players are unchanged | no |
+| **Cart worlds art:**<br>• large ground patches<br>• one new themed district per world (streak plate, pH beakers, oasis + pond, giant tree grove, protein helices, police floodlights + cars, palm plantation + barn, greenhouse domes + solar field), each with a ride caption<br>• valley-scale date palms (40-56 studs) | 40.4k parts | Screenshot at bridge height in Animal Biology; 0 script errors | n/a | no |
 
 ## 1b. Done in v54 (all committed and pushed)
 | Feature | Static | Studio solo | Multiplayer (2 clients) | Phone |
@@ -87,8 +93,8 @@ Smaller items:
 ## 5. Next steps, in priority order (v54)
 0. **Owner review of v54:** the lab feel, the ride length (18 min at the default speed), the part count on a phone.
    - If the phone struggles: lower `cart_tour53.DENSITY`, tie spacing, or `LEGZ`.
-1. **Virus Tag:** add a solo practice opponent (a computer-controlled "virus") so one player can play.
-2. **Cart worlds art:** licensed meshes, a petri rim, more distinct areas inside each valley.
+1. ~~Virus Tag solo opponent~~ done in v55.
+2. **Cart worlds art:** v55 added districts and scale. Still possible: licensed meshes, a petri rim, strata on the cliffs.
 3. **The campus and HQ** stay as the owner approved them. Sign redesign there needs the owner's OK.
 
 ## 5-old. Earlier next steps (v53)
@@ -156,6 +162,6 @@ Smaller items:
 ## 9. Exact prompt to start Codex
 From the repo root:
 ```
-"C:\Users\User\AppData\Local\OpenAI\Codex\bin\896a0166b774037a\codex.exe" exec -C "C:\Users\User\Desktop\KuwaitParkour\BSC_project_full" "Continue BSC Island development. Read docs/DEVELOPMENT_HANDOFF.md first, then CLAUDE.md and BSC_RESUME.md. Work on branch dev/v54-labs-cartride from the latest commit. Follow section 5 (next steps) in order, respect section 6 (owner decisions) and ask before anything in section 7. Build with the commands in section 2, never overwrite older .rbxlx builds (next build is KuwaitParkour_v55.rbxlx), commit after each verified milestone, and never publish."
+"C:\Users\User\AppData\Local\OpenAI\Codex\bin\896a0166b774037a\codex.exe" exec -C "C:\Users\User\Desktop\KuwaitParkour\BSC_project_full" "Continue BSC Island development. Read docs/DEVELOPMENT_HANDOFF.md first, then CLAUDE.md and BSC_RESUME.md. Work on branch dev/v54-labs-cartride from the latest commit. Follow section 5 (next steps) in order, respect section 6 (owner decisions) and ask before anything in section 7. Build with the commands in section 2, never overwrite older .rbxlx builds (next build is KuwaitParkour_v56.rbxlx), commit after each verified milestone, and never publish."
 ```
 Or paste the same text into the existing Codex thread `01a14bdc-a4d3-7360-a7e5-eacb9a8c4924` in the Codex app.
