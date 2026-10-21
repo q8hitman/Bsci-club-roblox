@@ -107,6 +107,21 @@ SIG = {
 }
 
 
+# v61 (owner: "every stage is the same template"): each valley ends differently. ("spiral", deg, R) circles the giant,
+# ("through", len) rides through it at THROUGH_Y, ("beside", angle, R) swings past it on a descending S-bend.
+FINALE = {
+    "micro": ("spiral", 720, 50),
+    "biochem": ("spiral", 360, 85),
+    "animal": ("beside", 30, 170),
+    "plant": ("spiral", 1080, 44),
+    "molecular": ("spiral", 720, 50),
+    "forensic": ("through", 90),
+    "agri": ("beside", 24, 220),
+    "biotech": ("through", 130),
+}
+THROUGH_Y = 26.0
+
+
 def zadv(bends):
     """distance an S-bend list advances along the leg"""
     return sum(4 * R * math.sin(math.radians(a)) for a, R in bends)
@@ -201,10 +216,27 @@ def stage_path(t, key, s):
     t.straight(to_edge(t), dy=mid - t.p[1])
     t.marks[key + ":leg"] = (i_leg, len(t.pts))
     hairpin()
-    # ---- E: double spiral down around the stage tower, then home to z = 0
+    # ---- E: the valley's finale around (or through) its giant, then home to z = 0 at y 0
     t.straight(60)
-    t.turn(720 * west(t), 50, dy=-(t.p[1]))
-    t.marks["dna" if key == "molecular" else key + ":tower"] = t.last_center
+    fin = FINALE.get(key, ("spiral", 720, 50))
+    if fin[0] == "spiral":
+        t.turn(fin[1] * west(t), fin[2], dy=-(t.p[1]))
+        t.marks["dna" if key == "molecular" else key + ":tower"] = t.last_center
+    elif fin[0] == "through":       # v61: ride straight through the giant (magnifier ring, bioreactor tube)
+        t.straight(220, dy=THROUGH_Y - t.p[1])
+        i0 = len(t.pts)
+        t.straight(fin[1])
+        p = t.pts[(i0 + len(t.pts)) // 2]
+        t.marks[key + ":tower"] = (p[0], p[1], p[2], p[3])
+        t.straight(220, dy=-t.p[1])
+    else:                           # "beside": a descending S-bend that swings past the giant
+        t.straight(160, dy=-t.p[1] / 2)
+        i0 = len(t.pts)
+        s_bend(t, west(t), fin[1], fin[2])
+        p = t.pts[(i0 + len(t.pts)) // 2]
+        rx, rz = math.cos(math.radians(p[3])), -math.sin(math.radians(p[3]))
+        t.marks[key + ":tower"] = (p[0] - rx * west(t) * 70, p[1], p[2] - rz * west(t) * 70)
+        t.straight(160, dy=-t.p[1])
     t.straight(max(10.0, abs(t.p[2]) - R1))
     t.turn(90 * s * (1 if hp[0] % 2 else -1), R1)
     t.straight(40)
@@ -336,11 +368,9 @@ def draw_track(t):
                      collide=False)
                 ball("SpecGateOrb", sx + rx * s_ * 8.5, sy + 17.5, sz + rz * s_ * 8.5, 2.8, col, "Neon", collide=False,
                      shadow=False)
-            for back in (0, 180):
-                G.part("SpecGateBanner", (19.0, 3.8, 0.8), (sx, sy + 15.2, sz), (24, 30, 44), "SmoothPlastic",
-                       rot=(0, syaw + back, 0), collide=False,
-                       text=dict(face="Front", text="%d) %s" % (k + 1, title), color=(255, 255, 255), bg=(24, 30, 44),
-                                 bg_t=0.0))
+            # v61 (owner: "no primitive writing on the track"): the stage name is a title card on screen now
+            G.part("SpecGateBeam", (19.0, 1.2, 1.2), (sx, sy + 17.5, sz), col, "Neon", rot=(0, syaw, 0), collide=False,
+                   shadow=False)
 
 
 # ====================================================================== valleys, ridges, tunnels
@@ -910,6 +940,156 @@ RIVERS = {"animal", "plant", "agri", "forensic"}
 TERRAIN_BLOCKS = []   # (x, y, z, sx, sy, sz, material) for CartTerrain.server
 
 
+# (wall colour, wall material, cap colour, cap material, portal colour, wall transparency)
+TUNNEL_STYLE = {
+    "micro": ((236, 168, 196), "SmoothPlastic", (250, 205, 222), "SmoothPlastic", (255, 120, 180), 0),   # cell membrane
+    "biochem": ((120, 150, 230), "SmoothPlastic", (160, 190, 250), "SmoothPlastic", (255, 210, 90), 0),  # folded protein
+    "plant": ((112, 82, 52), "Wood", (80, 140, 60), "Grass", (70, 50, 32), 0),                          # hollow log
+    "molecular": ((120, 70, 170), "SmoothPlastic", (170, 120, 220), "SmoothPlastic", (255, 230, 120), 0),  # chromosome
+    "forensic": ((60, 62, 72), "Concrete", (80, 82, 96), "Concrete", (255, 214, 60), 0),                # evidence vault
+    "agri": ((190, 232, 200), "Glass", (90, 160, 80), "Grass", (230, 236, 240), 0.45),                 # greenhouse
+    "biotech": ((170, 178, 190), "DiamondPlate", (200, 206, 214), "Metal", (80, 220, 255), 0),          # steel bore
+}
+
+
+def _phage(x, z, Y, col):
+    """micro: a bacteriophage standing on its tail fibres; the spiral circles its tail"""
+    vcyl("PhageTail", x, Y + 14, Y + 74, z, 7, (190, 196, 206), "Metal", collide=False)
+    vcyl("PhageCollar", x, Y + 74, Y + 78, z, 14, (150, 156, 170), "Metal", collide=False)
+    ball("PhageHead", x, Y + 96, z, 36, (205, 120, 230), "Glass", transp=0.15, collide=False)
+    ball("PhageDNA", x, Y + 96, z, 20, (255, 210, 90), "Neon", collide=False, shadow=False)
+    for a in range(6):
+        ang = math.radians(a * 60)
+        box("PhageFibre", (1.4, 22, 1.4), (x + math.sin(ang) * 9, Y + 8, z + math.cos(ang) * 9), (170, 176, 190), "Metal",
+            rot=(math.degrees(math.cos(ang)) * 0.6, 0, -math.degrees(math.sin(ang)) * 0.6), collide=False)
+
+
+def _atp_synthase(x, z, Y, col):
+    """biochem: ATP synthase - a membrane rotor stack with the catalytic head on top"""
+    for q in range(6):
+        vcyl("RotorDisc", x, Y + q * 9, Y + q * 9 + 7, z, 26 - q, (120 + q * 12, 150, 230), "SmoothPlastic", collide=False)
+    vcyl("Stalk", x, Y + 54, Y + 80, z, 5, (255, 210, 90), "SmoothPlastic", collide=False)
+    for a in range(3):
+        ang = math.radians(a * 120)
+        ball("AlphaBeta", x + math.sin(ang) * 9, Y + 90, z + math.cos(ang) * 9, 18, (230, 110, 120) if a % 2 else (250, 170, 90),
+             "SmoothPlastic", collide=False)
+
+
+def _turtle(x, z, Y, col):
+    """animal: a giant hawksbill turtle (Kuwait's islands) resting on a rock"""
+    ball("TurtleRock", x, Y + 6, z, 34, (150, 140, 128), "Slate", collide=False)
+    vcyl("TurtleShellRim", x, Y + 20, Y + 26, z, 38, (120, 84, 50), "SmoothPlastic", collide=False)
+    ball("TurtleShell", x, Y + 26, z, 32, (150, 108, 60), "SmoothPlastic", collide=False)
+    for q in range(5):
+        ang = math.radians(q * 72)
+        ball("ShellScute", x + math.sin(ang) * 9, Y + 38, z + math.cos(ang) * 9, 8, (175, 130, 75), "SmoothPlastic", collide=False)
+    ball("TurtleHead", x, Y + 24, z + 22, 10, (110, 140, 100), "SmoothPlastic", collide=False)
+    for sx, sz in ((-1, 1), (1, 1), (-1, -1), (1, -1)):
+        box("TurtleFlipper", (14, 2, 6), (x + sx * 20, Y + 20, z + sz * 10), (110, 140, 100), "SmoothPlastic",
+            rot=(0, sx * sz * 25, -sx * 15), collide=False)
+
+
+def _sunflower(x, z, Y, col):
+    """plant: a giant sunflower; the head faces the riders on the spiral"""
+    vcyl("FlowerStem", x, Y, Y + 92, z, 5, (80, 150, 60), "SmoothPlastic", collide=False)
+    for q, h in enumerate((30, 52)):
+        box("FlowerLeaf", (22, 1.2, 9), (x + (12 if q else -12), Y + h, z), (90, 170, 70), "Grass",
+            rot=(0, 0, 20 if q else -20), collide=False)
+    G.part("FlowerHead", (4, 30, 30), (x, Y + 104, z), (110, 70, 30), "SmoothPlastic", shape="Cylinder", collide=False)
+    for q in range(14):
+        ang = math.radians(q * 360 / 14)
+        box("FlowerPetal", (2, 9, 5), (x, Y + 104 + math.cos(ang) * 19, z + math.sin(ang) * 19), (255, 205, 40),
+            "SmoothPlastic", rot=(math.degrees(ang), 0, 0), collide=False)
+
+
+def _magnifier(x, z, Y, col):
+    """forensic: a giant magnifying glass over a glowing fingerprint"""
+    for q in range(5):
+        vcyl("FingerprintRidge", x, Y - 0.6, Y - 0.2 + q * 0.01, z, 40 - q * 7, (60, 200, 255) if q % 2 == 0 else (30, 40, 60),
+             "Neon" if q % 2 == 0 else "SmoothPlastic", collide=False, shadow=False)
+    vcyl("MagnifierHandle", x, Y, Y + 56, z, 6, (60, 40, 30), "Wood", collide=False)
+    for q in range(18):
+        ang = math.radians(q * 20)
+        box("MagnifierRim", (2.6, 8.2, 3), (x, Y + 82 + math.cos(ang) * 24, z + math.sin(ang) * 24), (200, 170, 60), "Metal",
+            rot=(math.degrees(ang), 0, 0), collide=False)
+    G.part("MagnifierLens", (1, 46, 46), (x, Y + 82, z), (190, 230, 250), "Glass", shape="Cylinder", transp=0.55,
+           collide=False, shadow=False)
+
+
+def _datepalm(x, z, Y, col):
+    """agri: a giant date palm heavy with dates"""
+    vcyl("GiantPalmTrunk", x, Y, Y + 100, z, 7, (150, 118, 82), "Wood", collide=False)
+    for q in range(7):
+        vcyl("GiantPalmRing", x, Y + 10 + q * 13, Y + 11.5 + q * 13, z, 8, (128, 98, 66), "Wood", collide=False)
+    for a in range(10):
+        ang = math.radians(a * 36)
+        box("GiantFrond", (34, 1, 5), (x + math.sin(ang) * 17, Y + 98, z + math.cos(ang) * 17), (70, 140, 60), "Grass",
+            rot=(0, math.degrees(ang) + 90, -18), collide=False)
+    for a in range(5):
+        ang = math.radians(a * 72 + 20)
+        ball("DateBunch", x + math.sin(ang) * 6, Y + 88, z + math.cos(ang) * 6, 6, (210, 120, 40), "SmoothPlastic", collide=False)
+
+
+def _bioreactor(x, z, Y, col):
+    """biotech: a glass bioreactor with glowing culture and rising bubbles"""
+    vcyl("ReactorGlass", x, Y, Y + 84, z, 36, (200, 235, 245), "Glass", transp=0.55, collide=False)
+    vcyl("ReactorCulture", x, Y + 2, Y + 62, z, 33, (90, 230, 140), "Neon", transp=0.35, collide=False, shadow=False)
+    ball("ReactorDome", x, Y + 84, z, 36, (190, 198, 210), "Metal", collide=False)
+    for q in range(8):
+        ball("Bubble", x + math.sin(q * 2.4) * 9, Y + 10 + q * 7, z + math.cos(q * 2.4) * 9, 3, (230, 255, 240), "Glass",
+             transp=0.3, collide=False, shadow=False)
+    for s_ in (-1, 1):
+        box("ReactorPipe", (2.4, 2.4, 26), (x + s_ * 20, Y + 70, z), (170, 178, 190), "Metal", collide=False)
+
+
+def _ring(name, x, cy, z, R, n, size, colr, mat):
+    """a vertical ring across a z-running track: n tangent blocks (size = tangent, radial, depth)"""
+    for q in range(n):
+        a = math.radians(q * 360 / n)
+        box(name, size, (x + math.sin(a) * R, cy + math.cos(a) * R, z), colr, mat, rot=(0, 0, -math.degrees(a)),
+            collide=False)
+
+
+def _magnifier_through(m, Y):
+    """forensic finale: the train rides straight through the lens ring of a giant magnifying glass, a glowing
+    fingerprint on the ground below"""
+    x, ry, z = m[0], m[1], m[2]
+    cy = ry + 4.5
+    _ring("MagnifierRim", x, cy, z, 24, 18, (9, 5, 3.5), (210, 175, 60), "Metal")
+    _ring("MagnifierGlow", x, cy, z, 21, 18, (7.6, 0.8, 1), (255, 230, 120), "Neon")
+    box("MagnifierHandle", (6, 44, 6), (x + math.sin(math.radians(140)) * 46, cy + math.cos(math.radians(140)) * 46, z),
+        (70, 45, 30), "Wood", rot=(0, 0, -140), collide=False)
+    for q in range(5):
+        vcyl("FingerprintRidge", x, Y - 0.6, Y - 0.2 + q * 0.01, z, 40 - q * 7, (60, 200, 255) if q % 2 == 0 else (30, 40, 60),
+             "Neon" if q % 2 == 0 else "SmoothPlastic", collide=False, shadow=False)
+
+
+def _bioreactor_through(m, Y, L):
+    """biotech finale: the train runs through a horizontal glass bioreactor full of glowing culture"""
+    x, ry, z = m[0], m[1], m[2]
+    cy, R = ry + 4.5, 15.0
+    for q in range(16):
+        a = math.radians(q * 22.5)
+        box("ReactorGlass", (6.2, 0.6, L), (x + math.sin(a) * R, cy + math.cos(a) * R, z), (200, 235, 245), "Glass",
+            transp=0.55, rot=(0, 0, -q * 22.5), collide=False, shadow=False)
+    box("ReactorCulture", (20, 7, L), (x, ry - 6, z), (90, 230, 140), "Neon", transp=0.35, collide=False, shadow=False)
+    for dz in (-L / 2, L / 2):
+        _ring("ReactorCap", x, cy, z + dz, R + 1, 16, (6.8, 3, 4), (180, 188, 200), "Metal")
+        for sx in (-1, 1):
+            box("ReactorLeg", (3, cy - R - Y, 3), (x + sx * 10, (Y + cy - R) / 2, z + dz), (150, 158, 170), "Metal",
+                collide=False)
+    for q in range(10):
+        sx = -1 if q % 2 else 1
+        ball("Bubble", x + sx * rng.uniform(7, 11), ry - 1 + rng.uniform(0, 14), z + rng.uniform(-L / 2 + 6, L / 2 - 6), 2.4,
+             (230, 255, 240), "Glass", transp=0.3, collide=False, shadow=False)
+    for sx in (-1, 1):
+        box("ReactorPipe", (2.4, 2.4, L + 20), (x + sx * 9, cy + R + 2, z), (170, 178, 190), "Metal", collide=False)
+
+
+CENTREPIECE = {"micro": _phage, "biochem": _atp_synthase, "animal": _turtle, "plant": _sunflower,
+               "forensic": _magnifier, "agri": _datepalm, "biotech": _bioreactor}
+
+
 def grand_features(t, clear, k, key):
     """v54 set pieces every valley shares: the overlook pavilion inside the top hairpin, the stage tower inside the
     double spiral, the mesa the track tunnels through, and a river under the high bridge (landscape worlds)."""
@@ -927,26 +1107,32 @@ def grand_features(t, clear, k, key):
     vcyl("OverlookFlagpole", ox, oy - 2, oy + 30, oz, 0.6, (230, 230, 236), "Metal", collide=False)
     box("OverlookFlag", (0.3, 6, 10), (ox, oy + 26, oz + 5), col, "Fabric", collide=False)
     # stage tower in the middle of the double spiral (molecular already has its giant DNA there)
-    if key != "molecular":
-        tx, ty, tz = t.marks[key + ":tower"]
-        vcyl("StageTower", tx, Y, Y + 120, tz, 16, (236, 236, 240), "SmoothPlastic", collide=False)
-        for q in range(6):
-            vcyl("TowerRing", tx, Y + 14 + q * 18, Y + 16 + q * 18, tz, 17, col, "Neon", collide=False, shadow=False)
-        ball("TowerCrown", tx, Y + 126, tz, 22, col, "Neon", transp=0.15, collide=False, shadow=False,
-             light=(1.5, 60, col))
+    if key == "forensic":
+        _magnifier_through(t.marks[key + ":tower"], Y)
+    elif key == "biotech":
+        _bioreactor_through(t.marks[key + ":tower"], Y, FINALE[key][1] - 20)
+    elif key != "molecular":
+        tx, tz = t.marks[key + ":tower"][0], t.marks[key + ":tower"][2]
+        CENTREPIECE[key](tx, tz, Y, col)   # v61: every valley's spiral circles its own giant (was one white tower)
     # mesa tunnel: rock walls and roof over the straight, a rocky mass on top
     i0, i1 = t.marks[key + ":mesa"]
     mx = t.pts[i0][0]
     my = t.pts[i0][1]
     z0, z1 = sorted((t.pts[i0][2], t.pts[i1 - 1][2]))
-    rect("MesaWall", mx - 40, mx - 8, Y - 2, my + 30, z0 - 10, z1 + 10, ROCK, "Sandstone")
-    rect("MesaWall", mx + 8, mx + 40, Y - 2, my + 30, z0 - 10, z1 + 10, ROCK, "Sandstone")
-    rect("MesaRoof", mx - 40, mx + 40, my + 12, my + 30, z0 - 10, z1 + 10, ROCK, "Sandstone")
-    rect("MesaCap", mx - 34, mx + 30, my + 30, my + 44, z0 + 10, z1 - 20, (184, 152, 114), "Sandstone")
+    # v61: each specialty bores through its own material (was the same sandstone mesa in all eight valleys)
+    wc, wm, cc, cm, pc, tr = TUNNEL_STYLE.get(key, (ROCK, "Sandstone", (184, 152, 114), "Sandstone", (90, 76, 60), 0))
+    rect("MesaWall", mx - 40, mx - 8, Y - 2, my + 30, z0 - 10, z1 + 10, wc, wm, transp=tr)
+    rect("MesaWall", mx + 8, mx + 40, Y - 2, my + 30, z0 - 10, z1 + 10, wc, wm, transp=tr)
+    rect("MesaRoof", mx - 40, mx + 40, my + 12, my + 30, z0 - 10, z1 + 10, wc, wm, transp=tr)
+    rect("MesaCap", mx - 34, mx + 30, my + 30, my + 44, z0 + 10, z1 - 20, cc, cm)
     for z in (z0 - 10, z1 + 10):
-        rect("MesaPortal", mx - 9, mx + 9, my + 10, my + 13, z - 1.5, z + 1.5, (90, 76, 60), "Slate", collide=False)
-    TERRAIN.append((mx - 30, my + 40, (z0 + z1) / 2, 34, "Limestone"))
-    TERRAIN.append((mx + 26, my + 36, z0 + 20, 26, "Limestone"))
+        rect("MesaPortal", mx - 9, mx + 9, my + 10, my + 13, z - 1.5, z + 1.5, pc, "Neon" if key in ("forensic", "micro") else "Slate",
+             collide=False)
+        for s_ in (-1, 1):
+            rect("MesaPortalPost", mx + s_ * 9 - 1, mx + s_ * 9 + 1, Y - 1, my + 13, z - 1.5, z + 1.5, pc, "Metal", collide=False)
+    if key in ("animal", "agri"):
+        TERRAIN.append((mx - 30, my + 40, (z0 + z1) / 2, 34, "Limestone"))
+        TERRAIN.append((mx + 26, my + 36, z0 + 20, 26, "Limestone"))
     # v56 slot canyon: tall rock walls close on both sides of the track, chockstones wedged across the top
     c0, c1 = t.marks[key + ":canyon"]
     kx, ky = t.pts[c0][0], t.pts[c0][1]

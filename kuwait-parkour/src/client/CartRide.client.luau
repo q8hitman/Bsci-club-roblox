@@ -235,11 +235,62 @@ end
 local hubBtn = cardButton("HubBtn", "🏛️ رجوع لكلية العلوم", 0.04, Color3.fromRGB(24, 110, 70))
 local againBtn = cardButton("AgainBtn", "🔁 رحلة ثانية", 0.52, Color3.fromRGB(70, 90, 160))
 
+-- v61 (owner: "text should appear on screen simply and smoothly, then go"): captions fade in and out instead of
+-- popping; each new stage gets a big title card in the middle of the view (no boards over the rails any more)
 local captionUntil = 0
+local captionShown = false
+local function fade(obj, shown, bg)
+	TweenService:Create(obj, TweenInfo.new(0.45, Enum.EasingStyle.Quad), {
+		TextTransparency = shown and 0 or 1,
+		TextStrokeTransparency = shown and 0.6 or 1,
+		BackgroundTransparency = shown and (bg or 0.25) or 1,
+	}):Play()
+end
+caption.TextTransparency, caption.BackgroundTransparency = 1, 1
+caption.Visible = true
 local function say(text, seconds)
 	caption.Text = text
-	caption.Visible = true
 	captionUntil = os.clock() + (seconds or 3)
+	if not captionShown then
+		captionShown = true
+		fade(caption, true)
+	end
+end
+local titleCard = Instance.new("TextLabel")
+titleCard.Name = "StageTitle"
+titleCard.AnchorPoint = Vector2.new(0.5, 0.5)
+titleCard.Position = UDim2.fromScale(0.5, 0.34)
+titleCard.Size = UDim2.fromScale(0.6, 0.1)
+titleCard.BackgroundTransparency = 1
+titleCard.TextColor3 = Color3.new(1, 1, 1)
+titleCard.TextStrokeColor3 = Color3.fromRGB(20, 30, 50)
+titleCard.TextTransparency, titleCard.TextStrokeTransparency = 1, 1
+titleCard.TextScaled = true
+titleCard.Font = Enum.Font.GothamBlack
+titleCard.Parent = gui
+local titleSub = titleCard:Clone()
+titleSub.Name = "StageNumber"
+titleSub.Position = UDim2.fromScale(0.5, 0.415)
+titleSub.Size = UDim2.fromScale(0.3, 0.04)
+titleSub.Font = Enum.Font.GothamBold
+titleSub.Parent = gui
+local titleToken = 0
+local function stageTitle(name, k)
+	titleToken += 1
+	local my = titleToken
+	titleCard.Text = name
+	titleSub.Text = ("المرحلة %d من 8"):format(k)
+	titleCard.Position = UDim2.fromScale(0.5, 0.37)
+	fade(titleCard, true, 1)
+	fade(titleSub, true, 1)
+	TweenService:Create(titleCard, TweenInfo.new(0.6, Enum.EasingStyle.Quad), { Position = UDim2.fromScale(0.5, 0.34) })
+		:Play()
+	task.delay(2.6, function()
+		if titleToken == my then
+			fade(titleCard, false, 1)
+			fade(titleSub, false, 1)
+		end
+	end)
 end
 
 local function play(name)
@@ -365,7 +416,8 @@ local function endRide(action)
 	end
 	gui.Enabled = false
 	endCard.Visible = false
-	caption.Visible = false
+	captionShown, captionUntil = false, 0
+	caption.TextTransparency, caption.BackgroundTransparency = 1, 1
 	-- the server removes the train and, for "station"/"hub", moves us with the safe teleport
 	remote:FireServer(action or "stop")
 end
@@ -584,7 +636,7 @@ local function passFlags(r, fromIdx, toIdx)
 		local sec = p.flags.s
 		if type(sec) == "number" and sec >= 1 and p.label ~= "" then
 			r.section = sec
-			say(p.label, 3)
+			stageTitle(p.label, sec)
 			remote:FireServer("progress", sec) -- v57: the server keeps the furthest valley for "continue"
 			local fact = FACTS[sec]
 			if fact then
@@ -603,7 +655,10 @@ RunService.RenderStepped:Connect(function(dt)
 	if not r then
 		return
 	end
-	caption.Visible = os.clock() < captionUntil
+	if captionShown and os.clock() >= captionUntil then
+		captionShown = false
+		fade(caption, false)
+	end
 	if not (r.seat.Parent and r.hum.Parent) or r.hum.Health <= 0 then
 		endRide("stop")
 		return
