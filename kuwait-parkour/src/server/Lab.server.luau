@@ -296,15 +296,26 @@ labFn.OnServerInvoke = function(player, action, a, b)
 	elseif action == "gram" then
 		local sample = LabData.GRAM_SAMPLES[rng:NextInteger(1, #LabData.GRAM_SAMPLES)]
 		local token = newToken()
+		-- v53: the answer never leaves the server; the client first runs the procedure (gramView), then identifies
 		pending[player] = { kind = "gram", answer = sample.gram, token = token, at = os.clock() }
 		return {
 			token = token,
 			name = sample.name,
 			shape = sample.shape,
-			finalColor = sample.finalColor,
-			gram = sample.gram,
+			cocci = sample.id == "staph",
 			research = s.research,
 		}
+	elseif action == "gramView" then
+		-- a = token, b = seconds of decolouriser. What the player sees depends on the cell wall AND on that timing.
+		local p = pending[player]
+		if not p or p.kind ~= "gram" or a ~= p.token or typeof(b) ~= "number" or p.quality then
+			return nil
+		end
+		local D = LabData.GRAM_DECOLOR
+		local secs = math.clamp(b, 0, D.bar)
+		p.quality = secs < D.min and "under" or secs > D.max and "over" or "ok"
+		local violet = (p.answer == "pos" and p.quality ~= "over") or (p.answer == "neg" and p.quality == "under")
+		return { color = violet and "violet" or "pink", quality = p.quality }
 	elseif action == "answer" then
 		local p = pending[player]
 		if not p or a ~= p.token then
@@ -315,7 +326,8 @@ labFn.OnServerInvoke = function(player, action, a, b)
 		if p.kind == "microscope" or p.kind == "gel" then
 			ok = b == p.answer
 		elseif p.kind == "gram" then
-			ok = b == p.answer and os.clock() - p.at >= 1.5
+			-- only a properly decolourised slide counts, and the whole procedure takes real time
+			ok = p.quality == "ok" and b == p.answer and os.clock() - p.at >= LabData.GRAM_DECOLOR.min + 2
 		elseif p.kind == "pcr" then
 			-- 3 cycles x 3 steps cannot honestly be finished in under ~8 s
 			ok = b == true and os.clock() - p.at > 8
@@ -324,7 +336,13 @@ labFn.OnServerInvoke = function(player, action, a, b)
 		if gained > 0 then
 			Passport.record(player, "activity", "lab")
 		end
-		return { ok = ok, gained = gained, research = s.research, answer = (not ok) and p.answer or nil }
+		return {
+			ok = ok,
+			gained = gained,
+			research = s.research,
+			answer = (not ok) and p.answer or nil,
+			quality = p.quality,
+		}
 	elseif action == "lmStart" then
 		-- v41 Light Microscopy: one session per player; the notebook is graded on lmSubmit
 		local sample

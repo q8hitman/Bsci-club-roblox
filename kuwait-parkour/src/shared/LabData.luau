@@ -88,9 +88,19 @@ LabData.GRAM_SAMPLES = {
 		finalColor = "وردي محمر (Pink/Red) 🌸",
 	},
 }
+-- v53 the decolouriser is the step that decides the result: seconds of alcohol before the water rinse.
+-- Under min: the thin wall of Gram-negative cells still holds crystal violet (false Gram-positive).
+-- Over max: even the thick wall of Gram-positive cells loses it (false Gram-negative). Real labs use ~5-15 s;
+-- the window here is the same idea at game pace.
+LabData.GRAM_DECOLOR = { min = 3.5, max = 8.5, bar = 12 }
+LabData.GRAM_QUALITY = {
+	ok = "✅ إزالة اللون مضبوطة: النتيجة موثوقة",
+	under = "⚠️ إزالة لون قليلة: البكتيريا السالبة تبقى بنفسجية، فممكن تنخدع وتقول موجبة",
+	over = "⚠️ إزالة لون زايدة: حتى الموجبة تفقد البنفسجي وتطلع وردية، فممكن تنخدع وتقول سالبة",
+}
 LabData.GRAM_ANSWERS = {
-	pos = "موجبة الجرام (Gram-Positive) 🟣",
-	neg = "سالبة الجرام (Gram-Negative) 🌸",
+	pos = "🟣 موجبة الجرام\nGram-positive",
+	neg = "🌸 سالبة الجرام\nGram-negative",
 }
 
 -- research points per success, and per-experiment cooldown (seconds)

@@ -452,11 +452,51 @@ local function batch()
 	)
 end
 
--- ------------------------------------------------------------------ v50: Gram Staining interactive protocol
+-- ------------------------------------------------------------------ v53: Gram Staining as a real procedure
+-- Pick each reagent from the rack yourself (a wrong pick explains why and lets you try again), time the decolouriser
+-- (the step that decides the result), add the counterstain, then read the slide under the microscope and identify it.
+-- The server decides what the slide looks like from the cell wall AND your timing (gramView), and grades the answer.
+local VIOLET, PINKC = Color3.fromRGB(110, 50, 180), Color3.fromRGB(226, 90, 140)
+local REAGENT_COLOR = {
+	cv = Color3.fromRGB(120, 50, 190),
+	iodine = Color3.fromRGB(150, 90, 30),
+	alcohol = Color3.fromRGB(90, 140, 200),
+	safranin = Color3.fromRGB(210, 60, 90),
+}
+
+local function drawCells(view, cocci, color)
+	for _, c in ipairs(view:GetChildren()) do
+		if c:IsA("Frame") then
+			c:Destroy()
+		end
+	end
+	local rnd = Random.new(7)
+	for _ = 1, cocci and 5 or 9 do
+		local cx, cy = rnd:NextNumber(0.18, 0.82), rnd:NextNumber(0.18, 0.82)
+		for _ = 1, cocci and 5 or 1 do
+			local cell = Instance.new("Frame")
+			cell.AnchorPoint = Vector2.new(0.5, 0.5)
+			cell.BackgroundColor3 = color
+			cell.BorderSizePixel = 0
+			if cocci then -- grape-like clusters of round cells
+				cell.Size = UDim2.fromScale(0.07, 0.07)
+				cell.Position = UDim2.fromScale(cx + rnd:NextNumber(-0.05, 0.05), cy + rnd:NextNumber(-0.05, 0.05))
+				corner(cell, 1)
+			else -- short rods
+				cell.Size = UDim2.fromScale(0.16, 0.055)
+				cell.Position = UDim2.fromScale(cx, cy)
+				cell.Rotation = rnd:NextNumber(0, 180)
+				corner(cell, 1)
+			end
+			cell.Parent = view
+		end
+	end
+end
+
 local function gram()
 	clear()
 	local my = session
-	header.Text = "🧪 صبغة جرام | Gram Staining (محاكاة مبسطة)"
+	header.Text = "🧪 صبغة جرام | Gram Staining"
 	local data = labFn:InvokeServer("gram")
 	if my ~= session or not data then
 		return
@@ -466,94 +506,236 @@ local function gram()
 		body,
 		("العيّنة: %s\n%s"):format(data.name, data.shape),
 		UDim2.fromScale(0, 0),
-		UDim2.fromScale(1, 0.2),
+		UDim2.fromScale(0.62, 0.16),
 		INK,
 		true
 	)
-	local slidePreview = Instance.new("Frame")
-	slidePreview.Position = UDim2.fromScale(0.05, 0.22)
-	slidePreview.Size = UDim2.fromScale(0.9, 0.22)
-	slidePreview.BackgroundColor3 = Color3.fromRGB(228, 232, 236)
-	slidePreview.Parent = body
-	corner(slidePreview, 0.15)
-	local slideStatus = text(
-		slidePreview,
-		"🔬 الشريحة شفافة قبل الصبغ — نفّذ الخطوات الأربع بالترتيب:",
-		UDim2.fromScale(0.03, 0.08),
-		UDim2.fromScale(0.94, 0.84),
+	-- the slide (left) and the microscope view (right)
+	local slide = Instance.new("Frame")
+	slide.Position = UDim2.fromScale(0, 0.18)
+	slide.Size = UDim2.fromScale(0.6, 0.2)
+	slide.BackgroundColor3 = Color3.fromRGB(232, 236, 240)
+	slide.Parent = body
+	corner(slide, 0.15)
+	local note = text(
+		slide,
+		"🔬 لطخة بكتيريا مثبتة بالحرارة على الشريحة. اختار الكاشف الأول من الرف 👇",
+		UDim2.fromScale(0.03, 0.06),
+		UDim2.fromScale(0.94, 0.88),
 		INK,
 		true
 	)
-	local stepIdx = 1
+	local view = Instance.new("Frame")
+	view.Position = UDim2.fromScale(0.66, 0.0)
+	view.Size = UDim2.fromScale(0.3, 0.38)
+	view.BackgroundColor3 = Color3.fromRGB(250, 246, 236)
+	view.Parent = body
+	corner(view, 1)
+	local viewAspect = Instance.new("UIAspectRatioConstraint")
+	viewAspect.Parent = view
+	local viewNote = text(view, "🔬", UDim2.fromScale(0.3, 0.3), UDim2.fromScale(0.4, 0.4), INK, true)
+
 	local result = text(body, "", UDim2.fromScale(0, 0.86), UDim2.fromScale(1, 0.14), GREEN, true)
-	local stepBtn
-	local choiceFrame = Instance.new("Frame")
-	choiceFrame.Position = UDim2.fromScale(0, 0.48)
-	choiceFrame.Size = UDim2.fromScale(1, 0.36)
-	choiceFrame.BackgroundTransparency = 1
-	choiceFrame.Visible = false
-	choiceFrame.Parent = body
+	local rack = Instance.new("Frame")
+	rack.Position = UDim2.fromScale(0, 0.42)
+	rack.Size = UDim2.fromScale(1, 0.2)
+	rack.BackgroundTransparency = 1
+	rack.Parent = body
+	local stage = Instance.new("Frame") -- decolouriser timer / identification buttons live here
+	stage.Position = UDim2.fromScale(0, 0.64)
+	stage.Size = UDim2.fromScale(1, 0.2)
+	stage.BackgroundTransparency = 1
+	stage.Parent = body
 
-	local STEP_COLORS = {
-		Color3.fromRGB(130, 60, 200),
-		Color3.fromRGB(110, 50, 180),
-		data.gram == "pos" and Color3.fromRGB(115, 55, 185) or Color3.fromRGB(220, 226, 232),
-		data.gram == "pos" and Color3.fromRGB(115, 55, 185) or Color3.fromRGB(225, 85, 135),
-	}
+	local order = table.clone(LabData.GRAM_STEPS)
+	local shuffled = table.clone(order)
+	for i = #shuffled, 2, -1 do
+		local j = math.random(1, i)
+		shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
+	end
+	local stepIdx = 1
+	local busy = false
+	local SLIDE_AFTER = { cv = VIOLET, iodine = Color3.fromRGB(80, 30, 140) }
 
-	stepBtn = button(
-		body,
-		LabData.GRAM_STEPS[1].ar,
-		UDim2.fromScale(0.08, 0.50),
-		UDim2.fromScale(0.84, 0.28),
-		Color3.fromRGB(110, 60, 175),
-		function()
-			if my ~= session or stepIdx > #LabData.GRAM_STEPS then
+	local function identify()
+		for _, c in ipairs(stage:GetChildren()) do
+			c:Destroy()
+		end
+		local answered = false
+		for i, k in ipairs({ "pos", "neg" }) do
+			local idBtn = button(
+				stage,
+				LabData.GRAM_ANSWERS[k],
+				UDim2.fromScale((i - 1) * 0.52, 0.05),
+				UDim2.fromScale(0.48, 0.9),
+				k == "pos" and VIOLET or PINKC,
+				function()
+					if answered or my ~= session then
+						return
+					end
+					answered = true
+					local r = labFn:InvokeServer("answer", data.token, k)
+					if my ~= session then
+						return
+					end
+					local msg
+					if r and r.quality and r.quality ~= "ok" then
+						-- the identification may even be right, but a badly decolourised slide proves nothing
+						play("wrong")
+						msg = "🧪 النتيجة غير موثوقة\n"
+							.. LabData.GRAM_QUALITY[r.quality]
+							.. " • أعد التجربة واضبط وقت الكحول"
+					else
+						msg = feedback(r, r and r.answer and LabData.GRAM_ANSWERS[r.answer])
+					end
+					result.Text = msg
+					setRP(r and r.research)
+					task.delay(3.5, function()
+						if my == session then
+							gram()
+						end
+					end)
+				end
+			)
+			idBtn.Name = "Answer_" .. k
+		end
+	end
+
+	local function decolourise()
+		-- a timer bar: the green band is the right time to rinse with water
+		busy = true
+		local D = LabData.GRAM_DECOLOR
+		local track = Instance.new("Frame")
+		track.Position = UDim2.fromScale(0, 0.05)
+		track.Size = UDim2.fromScale(0.62, 0.4)
+		track.BackgroundColor3 = Color3.fromRGB(60, 64, 72)
+		track.Parent = stage
+		corner(track, 0.4)
+		local window = Instance.new("Frame")
+		window.Position = UDim2.fromScale(D.min / D.bar, 0)
+		window.Size = UDim2.fromScale((D.max - D.min) / D.bar, 1)
+		window.BackgroundColor3 = Color3.fromRGB(70, 190, 110)
+		window.BorderSizePixel = 0
+		window.Parent = track
+		local needle = Instance.new("Frame")
+		needle.Size = UDim2.new(0, 4, 1.3, 0)
+		needle.AnchorPoint = Vector2.new(0.5, 0.5)
+		needle.Position = UDim2.fromScale(0, 0.5)
+		needle.BackgroundColor3 = Color3.new(1, 1, 1)
+		needle.Parent = track
+		text(
+			stage,
+			"💧 الكحول ينزل على الشريحة… اغسل بالماء لما المؤشر يكون بالأخضر",
+			UDim2.fromScale(0, 0.5),
+			UDim2.fromScale(0.62, 0.45),
+			INK,
+			true
+		)
+		local t0 = os.clock()
+		local stopped = false
+		local function rinse()
+			if stopped or my ~= session then
 				return
 			end
-			local st = LabData.GRAM_STEPS[stepIdx]
-			TweenService:Create(slidePreview, TweenInfo.new(0.25), { BackgroundColor3 = STEP_COLORS[stepIdx] }):Play()
-			slideStatus.TextColor3 = (stepIdx == 3 and data.gram == "neg") and INK or Color3.new(1, 1, 1)
-			slideStatus.Text = st.note
-			stepIdx += 1
-			if stepIdx <= #LabData.GRAM_STEPS then
-				stepBtn.Text = LabData.GRAM_STEPS[stepIdx].ar
-			else
-				stepBtn.Visible = false
-				slideStatus.Text = ("🎨 النتيجة تحت المجهر: %s — حدّد نوع الجدار الخلوي:"):format(
-					data.finalColor
-				)
-				choiceFrame.Visible = true
+			stopped = true
+			local secs = os.clock() - t0
+			play("click")
+			for _, c in ipairs(stage:GetChildren()) do
+				c:Destroy()
 			end
+			local v = labFn:InvokeServer("gramView", data.token, secs)
+			if my ~= session or not v then
+				return
+			end
+			data.view = v
+			note.Text = ("🚿 غسلت بعد %.1f ثانية. باقي الخطوة الأخيرة: الصبغة المقابلة"):format(
+				secs
+			)
+			busy = false
 		end
-	)
-
-	local answered = false
-	for i, k in ipairs({ "pos", "neg" }) do
 		button(
-			choiceFrame,
-			LabData.GRAM_ANSWERS[k],
-			UDim2.fromScale((i - 1) * 0.52, 0.1),
-			UDim2.fromScale(0.48, 0.8),
-			k == "pos" and Color3.fromRGB(115, 55, 185) or Color3.fromRGB(210, 75, 125),
+			stage,
+			"🚿 اغسل بالماء الحين!",
+			UDim2.fromScale(0.66, 0.05),
+			UDim2.fromScale(0.34, 0.9),
+			Color3.fromRGB(40, 120, 190),
+			rinse
+		).Name =
+			"RinseBtn"
+		task.spawn(function()
+			while not stopped and my == session do
+				local secs = os.clock() - t0
+				needle.Position = UDim2.fromScale(math.clamp(secs / D.bar, 0, 1), 0.5)
+				-- run-off: the purple slowly washes out of the smear
+				slide.BackgroundColor3 = Color3.fromRGB(80, 30, 140)
+					:Lerp(Color3.fromRGB(190, 170, 220), math.clamp(secs / D.bar, 0, 1))
+				if secs >= D.bar then
+					rinse()
+					break
+				end
+				task.wait()
+			end
+		end)
+	end
+
+	local function pick(st)
+		if busy or my ~= session or stepIdx > #order then
+			return
+		end
+		local want = order[stepIdx]
+		if st.id ~= want.id then
+			play("wrong")
+			result.TextColor3 = Color3.fromRGB(170, 60, 40)
+			result.Text = ("❌ مو هذا الحين. %s\n(هذا الكاشف: %s)"):format(
+				stepIdx == 1 and "أول شي الصبغة الأساسية اللي تلوّن كل الخلايا"
+					or "فكّر شنو لازم يصير قبل",
+				st.note
+			)
+			return
+		end
+		play("click")
+		result.TextColor3 = GREEN
+		result.Text = ""
+		stepIdx += 1
+		note.Text = st.note
+		if st.id == "alcohol" then
+			decolourise()
+		elseif st.id == "safranin" then
+			-- the counterstain: then the microscope shows what the timing really produced
+			local v = data.view
+			if not v then
+				return
+			end
+			TweenService
+				:Create(slide, TweenInfo.new(0.4), { BackgroundColor3 = v.color == "violet" and VIOLET or PINKC })
+				:Play()
+			note.Text = st.note .. "\n🔬 شوف الخلايا بالمجهر وحدد نوعها"
+			viewNote.Visible = false
+			drawCells(view, data.cocci, v.color == "violet" and VIOLET or PINKC)
+			rack.Visible = false
+			identify()
+		else
+			TweenService:Create(slide, TweenInfo.new(0.4), { BackgroundColor3 = SLIDE_AFTER[st.id] }):Play()
+			note.TextColor3 = Color3.new(1, 1, 1)
+		end
+	end
+
+	for i, st in ipairs(shuffled) do
+		-- the rack shows the name only (no step number), Arabic and English on separate lines (mixed text reorders)
+		local name = st.ar:gsub("^%S+%s", "")
+		local ar, en = name:match("^(.-)%s*%((.+)%)$")
+		local b = button(
+			rack,
+			ar and (ar .. "\n" .. en) or name,
+			UDim2.fromScale((i - 1) * 0.25 + 0.005, 0),
+			UDim2.fromScale(0.24, 1),
+			REAGENT_COLOR[st.id] or INK,
 			function()
-				if answered or my ~= session then
-					return
-				end
-				answered = true
-				local r = labFn:InvokeServer("answer", data.token, k)
-				if my ~= session then
-					return
-				end
-				result.Text = feedback(r, r and r.answer and LabData.GRAM_ANSWERS[r.answer])
-				setRP(r and r.research)
-				task.delay(2.0, function()
-					if my == session then
-						gram()
-					end
-				end)
+				pick(st)
 			end
 		)
+		b.Name = "Reagent_" .. st.id
+		b.TextWrapped = true
 	end
 end
 
