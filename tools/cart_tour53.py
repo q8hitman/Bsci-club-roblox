@@ -862,6 +862,24 @@ def grand_features(t, clear, k, key):
         rect("MesaPortal", mx - 9, mx + 9, my + 10, my + 13, z - 1.5, z + 1.5, (90, 76, 60), "Slate", collide=False)
     TERRAIN.append((mx - 30, my + 40, (z0 + z1) / 2, 34, "Limestone"))
     TERRAIN.append((mx + 26, my + 36, z0 + 20, 26, "Limestone"))
+    # v56 slot canyon: tall rock walls close on both sides of the track, chockstones wedged across the top
+    c0, c1 = t.marks[key + ":canyon"]
+    kx, ky = t.pts[c0][0], t.pts[c0][1]
+    za, zb = sorted((t.pts[c0][2], t.pts[c1 - 1][2]))
+    z = za - 20
+    while z < zb + 20:
+        L = rng.uniform(30, 50)
+        for s_ in (-1, 1):
+            h = rng.uniform(55, 95)
+            inner = rng.uniform(9, 13)
+            rect("CanyonWall", kx + s_ * inner, kx + s_ * (inner + 34), Y - 2, Y + h, z, z + L, STRATA[rng.randrange(3)],
+                 "Sandstone")
+        if rng.random() < 0.35:
+            box("Chockstone", (30, rng.uniform(8, 14), rng.uniform(10, 16)), (kx, ky + rng.uniform(32, 46), z + L / 2),
+                STRATA[1], "Sandstone", rot=(rng.uniform(-8, 8), rng.uniform(-10, 10), rng.uniform(-6, 6)), collide=False)
+        z += L
+    for s_ in (-1, 1):
+        TERRAIN.append((kx + s_ * 36, Y + 70, (za + zb) / 2, 30, "Limestone"))
     # river under the high bridge, the full width of the valley
     if key in RIVERS:
         b0, b1 = t.marks[key + ":bridge"]
