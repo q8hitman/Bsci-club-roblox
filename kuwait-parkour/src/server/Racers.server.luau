@@ -96,6 +96,7 @@ local function snapshot(room, kind)
 			id = c.id,
 			name = c.name,
 			bot = c.bot,
+			paint = c.paint, -- v63: fixed kart colour slot, the same on every screen
 			x = s.x,
 			z = s.z,
 			heading = s.heading,
@@ -333,6 +334,10 @@ Run.Heartbeat:Connect(function(dt)
 				)
 				-- v59: bots at 35/37/39 (players 42) so a clean driver can win; they used to lap at full speed
 				room.cars[#room.cars].state.topSpeed = 34 + 2 * math.min(i - 1, 3) -- v60: 36/38/40, eased +-6 % by the gap
+			end
+			-- v63 (owner: every racer their own colour): one paint slot per car for the whole race
+			for slot, car in ipairs(room.cars) do
+				car.paint = slot
 			end
 			room.phase = "running"
 			room.started = workspace:GetServerTimeNow()

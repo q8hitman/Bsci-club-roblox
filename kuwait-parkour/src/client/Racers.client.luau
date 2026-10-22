@@ -168,10 +168,19 @@ board.BackgroundColor3 = PANEL
 board.BackgroundTransparency = 0.3
 board.Parent = hud
 corner(board, 0.12)
-local boardRows = {}
+local boardRows, boardDots = {}, {}
 for i = 1, 4 do
-	boardRows[i] = label(board, "Row" .. i, "", UDim2.fromOffset(8, 4 + (i - 1) * 26), UDim2.new(1, -16, 0, 24), 17)
+	boardRows[i] = label(board, "Row" .. i, "", UDim2.fromOffset(30, 4 + (i - 1) * 26), UDim2.new(1, -38, 0, 24), 17)
 	boardRows[i].TextXAlignment = Enum.TextXAlignment.Right
+	-- v63: each racer's kart colour beside their name
+	local dot = Instance.new("Frame")
+	dot.Name = "Colour" .. i
+	dot.Position = UDim2.fromOffset(9, 9 + (i - 1) * 26)
+	dot.Size = UDim2.fromOffset(14, 14)
+	dot.Visible = false
+	dot.Parent = board
+	corner(dot, 0.5)
+	boardDots[i] = dot
 end
 local bigText = label(hud, "BigText", "", UDim2.fromScale(0.3, 0.3), UDim2.fromScale(0.4, 0.18), 90)
 bigText.TextStrokeTransparency = 0.4
@@ -453,11 +462,16 @@ end)
 local modelFolder = Instance.new("Folder")
 modelFolder.Name = "LocalMicroRacers"
 modelFolder.Parent = workspace
+-- v63: eight clearly different body colours (a race holds up to 8), each with a contrasting flask liquid
 local PAINT = {
-	{ Color3.fromRGB(70, 200, 170), Color3.fromRGB(255, 200, 80) }, -- mint / amber medium
-	{ Color3.fromRGB(235, 110, 90), Color3.fromRGB(120, 220, 255) }, -- coral / blue medium
-	{ Color3.fromRGB(150, 120, 230), Color3.fromRGB(140, 240, 140) }, -- lavender / green medium
-	{ Color3.fromRGB(80, 150, 230), Color3.fromRGB(255, 130, 200) }, -- sky / pink medium
+	{ Color3.fromRGB(230, 70, 70), Color3.fromRGB(255, 220, 90) }, -- red / yellow
+	{ Color3.fromRGB(60, 130, 235), Color3.fromRGB(255, 160, 60) }, -- blue / orange
+	{ Color3.fromRGB(80, 200, 100), Color3.fromRGB(255, 120, 200) }, -- green / pink
+	{ Color3.fromRGB(250, 200, 50), Color3.fromRGB(110, 90, 230) }, -- yellow / violet
+	{ Color3.fromRGB(160, 90, 230), Color3.fromRGB(120, 240, 160) }, -- purple / mint
+	{ Color3.fromRGB(255, 140, 50), Color3.fromRGB(90, 200, 255) }, -- orange / sky
+	{ Color3.fromRGB(70, 210, 200), Color3.fromRGB(255, 100, 100) }, -- teal / coral
+	{ Color3.fromRGB(240, 110, 190), Color3.fromRGB(140, 240, 120) }, -- pink / lime
 }
 local SPARK = { Color3.fromRGB(90, 180, 255), Color3.fromRGB(255, 150, 40), Color3.fromRGB(200, 90, 255) }
 local function emitter(parent, color)
@@ -487,7 +501,7 @@ local function carModel(c, index)
 	end
 	local body = model:FindFirstChild("Body")
 	local ground = CFrame.new(body.Position.X, minY, body.Position.Z)
-	local paint = PAINT[(index - 1) % #PAINT + 1]
+	local paint = PAINT[((c.paint or index) - 1) % #PAINT + 1]
 	local wheels = {}
 	for _, v in ipairs(parts) do
 		local tag = v.Name:match("^Wheel_(%u%u)")
@@ -846,6 +860,10 @@ event.OnClientEvent:Connect(function(data)
 		local c = data.cars[i]
 		boardRows[i].Text = c and ("%s  %d"):format(c.name, i) or ""
 		boardRows[i].TextColor3 = (c and c.id == data.you) and ACCENT or INK
+		boardDots[i].Visible = c ~= nil
+		if c then
+			boardDots[i].BackgroundColor3 = PAINT[((c.paint or i) - 1) % #PAINT + 1][1]
+		end
 	end
 end)
 p.CharacterAdded:Connect(function()
