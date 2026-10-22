@@ -1369,7 +1369,7 @@ def concepts(t, clear, k, key):
                     nx, nz = p[0] - x, p[2] - z
                     nl = math.hypot(nx, nz) or 1.0
                     with G.Group("Concept_" + fn.__name__, "Model"):
-                        fn(CC.F(x, z, GROUND_Y, (fx, fz), (nx / nl, nz / nl)))
+                        fn(CC.F(x, z, GROUND_Y, (fx, fz), (nx / nl, nz / nl), key))
                     CONCEPT_SPOTS.append((x, z, r))
                     label(text, x, GROUND_Y + 10, z, x, z)
                     placed = True

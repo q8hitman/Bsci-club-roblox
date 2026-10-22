@@ -77,9 +77,6 @@ local function pickQuestions(players)
 	local out = History.pickMany(players, pool, QUESTIONS_PER_EXAM, function(it)
 		return it.q
 	end)
-	for _, it in ipairs(out) do
-		History.markAll(players, it.q)
-	end
 	return out
 end
 
@@ -131,6 +128,12 @@ local function runExam(players)
 		alive[p] = true
 	end
 	for qi, item in ipairs(questions) do
+		-- Count only questions actually displayed, including spectators currently in the hall.
+		for _, p in ipairs(Players:GetPlayers()) do
+			if inHall(p) then
+				History.mark(p, item.q)
+			end
+		end
 		-- shuffle the 4 answers written for this question: right + its 3 wrong answers
 		local answers = { item.right, item.wrong[1], item.wrong[2], item.wrong[3] }
 		for i = #answers, 2, -1 do

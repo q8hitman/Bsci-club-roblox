@@ -267,6 +267,20 @@ end
 -- ------------------------------------------------------------------ experiments
 local EXP = {}
 
+-- Delayed work belongs to one bench session, never to a later owner or reset character.
+local function currentExperiment(b, player, st)
+	if b.st ~= st or b.owner ~= player or not player.Parent then
+		return false
+	end
+	local char = player.Character
+	local root = char and char:FindFirstChild("HumanoidRootPart")
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+	return root ~= nil
+		and hum ~= nil
+		and hum.Health > 0
+		and (root.Position - b.model:GetPivot().Position).Magnitude <= 60
+end
+
 -- Gram stain: heat-fix, then crystal violet / iodine / alcohol (timed) / safranin, rinsing with water after each.
 local GRAM_SEQ = { "cv", "iodine", "alcohol", "safranin" }
 local VIOLET, DARKV, PALE, PINK =
@@ -482,7 +496,13 @@ EXP.gel = {
 		end
 		local buf = b.parts["Liquid|buffer"]
 		if buf then
+			b.bufferHome = b.bufferHome or buf.CFrame
+			if b.bufferTween then
+				b.bufferTween:Cancel()
+				b.bufferTween = nil
+			end
 			buf.Size = Vector3.new(buf.Size.X, 0.02, buf.Size.Z)
+			buf.CFrame = b.bufferHome
 		end
 		local uv = b.parts["Liquid|uv"]
 		if uv then
@@ -580,6 +600,17 @@ EXP.gel = {
 				for _, pe in ipairs(bubbles) do
 					pe:Destroy()
 				end
+				if not currentExperiment(b, player, st) then
+					if b.st == st then
+						st.running = false
+						st.wells = {}
+						scr.Text = "0 V"
+						for _, bandPart in ipairs(made) do
+							bandPart:Destroy()
+						end
+					end
+					return
+				end
 				scr.Text = "0 V"
 				st.running = false
 				if not st.plusFar then
@@ -619,16 +650,23 @@ EXP.gel = {
 			if held == "gel" then
 				return "place"
 			elseif held == "buffer" then
+				if st.buffer then
+					return toast(
+						player,
+						"المحلول يغطي الجل بالفعل؛ انتقل لتحميل الآبار"
+					)
+				end
 				if b.at.gel ~= "tank" then
 					return toast(player, "🧊 حط الجل بالحوض أول")
 				end
 				st.buffer = true
 				drip(player, b.slots.tank, Color3.fromRGB(150, 210, 255))
 				local buf = b.parts["Liquid|buffer"]
-				tween(buf, 1.2, {
+				b.bufferTween = TweenService:Create(buf, TweenInfo.new(1.2, Enum.EasingStyle.Quad), {
 					Size = Vector3.new(buf.Size.X, 1.0, buf.Size.Z),
-					Position = buf.Position + Vector3.new(0, 0.5, 0),
+					Position = b.bufferHome.Position + Vector3.new(0, 0.5, 0),
 				})
+				b.bufferTween:Play()
 				return toast(
 					player,
 					"🌊 المحلول المنظم يغطي الجل ويوصل الكهرباء",
@@ -776,6 +814,9 @@ EXP.pcr = {
 	end,
 	program = function(b, player, den, ann, ext)
 		local st = b.st
+		if not currentExperiment(b, player, st) or st.done then
+			return { ok = false, msg = "ارجع للطاولة وابدأ تجربة جديدة" }
+		end
 		if b.at.tube ~= "cycler" or st.running then
 			return { ok = false, msg = "حط الأنبوب بالجهاز أول" }
 		end
@@ -794,13 +835,29 @@ EXP.pcr = {
 		end
 		st.running = true
 		local scr = b.parts["Screen|cycler"]:FindFirstChildWhichIsA("TextLabel", true)
+		local function stillRunning()
+			if currentExperiment(b, player, st) then
+				return true
+			end
+			if b.st == st then
+				st.running = false
+				scr.Text = "READY"
+			end
+			return false
+		end
 		task.spawn(function()
 			local temps = { den, ann, ext }
 			for cycle = 1, 30 do
 				for _, tmp in ipairs(temps) do
-					scr.Text = ("دورة %d/30 • %d°م"):format(cycle, tmp)
+					if not stillRunning() then
+						return
+					end
+					scr.Text = ("محاكاة مسرّعة • دورة %d/30 • %d°م"):format(cycle, tmp)
 					task.wait(0.12)
 				end
+			end
+			if not stillRunning() then
+				return
 			end
 			st.running = false
 			local missing
@@ -813,7 +870,7 @@ EXP.pcr = {
 			if missing then
 				scr.Text = "NO PRODUCT"
 				st.done = true
-				if b.owner == player then
+				if currentExperiment(b, player, st) then
 					b.finish() -- clear the bench so the player can mix a new tube
 				end
 				return toast(
@@ -822,18 +879,18 @@ EXP.pcr = {
 					"warn"
 				)
 			end
-			scr.Text = "2³⁰ ≈ 1,000,000,000 نسخة ✅"
+			scr.Text = "نموذج مثالي: تضاعف 30 مرة\nحوالي مليار ضعف ✅"
 			local gained = reward(player, "pcr")
 			st.done = true
 			toast(
 				player,
-				("✅ 30 دورة: كل دورة تضاعف النسخ، يعني أكثر من مليار نسخة من القطعة! +%d 🧪"):format(
+				("✅ اكتملت 30 دورة! التضاعف المثالي يعطي حوالي مليار ضعف؛ الناتج الحقيقي يعتمد على كفاءة التفاعل وكمية البداية. +%d 🧪"):format(
 					gained
 				),
 				"good"
 			)
 			task.delay(4, function()
-				if b.owner == player then
+				if currentExperiment(b, player, st) then
 					b.finish()
 				end
 			end)
@@ -979,7 +1036,7 @@ EXP.dna = {
 					"info"
 				)
 				task.delay(3, function()
-					if b.st == st then
+					if currentExperiment(b, player, st) then
 						local d = b.parts["Liquid|dna"]
 						d.Transparency = 0.15
 						tween(d, 2, { Size = Vector3.new(0.9, 1.2, 0.9) })
@@ -1011,7 +1068,7 @@ EXP.dna = {
 					"good"
 				)
 				task.delay(4, function()
-					if b.owner == player then
+					if currentExperiment(b, player, st) then
 						b.finish()
 					end
 				end)
@@ -1465,8 +1522,11 @@ for _, model in ipairs(mapFolder:GetDescendants()) do
 			benches[b.kind] = b
 			EXP[b.kind].reset(b)
 			b.finish = function()
+				local completedState = b.st
 				task.delay(2.5, function()
-					resetBench(b)
+					if b.st == completedState then
+						resetBench(b)
+					end
 				end)
 			end
 			for id, m in pairs(b.items) do

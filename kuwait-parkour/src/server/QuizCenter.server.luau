@@ -56,15 +56,13 @@ local function pickItems(player, spec, level)
 	local items = History.pickMany({ player }, pool, PER_SESSION, function(it)
 		return it[1]
 	end, rng)
-	for _, it in ipairs(items) do
-		History.mark(player, it[1])
-	end
 	return items
 end
 
 -- the next question for the client: shuffled options, the correct index stays on the server
-local function ask(sess)
+local function ask(sess, player)
 	local item = sess.items[sess.i]
+	History.mark(player, item[1]) -- abandoned sessions must not consume unseen questions
 	local opts = { item[2], item[3], item[4], item[5] }
 	local order = { 1, 2, 3, 4 }
 	for i = 4, 2, -1 do
@@ -170,7 +168,7 @@ fn.OnServerInvoke = function(player, action, a, b)
 			rewarded = rewarded,
 		}
 		sessions[player] = sess
-		local q = ask(sess)
+		local q = ask(sess, player)
 		q.title = ("%s • %s"):format(specName(spec), spec == PRACTICAL and "عملي" or LEVEL_AR[level])
 		q.practice = not rewarded or nil
 		return q
@@ -197,7 +195,7 @@ fn.OnServerInvoke = function(player, action, a, b)
 		if sess.i > #sess.items then
 			res.summary = finish(player, s, sess)
 		else
-			res.next = ask(sess)
+			res.next = ask(sess, player)
 		end
 		return res
 	elseif action == "quit" then

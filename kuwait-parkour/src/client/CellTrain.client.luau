@@ -13,7 +13,7 @@ local mapFolder = workspace:WaitForChild("Map")
 local CellStops = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("CellStops"))
 
 local CRUISE, SLOW = 16, 6 -- studs/s; slows down near each stop
-local DWELL = 4.5 -- seconds the train waits at each stop (fast mode: no wait)
+local DWELL = 12 -- reading time; the rider can pause for longer (fast mode: no wait)
 local LIFT = 0.9 -- car pivot above the track centre line (wheels sit on the rails)
 
 local points, labels, anchors = {}, {}, {}
@@ -266,6 +266,7 @@ end
 local exitBtn = button("ExitBtn", 0.24, Color3.fromRGB(150, 50, 60), "خروج")
 local camBtn = button("CamToggleBtn", 0.325, Color3.fromRGB(70, 50, 130), "🎥 كاميرا: سينمائية")
 local speedBtn = button("SpeedToggleBtn", 0.405, Color3.fromRGB(45, 110, 145), "⚡ السرعة: عادية")
+local pauseBtn = button("PauseReadingBtn", 0.485, Color3.fromRGB(48, 100, 92), "توقف للقراءة")
 
 local stopBadge = Instance.new("TextLabel")
 stopBadge.Name = "StopProgressBadge"
@@ -283,6 +284,7 @@ Instance.new("UICorner", stopBadge).CornerRadius = UDim.new(0.3, 0)
 
 local freeCam = false
 local fastMode = false
+local paused = false
 local hum -- the rider's Humanoid during a ride
 
 local function applyCam()
@@ -300,6 +302,10 @@ end)
 speedBtn.Activated:Connect(function()
 	fastMode = not fastMode
 	speedBtn.Text = fastMode and "⚡ السرعة: سريعة" or "⚡ السرعة: عادية"
+end)
+pauseBtn.Activated:Connect(function()
+	paused = not paused
+	pauseBtn.Text = paused and "كمّل الرحلة" or "توقف للقراءة"
 end)
 
 local function fadeTo(alpha)
@@ -365,8 +371,10 @@ local function ride()
 	end
 	root.Anchored = true
 	local cam = workspace.CurrentCamera
-	freeCam, fastMode = false, false
+	freeCam, fastMode, paused = false, false, false
 	speedBtn.Text = "⚡ السرعة: عادية"
+	pauseBtn.Text = "توقف للقراءة"
+	pauseBtn.Visible = true
 	applyCam()
 	exitBtn.Visible, camBtn.Visible, speedBtn.Visible, stopBadge.Visible = true, true, true, true
 
@@ -423,7 +431,7 @@ local function ride()
 			return
 		end
 		-- the train waits at every stop so the card can be read (fast mode rolls through)
-		if os.clock() < waitUntil and not fastMode and not stopRequested then
+		if (paused or (os.clock() < waitUntil and not fastMode)) and not stopRequested then
 			place(dt)
 			return
 		end
@@ -433,6 +441,10 @@ local function ride()
 			if d < st.at and nd >= st.at and not waitedFor[st.id] then
 				waitedFor[st.id] = true
 				waitUntil = os.clock() + DWELL
+				if not fastMode then
+					nd = st.at -- a slow frame must not skip the stop and its lesson card
+					break
+				end
 			end
 		end
 		d = nd
@@ -447,6 +459,8 @@ local function ride()
 				fadeTo(0)
 				train:Destroy()
 				showCard(nil)
+				pauseBtn.Visible = false
+				paused = false
 				highlightTag(nil)
 				exitBtn.Visible, camBtn.Visible, speedBtn.Visible, stopBadge.Visible = false, false, false, false
 				cam.CameraType = Enum.CameraType.Custom

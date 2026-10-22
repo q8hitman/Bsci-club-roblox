@@ -14,14 +14,22 @@ import genmap as G
 box, vcyl, disc, ball = G.box, G.vcyl, G.disc, G.ball
 rnd = random.Random(6262)
 
+EXHIBIT_ACCENTS = {
+    "micro": (52, 143, 126), "biochem": (139, 104, 181),
+    "animal": (179, 116, 66), "plant": (80, 137, 75),
+    "molecular": (75, 166, 190), "forensic": (205, 160, 66),
+    "agri": (129, 151, 70), "biotech": (48, 158, 171),
+}
+
 
 class F:
     """a local frame: a = along the track, b = towards the track, h = height above the floor"""
 
-    def __init__(self, x, z, Y, u, n):
+    def __init__(self, x, z, Y, u, n, specialty="micro"):
         self.x, self.z, self.Y = x, z, Y
         self.ux, self.uz = u
         self.nx, self.nz = n
+        self.accent = EXHIBIT_ACCENTS[specialty]
         self.yaw_u = math.degrees(math.atan2(-self.uz, self.ux))   # local X along the track
         self.yaw_n = math.degrees(math.atan2(-self.nz, self.nx))   # local X towards the track
         wy = math.radians(self.yaw_n)
@@ -61,9 +69,21 @@ class F:
 
 
 def plinth(f, w, d, col=(236, 236, 240)):
-    """a low stage the sculpture stands on, so it reads as an exhibit and not as clutter"""
-    f.slab("ConceptPlinth", 0, 0, 1, w, 2, d, col, "Marble")
-    f.slab("ConceptPlinthGlow", 0, d / 2, 2.05, w, 0.2, 0.8, (255, 255, 255), "Neon", shadow=False)
+    """Layered exhibition footing; all detail stays within the reserved footprint.
+
+    Keep the top at h=2 so existing scientific models remain grounded.
+    Broad matte surfaces and a coloured fascia read from the moving train.
+    """
+    f.slab("ConceptPlinth", 0, 0, 0.5, w, 1, d, (46, 59, 65), "Slate")
+    f.slab("ConceptDeck", 0, 0, 1.5, w - 1.2, 1, d - 1.2, col, "Concrete")
+    f.slab("ConceptFascia", 0, d / 2 - 0.15, 1.25, w - 2, 0.7, 0.3, f.accent)
+    # Slim recessed joints break up the large slab without individual floor tiles.
+    for a in (-w / 4, 0, w / 4):
+        f.slab("ConceptDeckJoint", a, 0, 2.015, 0.12, 0.03, d - 1.3, (140, 151, 153), shadow=False)
+    for side in (-1, 1):
+        f.slab("ConceptCornerTrim", side * (w / 2 - 1.2), 0, 2.04, 0.7, 0.08, d - 2, f.accent, shadow=False)
+        f.slab("ConceptFootlight", side * (w / 2 - 4), d / 2, 0.6, 3, 0.25, 0.15,
+               (180, 211, 202), "Neon", shadow=False)
 
 
 # ============================================================== microbiology
@@ -73,7 +93,7 @@ def growth_curve(f):
     cols = [(150, 200, 255)] * 3 + [(120, 230, 140)] * 4 + [(250, 220, 90)] * 2 + [(240, 110, 110)] * 3
     for i, h in enumerate(hs):
         f.slab("GrowthBar", -44 + i * 8, 0, 2 + h / 2, 6, h, 6, cols[i])
-        f.ball("GrowthDot", -44 + i * 8, 2, 2 + h + 2, 3.4, (255, 255, 255), "Neon", shadow=False)
+        f.ball("GrowthDot", -44 + i * 8, 2, 2 + h + 2, 2.4, (244, 243, 228), shadow=False)
 
 
 def binary_fission(f):
@@ -506,10 +526,10 @@ CONCEPTS = {
         (germination, 48, "🌱 الإنبات: بذرة ← جذر ← ساق ← بادرة"),
     ],
     "molecular": [
-        (central_dogma, 58, "🧬 العقيدة المركزية: DNA ← mRNA (نسخ) ← بروتين (ترجمة)"),
+        (central_dogma, 58, "🧬 لصنع بروتين: تُنسخ معلومات الجين من DNA إلى mRNA، ثم تُترجم لبناء البروتين"),
         (replication_fork, 54, "🍴 تضاعف DNA: الشريط ينفك وكل نصف يبني شريك جديد"),
         (gel, 44, "🧪 الفصل الكهربائي: قطع DNA الصغيرة تمشي أبعد بالجل"),
-        (codon_wheel, 34, "🎡 عجلة الشيفرة: كل 3 قواعد (كودون) تحدد حمض أميني واحد"),
+        (codon_wheel, 34, "🎡 الكودون 3 قواعد في mRNA: يحدد حمضاً أمينياً أو يعطي إشارة توقف لبناء البروتين"),
     ],
     "forensic": [
         (fingerprint_types, 50, "🖐️ البصمات ثلاث أنماط: قوس، عروة، دوامة، وكل شخص بصمته غير"),

@@ -421,7 +421,10 @@ local function pcrProgram()
 			local r = fn:InvokeServer("pcr", choice[1], choice[2], choice[3])
 			if r and r.ok then
 				panel.Visible = false
-				say("🧬 الجهاز شغّال: راقب الشاشة", "info")
+				say(
+					"🧬 محاكاة تعليمية مسرّعة؛ زمن التجربة الحقيقي أطول. راقب الشاشة",
+					"info"
+				)
 			elseif r then
 				say(r.msg, "warn")
 			end
