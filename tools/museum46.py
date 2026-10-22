@@ -224,5 +224,5 @@ def build():
                 G.box("Console",(6,3.5,3),(x,2,z-13),c,"Metal")
                 G.sign("StationName",f"{index:02d}  {ar}\n{en}",(x,5,z-13),(18,3.5,.4),"Front",bg=DARK)
                 if kind=="biotech":
-                    G.sign("HeroTitle","التقنية الحيوية\nفكرة → خلية → منتج",(x,21,z),(32,5,.5),"Front",bg=DARK)
+                    G.sign("HeroTitle","التقنية الحيوية\nجين ← خلية ← دوا",(x,21,z),(32,5,.5),"Front",bg=DARK)
                     for side in (-1,1): deco("HeroFin",(1,20,3),(x+side*20,10,z),c,"Neon")

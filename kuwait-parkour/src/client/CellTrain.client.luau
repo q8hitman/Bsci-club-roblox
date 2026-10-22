@@ -140,6 +140,9 @@ end
 local function highlightTag(id)
 	for key, t in pairs(tags) do
 		local on = key == id
+		-- v63: the explained structure's own tag hides while its card is up (the card names it; the tag sat over
+		-- the stop counter at the top of the screen)
+		t.frame.Parent.Enabled = not on
 		t.frame.BackgroundColor3 = on and Color3.fromRGB(150, 50, 140) or Color3.fromRGB(40, 16, 70)
 		t.stroke.Transparency = on and 0 or 0.4
 	end
