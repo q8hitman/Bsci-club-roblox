@@ -174,8 +174,35 @@ def exam_hall_dressing():
             box("PosterFrame", (0.4, 11, 15), (x, EY + 22, EZ + z), FRAME, "Wood", collide=False)
             sign("Poster", text, (x - side * 0.25, EY + 22, EZ + z), (0.3, 10, 14), "Right" if side < 0 else "Left",
                  bg=col)
-        # green carpet runner down the aisle to the answer zones
-        box("AisleRunner", (6, 0.08, 98), (EX + 8, EY + 0.05, EZ + 40), (30, 90, 62), "Fabric", collide=False)
+        # green carpet runner down the aisle to the answer zones. v63: centred, from the desks to the start line, and
+        # SmoothPlastic (Fabric rendered as a near-black strip at an odd spot)
+        box("AisleRunner", (8, 0.08, 56), (EX, EY + 0.05, EZ + 2), (52, 128, 88), "SmoothPlastic", collide=False,
+            shadow=False)
+        for s_ in (-1, 1):
+            box("AisleRunnerEdge", (0.5, 0.1, 56), (EX + s_ * 4.2, EY + 0.06, EZ + 2), (230, 200, 120), "SmoothPlastic",
+                collide=False, shadow=False)
+        # v63 (owner audit: "a plain, empty room"): the eight specialties as hanging banners in their colours, a floor
+        # inlay, plants along the walls and the lecturer's podium
+        spec = [(76, 160, 70), (210, 120, 60), (230, 190, 60), (90, 150, 230), (150, 90, 210), (70, 72, 90),
+                (150, 110, 70), (60, 190, 200)]
+        for i, col in enumerate(spec):
+            x = EX - 56 + i * 16
+            for z in (-6, 58):
+                box("SpecBanner", (6, 10, 0.3), (x, EY + 31, EZ + z), col, "SmoothPlastic", collide=False, shadow=False)
+                box("SpecBannerTip", (6, 1.2, 0.35), (x, EY + 25.4, EZ + z), (255, 236, 190), "SmoothPlastic", collide=False,
+                    shadow=False)
+                box("SpecBannerRod", (7, 0.4, 0.4), (x, EY + 36.2, EZ + z), TRIM, "Wood", collide=False, shadow=False)
+        disc("FloorInlay", EX, EY + 0.04, EZ + 10, 34, 0.08, (196, 160, 110), "Marble", collide=False, shadow=False)
+        disc("FloorInlayRing", EX, EY + 0.05, EZ + 10, 30, 0.08, (232, 214, 170), "Marble", collide=False, shadow=False)
+        disc("FloorInlayCore", EX, EY + 0.06, EZ + 10, 12, 0.08, (40, 110, 76), "Marble", collide=False, shadow=False)
+        for side in (-1, 1):
+            for z in (-20, 44, 84):   # clear of the rules board (+x wall, z 6..34)
+                x = EX + side * 64
+                vcyl("PlantPot", x, EY, EY + 3.4, EZ + z, 4, (170, 110, 70), "SmoothPlastic", collide=False)
+                ball("PlantLeaves", x, EY + 6, EZ + z, 6.4, (70, 140, 70), "Grass", collide=False)
+                ball("PlantLeaves", x + 1.2, EY + 8, EZ + z - 1, 4.4, (90, 160, 80), "Grass", collide=False)
+        box("Podium", (6, 4.6, 4), (EX + 50, EY + 2.3, EZ - 72), WOOD, "WoodPlanks")
+        box("PodiumTop", (6.6, 0.4, 4.6), (EX + 50, EY + 4.8, EZ - 72), TRIM, "Wood", collide=False)
 
 
 def arcade_dressing():
@@ -349,17 +376,19 @@ def research_lab():
             for q in range(5):
                 r("RackLED", 65.8, 65.95, 2 + q * 2, 2.3 + q * 2, z - 1.5, z + 1.5,
                   (90, 255, 150) if q % 2 else (90, 170, 255), "Neon", collide=False)
-        # ---- centre: DNA sculpture + bioreactors
+        # ---- DNA sculpture + bioreactors. v63: the helix moved from the centre aisle (0, -10), where it stood between the
+        # spawn and the Batch Hall board, to (14, 20) beside the bioreactors
+        hx, hz = 14, 20
         for q in range(46):
             a = q * 0.42
             y = 1 + q * 0.42
             for s_ in (0, math.pi):
-                ball("Helix", LX + 4 * math.cos(a + s_), LY + y, LZ - 10 + 4 * math.sin(a + s_), 1.2,
+                ball("Helix", LX + hx + 4 * math.cos(a + s_), LY + y, LZ + hz + 4 * math.sin(a + s_), 1.2,
                      (255, 90, 170) if s_ == 0 else (60, 200, 255), "Neon", collide=False, shadow=False)
             if q % 3 == 0:
-                G.part("BasePair", (8, 0.35, 0.35), at(0, y, -10), (240, 240, 240), "SmoothPlastic",
+                G.part("BasePair", (8, 0.35, 0.35), at(hx, y, hz), (240, 240, 240), "SmoothPlastic",
                        rot=(0, -math.degrees(a), 0), collide=False, shadow=False)
-        disc("HelixPlinth", LX, LY + 0.3, LZ - 10, 12, 0.6, (60, 66, 72), "Marble")
+        disc("HelixPlinth", LX + hx, LY + 0.3, LZ + hz, 12, 0.6, (60, 66, 72), "Marble")
         for x in (14, 22):
             vcyl("Bioreactor", LX + x, LY, LY + 12, LZ + 30, 5, (225, 242, 250), "Glass", transp=0.78, collide=True)
             vcyl("Culture", LX + x, LY + 0.5, LY + 9, LZ + 30, 4.2, (110, 220, 120), "Neon", transp=0.3, collide=False)

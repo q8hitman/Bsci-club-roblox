@@ -256,8 +256,9 @@ def posters():
              color=(30, 30, 36), bg=PASTELS[i % 5])
 
 
-def dna_sculpture(cx=-26.0, cz=-22.0, h=34.0):
-    """the HQ centrepiece: a tall glowing DNA helix on a round plinth"""
+def dna_sculpture(cx=40.0, cz=14.0, h=34.0):
+    """the HQ centrepiece: a tall glowing DNA helix on a round plinth. v63: moved to (40, 14), out of the view from the
+    spawn to the north wall (at (-26, -22) it covered the HQ title and two parkour gates)"""
     disc("Plinth", cx, 0.8, cz, 16, 1.6, (240, 238, 232), "Marble")
     disc("PlinthGlow", cx, 1.62, cz, 15, 0.1, (120, 255, 200), "Neon", collide=False, shadow=False)
     for q in range(int(h / 1.7)):

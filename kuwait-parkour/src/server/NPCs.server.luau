@@ -79,8 +79,8 @@ local NPC = {
 		hair = 376524487,
 		name = "مرشد المتحف 🏺",
 		role = "متحف العلوم التفاعلي",
-		shirt = Color3.fromRGB(230, 70, 60),
-		pants = Color3.fromRGB(240, 200, 70),
+		shirt = Color3.fromRGB(40, 140, 150), -- v63: the museum's teal (was the old lifeguard red/yellow)
+		pants = Color3.fromRGB(40, 44, 60),
 		skin = 3,
 		lines = {
 			"المتحف فيه ثمانية معارض تفاعلية، واحد لكل جانب من علوم الأحياء 🧬",

@@ -271,7 +271,8 @@ def outdoors_extra():
     # logo boards: on the south building's garden facade and at the train station
     A.logo_board(0, 70, -29.2, R=2.0, nx=0.0, nz=1.0)
     A.logo_board(171.4, 26, -40, R=1.0, nx=-1.0, nz=0.0)
-    G.part("TrainSpawnPoint", (6, 1, 6), (138, 1.9, -47), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
+    G.part("TrainSpawnPoint", (6, 1, 6), (138, 1.9, -47), (0, 0, 0), "SmoothPlastic", rot=(0, 180, 0), transp=1,
+           collide=False)   # v63: face the train (+z)
     # more shade trees along the lawns (kept clear of paths and the station)
     for (x, z) in ((140, 120), (-100, 250)):
         C3.tree(x, 0.0, z, 1.2)

@@ -103,7 +103,7 @@ def build():
                 G.box("MuseumHedge",(3.5,3.2,216),(hx,1.6,-50),(68,128,68),"Grass",collide=False)
             G.box("MuseumRearHedge",(188,3.2,3.5),(290,1.6,62),(68,128,68),"Grass",collide=False)
             G.box("MuseumFloor",(160,1.2,200),(290,-.4,-50),CREAM,"Concrete")
-            G.part("MuseumSpawn",(8,1,8),(290,.8,-142),TEAL,transp=1,collide=False,shadow=False)
+            G.part("MuseumSpawn",(8,1,8),(290,.8,-142),TEAL,rot=(0,180,0),transp=1,collide=False,shadow=False)  # v63: face the museum (+z), not the exit
             # Wide route around the existing parking, not through it or the train station.
             G.box("MuseumApproach",(151,.5,12),(217.5,-.05,-205),CREAM,"Concrete")
             G.box("MuseumApproach",(12,.5,61),(290,-.05,-177),CREAM,"Concrete")

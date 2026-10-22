@@ -59,7 +59,7 @@ def build():
         box("StageEdge", (60.4, 0.5, 0.5), (SX, SY + 3.1, SZ - 23.8), GOLD, "Neon", collide=False, shadow=False)
         for k in range(15):
             ball("StageBulb", SX - 28 + k * 4, SY + 1.6, SZ - 23.7, 0.9, (255, 236, 180), "Neon", collide=False, shadow=False)
-        G.mascot(SX + 25, SY + 3, SZ - 29)   # right end of the stage: clear of the main screen (x -20..20) from the spawn view
+        G.mascot(SX + 34, SY + 3, SZ - 29)   # v63: x 34 (at 25 it still covered the main screen's right edge)
         G.part("HostDesk", (10, 4, 3), (SX + 6, SY + 5, SZ - 26), (24, 80, 56), "SmoothPlastic",
                text=dict(face="Back", text="ابدأ الحلقة" + NL + "Start the show", color=(255, 255, 255), bg=(24, 80, 56),
                          bg_t=0.0))
@@ -74,9 +74,10 @@ def build():
                text=dict(face="Back", text="BSC", color=(255, 236, 160), bg=(40, 20, 60), bg_t=0.0))
         light_tower(-25, -39, (70, 200, 230))
         light_tower(25, -39, (230, 80, 120))
-        for name, x, col, ry in (("Red", -44, (200, 60, 70), 30), ("Blue", 44, (60, 110, 210), -30)):
-            G.part("TeamScreen|" + name, (18, 12, 0.6), (SX + x, SY + 12, SZ - 30), col, "SmoothPlastic", rot=(0, ry, 0),
-                   text=dict(face="Back", text="", color=(255, 255, 255), bg=col, bg_t=0.0))
+        # v63: team screens on the side walls facing the room (behind the picture board they were half hidden)
+        for name, x, col, ry in (("Red", -44, (200, 60, 70), 90), ("Blue", 44, (60, 110, 210), -90)):
+            G.part("TeamScreen|" + name, (18, 12, 0.6), (SX + (x / abs(x)) * (W / 2 - 1.6), SY + 13, SZ - 9), col,
+                   "SmoothPlastic", rot=(0, ry, 0), text=dict(face="Back", text="", color=(255, 255, 255), bg=col, bg_t=0.0))
             box("TeamFloor", (W / 2 - 2, 0.08, 40), (SX + (x / abs(x)) * (W / 4), SY + 0.05, SZ + 14), col, "SmoothPlastic",
                 collide=False, shadow=False, transp=0.75)
         # picture screen (left of the stage): bigger, framed, 5x5 cover tiles
