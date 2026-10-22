@@ -1395,6 +1395,12 @@ def scenery(t, cells):
             districts(t, clear, k, key)
             rail_props(t, clear, k, key)
             concepts(t, clear, k, key)
+            # v63: each valley's own world (skyline behind the walls, a designed ground, a themed midground)
+            import cart_biomes63 as CB
+            taken = [(x, z, r) for x, z, r in CONCEPT_SPOTS] + [(lm[2], lm[3], 40) for lm in CR.LANDMARKS
+                                                             if lm[1] != "NOT PLACED"]
+            with G.Group("Biome_" + key):
+                CB.build(key, k, clear, hi, lo, GROUND_Y, taken)
 
 
 def station_hall(t):
