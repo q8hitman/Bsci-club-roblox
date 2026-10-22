@@ -180,7 +180,8 @@ task.spawn(function()
 	local milestone = ReplicatedStorage:WaitForChild("Milestone", 20)
 	while true do
 		local elapsed = os.clock() - t0
-		while #hints > 0 and elapsed >= hints[1][1] do
+		-- v63: held during rides, where a toast covered the lesson card; shown once the ride ends
+		while #hints > 0 and elapsed >= hints[1][1] and not player:GetAttribute("OnRide") do
 			local h = table.remove(hints, 1)
 			if _G.BSCToast then
 				_G.BSCToast(h[2], "info")

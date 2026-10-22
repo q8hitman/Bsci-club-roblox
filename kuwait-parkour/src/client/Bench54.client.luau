@@ -465,7 +465,7 @@ hoverLight.Parent = workspace.CurrentCamera
 local tip = Instance.new("TextLabel")
 tip.Name = "LabHoverTip"
 tip.AnchorPoint = Vector2.new(0, 1)
-tip.Size = UDim2.fromOffset(220, 30)
+tip.Size = UDim2.fromOffset(300, 40) -- v63: larger (the label was hard to read)
 tip.BackgroundColor3 = Color3.fromRGB(20, 30, 44)
 tip.BackgroundTransparency = 0.15
 tip.TextColor3 = Color3.new(1, 1, 1)
@@ -476,7 +476,7 @@ tip.Parent = gui
 corner(tip, 0.3)
 local hovered = nil
 local function hoverText(part)
-	local pr = part:FindFirstChildWhichIsA("ProximityPrompt")
+	local pr = part:FindFirstChildWhichIsA("ProximityPrompt", true) -- the detector may sit on an Item Model
 	if not pr then
 		return "اضغط"
 	end

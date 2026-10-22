@@ -435,6 +435,19 @@ local function ride()
 	end
 	local camCF = nil
 	local waitUntil, waitedFor = 0, {}
+	-- the train starts with its full length on the rails, already past the first stop (the membrane): stop there
+	-- straight away so no lesson is skipped
+	for _, st in ipairs(stops) do
+		if st.at <= d then
+			waitedFor[st.id] = true
+			if tapMode then
+				waitingTap = true
+			else
+				waitUntil = os.clock() + DWELL
+			end
+		end
+	end
+	player:SetAttribute("OnRide", true) -- Welcome.client holds its general tips while a lesson card is up
 	local function place(dt)
 		for _, c in ipairs(cars) do
 			c.model:PivotTo(carFrame(d - c.back, c.half) * TURN)
@@ -515,6 +528,7 @@ local function ride()
 				showCard(nil)
 				readBtn.Visible = false
 				waitingTap = false
+				player:SetAttribute("OnRide", nil)
 				highlightTag(nil)
 				exitBtn.Visible, camBtn.Visible, speedBtn.Visible, stopBadge.Visible = false, false, false, false
 				cam.CameraType = Enum.CameraType.Custom
