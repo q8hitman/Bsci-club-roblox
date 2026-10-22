@@ -598,6 +598,21 @@ def _rod(x, y, z, yaw, col, L=44, D=14):
                (190, 255, 200), "Neon", rot=(0, yaw, (-1) ** q * 14), collide=False, shadow=False)
 
 
+def flat_colony(name, x, z, d, col, Y):
+    """v63 (owner: the round domes with a bump on top looked wrong): a colony as it really sits on agar: flat, a little
+    raised, with a wavy lobed edge and a faint halo; no dome, no centre bump. Own RNG per spot (the shared rng is
+    untouched). The grow event scales every part named CartEvt1_Colony, so the lobes share the name."""
+    r = random.Random(int(x * 13 + z * 7))
+    disc(name, x, Y + 0.12, z, d * 1.22, 0.12, tuple(min(255, c + 18) for c in col), "SmoothPlastic", collide=False,
+         shadow=False, transp=0.45)                                          # the faint halo round the colony
+    disc(name, x, Y + 0.7, z, d, 1.2, col, "SmoothPlastic", collide=False, shadow=False)
+    for q in range(9):                                                         # lobed, organic margin
+        a = q * 2 * math.pi / 9 + r.uniform(-0.25, 0.25)
+        rr = d * r.uniform(0.36, 0.46)
+        disc(name, x + math.cos(a) * rr, Y + 0.65, z + math.sin(a) * rr, d * r.uniform(0.22, 0.34), 1.1, col,
+             "SmoothPlastic", collide=False, shadow=False)
+
+
 def stage_micro(t, clear, cx, Y):
     lx, za, zb, ly = leg_x(t, "micro")
     vx, vy, vz = t.marks["micro:view"]
@@ -615,9 +630,7 @@ def stage_micro(t, clear, cx, Y):
         grow = math.hypot(x - vx, z - vz) < 330 and n < 8
         n += grow
         name = "CartEvt1_Colony" if grow else "Colony"
-        ball(name, x, Y, z, d, col, "SmoothPlastic", collide=False)
-        ball(name, x, Y + d * 0.32, z, d * 0.42, tuple(max(0, c - 30) for c in col), "SmoothPlastic", collide=False)
-        disc(name, x, Y + 0.3, z, d * 1.18, 0.4, tuple(min(255, c + 10) for c in col), "SmoothPlastic", collide=False)
+        flat_colony(name, x, z, d, col, Y)
     # an antibiotic disc with its clear inhibition zone, beside the low run
     for s_ in (1, -1):
         ax, az = lx + s_ * 70, (za + zb) / 2
@@ -626,8 +639,7 @@ def stage_micro(t, clear, cx, Y):
             disc("AntibioticDisc", ax, Y + 0.6, az, 12, 1.0, (252, 252, 252), "SmoothPlastic", collide=False)
             for q in range(10):
                 a = q * math.pi / 5
-                ball("Colony", ax + 58 * math.cos(a), Y, az + 58 * math.sin(a), 16, COLS[q % 3], "SmoothPlastic",
-                     collide=False)
+                flat_colony("Colony", ax + 58 * math.cos(a), az + 58 * math.sin(a), 14, COLS[q % 3], Y)
             label("🧫 منطقة التثبيط: المضاد الحيوي يمنع البكتيريا تنمو حوله", lx + s_ * 13, ly + 12, az, ax, az, 30)
             break
     # giant rod bacteria drifting over the plate
@@ -1202,7 +1214,7 @@ def grand_features(t, clear, k, key):
 
 
 PATCH = {   # ground patch colours per world: breaks the flat floor into readable zones
-    "micro": [(214, 166, 86), (188, 140, 62)], "biochem": [(210, 200, 232), (232, 226, 246)],
+    "micro": [(184, 134, 72), (170, 120, 62)], "biochem": [(210, 200, 232), (232, 226, 246)],
     "animal": [(226, 200, 146), (196, 168, 116)], "plant": [(110, 170, 86), (84, 140, 66)],
     "molecular": [(32, 40, 78), (20, 26, 52)], "forensic": [(80, 82, 96), (60, 62, 72)],
     "agri": [(156, 118, 76), (120, 92, 58)], "biotech": [(214, 230, 236), (236, 244, 248)],
@@ -1256,8 +1268,8 @@ def districts(t, clear, k, key):
                 px = x - 90 + line * 55 + (q % 2) * 18
                 pz = z - 80 + q * 18
                 d = 9 - line * 1.8
-                ball("StreakColony", px, Y, pz, d, (250, 236, 200) if line < 3 else (240, 190, 90), "SmoothPlastic",
-                     collide=False)
+                disc("StreakColony", px, Y + 0.4, pz, d, 0.8, (250, 236, 200) if line < 3 else (240, 190, 90),
+                     "SmoothPlastic", collide=False, shadow=False)
         label("🧫 تخطيط الطبق: نخفف البكتيريا عشان نعزل مستعمرة وحدة", x, Y + 10, z, x, z)
     elif key == "biochem":
         for q in range(9):

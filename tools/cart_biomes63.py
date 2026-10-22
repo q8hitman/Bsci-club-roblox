@@ -48,16 +48,17 @@ def along(hi, lo, n, margin=260):
 # ====================================================================== microbiology: the agar plate in the lab
 def micro(rnd, clear, hi, lo, Y, taken):
     cx = (hi + lo) / 2
-    # ground: honey-amber agar, lighter in the middle of the plate and darker to the rim, with a slight wet shine.
-    # (Glass/Ice layers reflected the sky and washed the floor out to white: opaque + low Reflectance instead)
-    SHINE = '<float name="Reflectance">0.12</float>'
-    for d, col in ((2000, (196, 140, 60)), (1500, (208, 154, 70)), (1000, (220, 168, 82)), (520, (230, 182, 98))):
-        disc("AgarGloss", cx, Y + 0.02 + d / 100000, 0, d, 0.05, col, "SmoothPlastic", collide=False, shadow=False,
-             extra=SHINE)
+    # ground: honey-amber agar, lighter in the middle of the plate and darker to the rim (Glass/Ice layers reflected
+    # the sky and washed it out to white; an `extra` Reflectance moved the discs out of the streamed valley)
+    for d, col in ((2000, (168, 118, 62)), (1500, (178, 128, 70)), (1000, (188, 140, 80)), (520, (198, 152, 92))):
+        disc("AgarGloss", cx, Y + 0.02 + d / 100000, 0, d, 0.05, col, "SmoothPlastic", collide=False, shadow=False)
     # colonies the way they really grow on a plate
-    def dome(x, z, d, col):   # a low glossy colony: a flat base and a soft raised centre
-        disc("Colony", x, Y + 0.15, z, d, 0.3, col, "SmoothPlastic", collide=False, shadow=False)
-        ball("ColonyDome", x, Y - d * 0.3, z, d * 0.8, col, "SmoothPlastic", collide=False)
+    def dome(x, z, d, col):   # a flat colony with a lobed edge (no dome or centre bump: those read wrong)
+        disc("Colony", x, Y + 0.5, z, d, 0.8, col, "SmoothPlastic", collide=False, shadow=False)
+        for q in range(6):
+            a = q * math.pi / 3 + rnd.uniform(-0.3, 0.3)
+            disc("Colony", x + math.cos(a) * d * 0.4, Y + 0.45, z + math.sin(a) * d * 0.4, d * 0.3, 0.7, col,
+                 "SmoothPlastic", collide=False, shadow=False)
     for _ in range(8):   # mould (Penicillium): white fuzzy rim, blue-green spores in the middle, a pale centre
         spot = free_spot(rnd, clear, hi, lo, 40, taken)
         if not spot:
@@ -66,7 +67,10 @@ def micro(rnd, clear, hi, lo, Y, taken):
         d = rnd.uniform(46, 78)
         disc("MouldRim", x, Y + 0.2, z, d, 0.4, (248, 248, 244), "SmoothPlastic", collide=False, shadow=False)
         disc("MouldSpores", x, Y + 0.3, z, d * 0.72, 0.4, (70, 140, 120), "SmoothPlastic", collide=False, shadow=False)
-        disc("MouldCentre", x, Y + 0.4, z, d * 0.22, 0.4, (220, 230, 210), "SmoothPlastic", collide=False, shadow=False)
+        for q in range(7):   # spores clump unevenly, so the green is patchy, not a target
+            a = rnd.uniform(0, 2 * math.pi)
+            disc("MouldSpores", x + math.cos(a) * d * 0.18, Y + 0.35, z + math.sin(a) * d * 0.18, d * rnd.uniform(0.2, 0.35),
+                 0.4, (50, 116, 100), "SmoothPlastic", collide=False, shadow=False)
         for q in range(14):
             a = q * math.pi / 7
             ball("MouldFuzz", x + math.cos(a) * d / 2, Y + 0.6, z + math.sin(a) * d / 2, rnd.uniform(3, 5), WHITE,
@@ -76,10 +80,9 @@ def micro(rnd, clear, hi, lo, Y, taken):
         if not spot:
             continue
         x, z = spot
-        for k in range(6):
-            disc("SwarmWave", x, Y + 0.08 + k * 0.01, z, 140 - k * 22, 0.06, (232, 210, 160) if k % 2 else (214, 176, 108),
-                 "SmoothPlastic", collide=False, shadow=False)
-        dome(x, z, 12, (240, 230, 200))
+        for k in range(5):   # each wave a little off-centre, like a real swarm front
+            disc("SwarmWave", x + rnd.uniform(-6, 6), Y + 0.08 + k * 0.01, z + rnd.uniform(-6, 6), 150 - k * 26, 0.06,
+                 (226, 196, 140) if k % 2 else (214, 176, 108), "SmoothPlastic", collide=False, shadow=False)
     for _ in range(4):   # quadrant streak plates: four zig-zag strokes, each thinner, ending in single colonies
         spot = free_spot(rnd, clear, hi, lo, 110, taken)
         if not spot:
@@ -97,6 +100,17 @@ def micro(rnd, clear, hi, lo, Y, taken):
                 pz = oz + uz * (f - 0.5) * 90 + math.sin(a) * zig
                 disc("StreakColony", px + rnd.uniform(-2, 2), Y + 0.18, pz + rnd.uniform(-2, 2), size * rnd.uniform(0.8, 1.3),
                      0.3, col, "SmoothPlastic", collide=False, shadow=False)
+    for _ in range(22):   # loose clusters of small colonies over the open agar (a real plate is never bare)
+        spot = free_spot(rnd, clear, hi, lo, 40, taken)
+        if not spot:
+            continue
+        x, z = spot
+        col = rnd.choice([(244, 232, 196), (248, 246, 238), (236, 186, 70), (232, 214, 150), (204, 64, 70)])
+        for q in range(rnd.randint(5, 9)):
+            a, r = rnd.uniform(0, 2 * math.pi), rnd.uniform(0, 34)
+            d = rnd.uniform(4, 11)
+            disc("SmallColony", x + math.cos(a) * r, Y + 0.3, z + math.sin(a) * r, d, 0.5, col, "SmoothPlastic",
+                 collide=False, shadow=False)
     for _ in range(9):   # a big colony with small satellite colonies round it
         spot = free_spot(rnd, clear, hi, lo, 36, taken)
         if not spot:
