@@ -389,7 +389,7 @@ STRATA = [(205, 176, 136), (188, 156, 118), (214, 188, 150)]   # canyon rock lay
 # terrain material). Same rng calls as before, so the track and the layout do not move.
 WALLS = {
     "station": (STRATA, "Sandstone", "Limestone"),
-    "micro": ([(238, 228, 200), (226, 214, 182), (246, 238, 216)], "SmoothPlastic", "Salt"),        # agar plate rim
+    "micro": ([(206, 230, 236), (192, 220, 230), (220, 238, 242)], "Glass", "Salt"),   # v63: the glass wall of the dish
     "biochem": ([(204, 196, 232), (186, 178, 220), (222, 216, 242)], "Marble", "Slate"),            # lab tiles
     "animal": (STRATA, "Sandstone", "Limestone"),                                                     # Kuwait desert
     "plant": ([(92, 138, 72), (74, 116, 60), (108, 154, 84)], "Grass", "LeafyGrass"),                # green hills
@@ -1180,6 +1180,9 @@ def grand_features(t, clear, k, key):
              collide=False)
         for s_ in (-1, 1):
             rect("MesaPortalPost", mx + s_ * 9 - 1, mx + s_ * 9 + 1, Y - 1, my + 13, z - 1.5, z + 1.5, pc, "Metal", collide=False)
+    if key == "micro":
+        import cart_biomes63 as CB
+        CB.micro_tunnel(mx, my, z0, z1)
     if key in ("animal", "agri"):
         TERRAIN.append((mx - 30, my + 40, (z0 + z1) / 2, 34, "Limestone"))
         TERRAIN.append((mx + 26, my + 36, z0 + 20, 26, "Limestone"))

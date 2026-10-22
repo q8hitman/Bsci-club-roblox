@@ -158,20 +158,144 @@ def micro(rnd, clear, hi, lo, Y, taken):
         a = q * math.pi / 8
         ball("LoopRing", cx + 400 + math.cos(a) * 40, Y + 640 + math.sin(a) * 40, z + 40, 12, STEEL, "Metal",
              collide=False)
-    # midground: a mould forest (Penicillium: a stalk with a brush of spore chains)
-    for _ in range(14):
-        spot = free_spot(rnd, clear, hi, lo, 30, taken)
+
+
+
+# ---- v63 micro, second pass (owner: "the worst stage: bad floor, few details, nothing in the tunnel")
+def _bacillus(x, y, z, yaw, L, D, col):
+    """a rod bacterium: capsule body, a darker nucleoid inside, wavy flagella at one end"""
+    ry = math.radians(yaw)
+    ux, uz = math.cos(ry), -math.sin(ry)
+    G.part("Bacillus", (L, D, D), (x, y, z), col, "SmoothPlastic", shape="Cylinder", rot=(0, yaw, 0), collide=False)
+    for e in (-1, 1):
+        ball("BacillusCap", x + ux * e * L / 2, y, z + uz * e * L / 2, D, col, "SmoothPlastic", collide=False)
+    G.part("Nucleoid", (L * 0.5, D * 0.42, D * 0.42), (x, y + D * 0.12, z), tuple(max(0, c - 50) for c in col),
+           "SmoothPlastic", shape="Cylinder", rot=(0, yaw, 0), collide=False, shadow=False)
+    for f in (-1, 0, 1):   # flagella: three short segments each, alternating angle (a wave)
+        bx, bz = x - ux * (L / 2 + D * 0.4), z - uz * (L / 2 + D * 0.4)
+        for k in range(3):
+            seg = D * 0.9
+            px, pz = bx - ux * seg * (k + 0.5), bz - uz * seg * (k + 0.5)
+            box("Flagellum", (seg * 1.1, D * 0.08, D * 0.08), (px, y + f * D * 0.3 + (0.2 if k % 2 else -0.2) * D, pz),
+                (240, 236, 220), "SmoothPlastic", rot=(0, yaw, 25 if k % 2 else -25), collide=False, shadow=False)
+
+
+def _coccus_chain(x, y, z, yaw, n, d, col):
+    """Streptococcus: round cells in a gently curving chain"""
+    ry = math.radians(yaw)
+    for k in range(n):
+        a = ry + 0.12 * k
+        x += math.cos(a) * d * 0.92
+        z -= math.sin(a) * d * 0.92
+        ball("Streptococcus", x, y + math.sin(k * 0.8) * d * 0.15, z, d, col, "SmoothPlastic", collide=False)
+
+
+def _coccus_cluster(rnd, x, y, z, d, col):
+    """Staphylococcus: a grape-like bunch"""
+    for k in range(11):
+        ball("Staphylococcus", x + rnd.uniform(-1, 1) * d, y + rnd.uniform(-0.6, 1) * d, z + rnd.uniform(-1, 1) * d, d,
+             col, "SmoothPlastic", collide=False)
+
+
+def _spirillum(x, y, z, yaw, L, d, col):
+    """a spiral bacterium: beads along a helix"""
+    ry = math.radians(yaw)
+    ux, uz = math.cos(ry), -math.sin(ry)
+    n = int(L / (d * 0.55))
+    for k in range(n):
+        t = k / n
+        a = t * math.pi * 6
+        ball("Spirillum", x + ux * (t - 0.5) * L - uz * math.cos(a) * d * 1.4, y + math.sin(a) * d * 1.4,
+             z + uz * (t - 0.5) * L + ux * math.cos(a) * d * 1.4, d, col, "SmoothPlastic", collide=False, shadow=False)
+
+
+def micro_life(rnd, clear, hi, lo, Y, taken):
+    """big readable bacteria of every shape over the plate, a biofilm and a petri-dish rim"""
+    PASTEL = [(150, 210, 140), (240, 170, 120), (170, 150, 230), (120, 200, 220), (240, 140, 170), (230, 210, 120)]
+    for q in range(24):   # resting on the agar: rods in small groups, chains, clusters, spirals (2.5x scale)
+        spot = free_spot(rnd, clear, hi, lo, 70, taken)
         if not spot:
             continue
         x, z = spot
-        for s in range(4):
-            px, pz = x + rnd.uniform(-16, 16), z + rnd.uniform(-16, 16)
-            h = rnd.uniform(18, 34)
-            vcyl("MouldStalk", px, Y, Y + h, pz, 1.6, (200, 230, 210), "SmoothPlastic", collide=False)
-            for b in range(4):
-                a = b * math.pi / 2 + s
-                ball("MouldSpores", px + math.cos(a) * 2.6, Y + h + 2 + b % 2, pz + math.sin(a) * 2.6, 3.4,
-                     (70, 160, 140) if b % 2 else (110, 200, 170), "SmoothPlastic", collide=False, shadow=False)
+        col = PASTEL[q % len(PASTEL)]
+        kind = q % 4
+        if kind == 0:
+            for k in range(rnd.randint(2, 4)):
+                D = rnd.uniform(16, 24)
+                _bacillus(x + rnd.uniform(-40, 40), Y + D / 2, z + rnd.uniform(-40, 40), rnd.uniform(0, 180),
+                          D * 3, D, col)
+        elif kind == 1:
+            _coccus_chain(x - 50, Y + 9, z, rnd.uniform(0, 360), rnd.randint(7, 11), 18, col)
+        elif kind == 2:
+            _coccus_cluster(rnd, x, Y + 16, z, 18, col)
+        else:
+            _spirillum(x, Y + 14, z, rnd.uniform(0, 180), 120, 9, col)
+    for q in range(16):   # swimming overhead, so the rider sees them against the sky
+        spot = free_spot(rnd, clear, hi, lo, 60, taken)
+        if not spot:
+            continue
+        x, z = spot
+        y = Y + rnd.uniform(70, 150)
+        col = PASTEL[(q + 2) % len(PASTEL)]
+        if q % 3 == 0:
+            _spirillum(x, y, z, rnd.uniform(0, 180), 160, 11, col)
+        elif q % 3 == 1:
+            _coccus_chain(x - 70, y, z, rnd.uniform(0, 360), 9, 22, col)
+        else:
+            _bacillus(x, y, z, rnd.uniform(0, 180), 90, 28, col)
+    for _ in range(4):   # biofilm: a glossy green mat with slime bubbles and embedded rods
+        spot = free_spot(rnd, clear, hi, lo, 60, taken)
+        if not spot:
+            continue
+        x, z = spot
+        for k in range(7):
+            disc("Biofilm", x + rnd.uniform(-30, 30), Y + 0.5 + k * 0.05, z + rnd.uniform(-30, 30), rnd.uniform(36, 60), 1,
+                 (110, 150, 90), "SmoothPlastic", collide=False, shadow=False)
+        for k in range(10):
+            ball("SlimeBubble", x + rnd.uniform(-34, 34), Y + 1.5, z + rnd.uniform(-34, 34), rnd.uniform(2, 5),
+                 (200, 240, 200), "Glass", transp=0.3, collide=False, shadow=False)
+        for k in range(5):
+            _bacillus(x + rnd.uniform(-24, 24), Y + 2.5, z + rnd.uniform(-24, 24), rnd.uniform(0, 180), 12, 4,
+                      (90, 130, 80))
+    # the petri dish rim: a thick glass band on top of both long walls, glinting
+    for s in (-1, 1):
+        x = lo + 20
+        while x < hi - 20:
+            L = min(400.0, hi - 20 - x)
+            box("DishRimGlass", (L, 14, 26), (x + L / 2, Y + 236, s * (CELLZ + 4)), (210, 236, 246), "Glass",
+                transp=0.25, collide=False, shadow=False)
+            box("DishRimShine", (L, 1.2, 1.2), (x + L / 2, Y + 243.5, s * (CELLZ - 9)), (255, 255, 255), "Neon",
+                collide=False, shadow=False)
+            x += L
+
+
+def micro_tunnel(mx, my, z0, z1):
+    """the micro mesa bore as the inside of a cell membrane: lipid heads lining the walls and roof, channel proteins
+    glowing at intervals. Everything stays outside the rider envelope (|dx| > 5, or above my + 9.5)."""
+    HEAD, TAIL = (255, 190, 214), (250, 226, 160)
+    z = z0 - 8
+    k = 0
+    while z < z1 + 8:
+        for s in (-1, 1):
+            ball("LipidHead", mx + s * 7.1, my + 2 + (k % 2) * 3, z, 1.8, HEAD, "SmoothPlastic", collide=False,
+                 shadow=False)
+            ball("LipidHead", mx + s * 7.1, my + 8 + (k % 2) * 2, z, 1.8, HEAD, "SmoothPlastic", collide=False,
+                 shadow=False)
+        ball("LipidHead", mx - 4 + (k % 5) * 2, my + 11.1, z, 1.8, HEAD, "SmoothPlastic", collide=False, shadow=False)
+        if k % 8 == 0:   # a channel protein: a glowing barrel in the membrane with a gate on top
+            for s in (-1, 1):
+                vcyl("ChannelProtein", mx + s * 6.8, my - 1, my + 11, z, 2.4, (120, 210, 255), "Neon", transp=0.15,
+                     collide=False, shadow=False)
+                ball("ChannelGate", mx + s * 6.8, my + 11.6, z, 2.8, (90, 140, 230), "SmoothPlastic", collide=False,
+                     shadow=False)
+            G.part("ChannelLight", (1, 1, 1), (mx, my + 10.5, z), (0, 0, 0), "SmoothPlastic", transp=1, collide=False,
+                   shadow=False, light=(1.4, 18, (150, 210, 255)))
+        if k % 3 == 1:
+            for s in (-1, 1):
+                box("LipidTail", (0.4, 3, 0.4), (mx + s * 7.6, my + 5, z), TAIL, "SmoothPlastic", collide=False,
+                    shadow=False)
+        z += 2.6
+        k += 1
 
 
 # ====================================================================== biochemistry: a giant glassware lab
@@ -524,3 +648,5 @@ BIOMES = {"micro": micro, "biochem": biochem, "animal": animal, "plant": plant, 
 
 def build(key, k, clear, hi, lo, Y, taken):
     BIOMES[key](random.Random(6300 + k), clear, hi, lo, Y, taken)
+    if key == "micro":
+        micro_life(random.Random(6400), clear, hi, lo, Y, taken)
