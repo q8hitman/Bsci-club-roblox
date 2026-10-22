@@ -332,6 +332,81 @@ def kart(x,y,z):
         d("Wheel_"+tag+"_Spoke",(w+.1,dia*.62,.25),(px,dia/2,zz),GREY,"Metal")
 
 
+def pit_lobby():
+    """v63 (owner audit: "a dark, empty floor with only a text board"): the lobby is a racing pit. A three-bay garage
+    with a display kart in the side bays, a glowing mini map of each track on either side of the console, an asphalt
+    pit lane with a chequered start line, floodlight towers, tyre stacks, flags and a podium. The long rules board is
+    gone (the help button and the race HUD explain the controls). Scripted parts (RaceConsole, RaceExit,
+    RaceLobbySpawn) are untouched."""
+    cx, y, cz = -7400.0, 300.0, -6000.0
+    ASPH, LINE, WHITE, BLACK = (80, 84, 94), (236, 236, 232), (240, 240, 236), (24, 24, 28)
+    G.box("PitAsphalt", (96, 0.1, 76), (cx, y + 0.05, cz), ASPH, "Asphalt", collide=False, shadow=False)
+    for k in (-1, 1):
+        deco("PitLaneLine", (0.6, 0.06, 60), (cx + k * 24, y + 0.12, cz + 4), LINE)
+    for i in range(20):   # chequered start line between the spawn and the console
+        for j in range(2):
+            deco("StartChequer", (2, 0.06, 2), (cx - 19 + i * 2, y + 0.13, cz - 8 + j * 2), WHITE if (i + j) % 2 else BLACK)
+    for sx in (-1, 1):   # neon edge round the pit
+        deco("PitEdge", (0.5, 0.12, 78), (cx + sx * 49.5, y + 0.14, cz), TEAL, "Neon")
+    deco("PitEdge", (100, 0.12, 0.5), (cx, y + 0.14, cz + 39.5), TEAL, "Neon")
+    # the garage: back wall, roof, three bays; a display kart on a lit turntable in the two side bays
+    G.box("GarageBack", (90, 18, 2), (cx, y + 9, cz - 39), (40, 46, 60), "SmoothPlastic")
+    G.box("GarageRoof", (92, 1.4, 14), (cx, y + 18.6, cz - 33), (30, 34, 46), "Metal")
+    deco("GarageRoofGlow", (92, 0.3, 0.4), (cx, y + 17.8, cz - 26.2), TEAL, "Neon")
+    for k, (bx, col) in enumerate(((-30, TEAL), (0, PINK), (30, YELLOW))):
+        x = cx + bx
+        if k < 2:
+            G.box("BayDivider", (1.2, 18, 12), (x + 15, y + 9, cz - 33), (60, 66, 82), "SmoothPlastic")
+        deco("BayAccent", (26, 2, 0.4), (x, y + 13, cz - 37.8), col, "Neon")
+        G.part("BayLamp", (1, 1, 1), (x, y + 16, cz - 31), (0, 0, 0), "SmoothPlastic", transp=1, collide=False,
+               shadow=False, light=(1.4, 26, (255, 246, 230)))
+        # raised turntables so the karts show over the map tables in front
+        G.vcyl("TurntableBase", x, y, y + 3.4, cz - 31, 14, (50, 56, 72), "SmoothPlastic")
+        G.disc("Turntable", x, y + 3.5, cz - 31, 13, 0.3, (70, 76, 92), "Metal", collide=False, shadow=False)
+        G.disc("TurntableRing", x, y + 3.45, cz - 31, 14.4, 0.2, col, "Neon", collide=False, shadow=False)
+        if bx != 0:   # the middle bay stays open behind the console
+            with G.Group("DisplayKart", "Model"):
+                kart(x, y + 3.7, cz - 31)
+    G.sign("RaceTitle", "سباق الميكرو | Micro Racers", (cx, y + 22, cz - 25.8), (44, 5, 0.5), "Back", bg=(20, 26, 40))
+    # the two tracks as glowing mini maps on tables either side of the console
+    for side, d in ((-1, TRACKS[0]), (1, TRACKS[1])):
+        tx, tz = cx + side * 16, cz - 15
+        G.box("MapTable", (16, 3, 12), (tx, y + 1.5, tz), (40, 46, 60), "SmoothPlastic")
+        deco("MapTop", (15, 0.2, 11), (tx, y + 3.1, tz), (20, 24, 34))
+        pts = d["points"]
+        xs, zs = [p[0] for p in pts], [p[1] for p in pts]
+        mx, mz = (max(xs) + min(xs)) / 2, (max(zs) + min(zs)) / 2
+        sc = min(13.0 / max(1.0, max(xs) - min(xs)), 9.0 / max(1.0, max(zs) - min(zs)))
+        col = TEAL if side < 0 else PINK
+        step = max(1, len(pts) // 90)
+        for i in range(0, len(pts), step):
+            px, pz = pts[i]
+            deco("MapTrack", (0.5, 0.15, 0.5), (tx + (px - mx) * sc, y + 3.3, tz + (pz - mz) * sc), col, "Neon")
+    # floodlight towers at the corners: the lobby lights itself (the arcade sky is dusk)
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            x, z = cx + sx * 46, cz + sz * 30
+            G.vcyl("FloodPole", x, y, y + 22, z, 1, (70, 74, 86), "Metal", collide=False)
+            G.box("Floodlight", (5, 2, 2), (x, y + 22, z), (250, 248, 236), "Neon", collide=False, shadow=False,
+                  light=(1.6, 60, (255, 250, 236)))
+    # tyre stacks, chequered flags and the podium along the sides
+    for sx in (-1, 1):
+        for k in range(3):
+            x, z = cx + sx * 44, cz - 12 + k * 14
+            for h in range(3):
+                G.part("TyreStack", (1.4, 4, 4), (x, y + 0.7 + h * 1.4, z), (28, 30, 34), "SmoothPlastic", shape="Cylinder",
+                       rot=(0, 0, 90), collide=False)
+            deco("TyreBand", (4.1, 0.3, 4.1), (x, y + 2.1, z), CURB_R if k % 2 else CURB_W)
+        x = cx + sx * 36
+        G.vcyl("FlagPole", x, y, y + 14, cz + 26, 0.4, (220, 222, 226), "Metal", collide=False)
+        for i in range(4):
+            for j in range(3):
+                deco("Flag", (0.2, 1.2, 1.2), (x, y + 13 - j * 1.2, cz + 26.8 + i * 1.2), WHITE if (i + j) % 2 else BLACK)
+    for place, (h, col) in enumerate(((5, (255, 205, 60)), (3.5, (200, 205, 214)), (2.4, (205, 130, 70)))):
+        px = cx - 34 + (0, -6, 6)[place]
+        G.box("Podium", (6, h, 6), (px, y + h / 2, cz + 6), col, "SmoothPlastic")
+
+
 def build():
     with G.Group("Racers47"):
         # Entrance fits inside the existing Arcade floor; the racing lobby is outside random-round selection.
@@ -343,8 +418,8 @@ def build():
             G.part("RaceLobbySpawn",(8,1,8),(-7400,300.5,-6000),TEAL,transp=1,collide=False)
             arch("ReturnGate",-7400,300,-5970,PINK,"العودة للأركيد",width=12)
             G.part("RaceExit",(10,9,2),(-7400,304.5,-5970),PINK,"Neon",transp=.6,collide=False)
-            G.sign("RaceRules","سباق مركبات في عالم مجهري خيالي\n3 لفات • وجّه وسرّع وفرمل\nالدرع يحمي من عائق واحد • السرعة مؤقتة",(-7400,309,-6026),(48,11,.5),"Back",bg=DARK)
             G.part("RaceConsole",(10,4,4),(-7400,302,-6014),TEAL,"Metal")
+            pit_lobby()
         with G.Group("VehicleTemplate","Model"):
             kart(-7400,250,-6000)
         for i,d in enumerate(TRACKS): track(d,i)
