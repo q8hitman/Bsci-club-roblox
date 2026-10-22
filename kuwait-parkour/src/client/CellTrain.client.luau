@@ -7,13 +7,16 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 local mapFolder = workspace:WaitForChild("Map")
 local CellStops = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("CellStops"))
 
 local CRUISE, SLOW = 16, 6 -- studs/s; slows down near each stop
-local DWELL = 12 -- reading time; the rider can pause for longer (fast mode: no wait)
+local DWELL = 12 -- auto reading mode: seconds at each stop (fast mode: no wait)
+-- v63 (owner: some cards go too fast, others too slow): the default is tap mode, the train waits at each stop until
+-- the rider taps the screen (or Space / Enter / gamepad A); the button switches to the timed auto mode
 local LIFT = 0.9 -- car pivot above the track centre line (wheels sit on the rails)
 
 local points, labels, anchors = {}, {}, {}
@@ -266,7 +269,30 @@ end
 local exitBtn = button("ExitBtn", 0.24, Color3.fromRGB(150, 50, 60), "خروج")
 local camBtn = button("CamToggleBtn", 0.325, Color3.fromRGB(70, 50, 130), "🎥 كاميرا: سينمائية")
 local speedBtn = button("SpeedToggleBtn", 0.405, Color3.fromRGB(45, 110, 145), "⚡ السرعة: عادية")
-local pauseBtn = button("PauseReadingBtn", 0.485, Color3.fromRGB(48, 100, 92), "توقف للقراءة")
+local readBtn = button("ReadModeBtn", 0.485, Color3.fromRGB(48, 100, 92), "👆 القراءة: بالضغط")
+
+-- tap mode: an invisible full-screen catcher under the buttons, and a pulsing hint above the lesson card
+local tapCatcher = Instance.new("TextButton")
+tapCatcher.Name = "TapToContinue"
+tapCatcher.Size = UDim2.fromScale(1, 1)
+tapCatcher.BackgroundTransparency = 1
+tapCatcher.Text = ""
+tapCatcher.ZIndex = 0
+tapCatcher.Visible = false
+tapCatcher.Parent = gui
+local tapHint = Instance.new("TextLabel")
+tapHint.Name = "TapHint"
+tapHint.AnchorPoint = Vector2.new(0.5, 1)
+tapHint.Position = UDim2.fromScale(0.5, 0.655)
+tapHint.Size = UDim2.fromScale(0.3, 0.05)
+tapHint.BackgroundColor3 = Color3.fromRGB(255, 160, 230)
+tapHint.TextColor3 = Color3.fromRGB(40, 12, 60)
+tapHint.TextScaled = true
+tapHint.Font = Enum.Font.GothamBold
+tapHint.Text = "👆 اضغط بالشاشة للمتابعة"
+tapHint.Visible = false
+tapHint.Parent = gui
+Instance.new("UICorner", tapHint).CornerRadius = UDim.new(0.4, 0)
 
 local stopBadge = Instance.new("TextLabel")
 stopBadge.Name = "StopProgressBadge"
@@ -284,7 +310,8 @@ Instance.new("UICorner", stopBadge).CornerRadius = UDim.new(0.3, 0)
 
 local freeCam = false
 local fastMode = false
-local paused = false
+local tapMode = true -- default: wait for a tap at every stop
+local waitingTap = false
 local hum -- the rider's Humanoid during a ride
 
 local function applyCam()
@@ -303,9 +330,33 @@ speedBtn.Activated:Connect(function()
 	fastMode = not fastMode
 	speedBtn.Text = fastMode and "⚡ السرعة: سريعة" or "⚡ السرعة: عادية"
 end)
-pauseBtn.Activated:Connect(function()
-	paused = not paused
-	pauseBtn.Text = paused and "كمّل الرحلة" or "توقف للقراءة"
+readBtn.Activated:Connect(function()
+	tapMode = not tapMode
+	readBtn.Text = tapMode and "👆 القراءة: بالضغط" or "⏱️ القراءة: تلقائي"
+	if not tapMode then
+		waitingTap = false -- switching to auto releases a train that is waiting for a tap
+	end
+end)
+local function continueRide()
+	waitingTap = false
+end
+tapCatcher.Activated:Connect(continueRide)
+UserInputService.InputBegan:Connect(function(input, processed)
+	if not waitingTap or processed then
+		return
+	end
+	local k = input.KeyCode
+	if k == Enum.KeyCode.Space or k == Enum.KeyCode.Return or k == Enum.KeyCode.ButtonA then
+		continueRide()
+	end
+end)
+-- the hint pulses gently while the train waits
+RunService.Heartbeat:Connect(function()
+	tapCatcher.Visible = waitingTap
+	tapHint.Visible = waitingTap
+	if waitingTap then
+		tapHint.BackgroundTransparency = 0.15 + 0.25 * (0.5 + 0.5 * math.sin(os.clock() * 4))
+	end
 end)
 
 local function fadeTo(alpha)
@@ -371,10 +422,9 @@ local function ride()
 	end
 	root.Anchored = true
 	local cam = workspace.CurrentCamera
-	freeCam, fastMode, paused = false, false, false
+	freeCam, fastMode, waitingTap = false, false, false
 	speedBtn.Text = "⚡ السرعة: عادية"
-	pauseBtn.Text = "توقف للقراءة"
-	pauseBtn.Visible = true
+	readBtn.Visible = true
 	applyCam()
 	exitBtn.Visible, camBtn.Visible, speedBtn.Visible, stopBadge.Visible = true, true, true, true
 
@@ -431,7 +481,7 @@ local function ride()
 			return
 		end
 		-- the train waits at every stop so the card can be read (fast mode rolls through)
-		if (paused or (os.clock() < waitUntil and not fastMode)) and not stopRequested then
+		if (waitingTap or os.clock() < waitUntil) and not fastMode and not stopRequested then
 			place(dt)
 			return
 		end
@@ -440,7 +490,11 @@ local function ride()
 		for _, st in ipairs(stops) do
 			if d < st.at and nd >= st.at and not waitedFor[st.id] then
 				waitedFor[st.id] = true
-				waitUntil = os.clock() + DWELL
+				if tapMode and not fastMode then -- fast mode rolls through, so it must not leave a tap pending
+					waitingTap = true
+				else
+					waitUntil = os.clock() + DWELL
+				end
 				if not fastMode then
 					nd = st.at -- a slow frame must not skip the stop and its lesson card
 					break
@@ -459,8 +513,8 @@ local function ride()
 				fadeTo(0)
 				train:Destroy()
 				showCard(nil)
-				pauseBtn.Visible = false
-				paused = false
+				readBtn.Visible = false
+				waitingTap = false
 				highlightTag(nil)
 				exitBtn.Visible, camBtn.Visible, speedBtn.Visible, stopBadge.Visible = false, false, false, false
 				cam.CameraType = Enum.CameraType.Custom
