@@ -270,3 +270,10 @@ Portals are parts named `Portal|<Kind>`. `destinations` lives in `src/server/Mai
 - Cell Train: per-car placement (TrainTemplate/Loco,Car1..4), lessons in Shared/CellStops (map = names only).
 - Specialties Train: WALLS theme per valley + tools/cart_concepts62.py theory sculptures. Final audit: docs/FINAL_VERSION_AUDIT_v62.md.
 - Tycoons come after the final version (owner).
+
+## v63 (2026-10-22, local only, NOT published). Branch dev/v63-release-polish. Build Desktop\KuwaitParkour\KuwaitParkour_v63.rbxlx
+- Audit sections A and B of docs/FINAL_VERSION_AUDIT_v62.md done: spawn directions, HQ/lab/Game Show overlaps, exam hall,
+  Virus Tag (infected tissue, extras10.virus_arena), Racers pit lobby (racers47.pit_lobby), Laser briefing hall
+  (laser48.entrance_hall; arcade gateway = Portal|Laser).
+- Codex/ChatGPT session work reviewed and committed (lab session guards, CellStops science, QuestionHistory counts).
+  Its handoff: docs/CLAUDE_HANDOFF_v63_2026-10-22.md. Owner prefers one task, then stop and report.
