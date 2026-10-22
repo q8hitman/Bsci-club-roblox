@@ -48,9 +48,66 @@ def along(hi, lo, n, margin=260):
 # ====================================================================== microbiology: the agar plate in the lab
 def micro(rnd, clear, hi, lo, Y, taken):
     cx = (hi + lo) / 2
-    # ground: the agar darkens towards the rim of the plate (rings under the colonies and patches)
-    for d, col in ((2000, (226, 196, 120)), (1500, (234, 206, 134)), (1000, (240, 216, 148)), (560, (244, 226, 164))):
-        disc("AgarRing", cx, Y + 0.02 + d / 100000, 0, d, 0.05, col, "SmoothPlastic", collide=False, shadow=False)
+    # ground: honey-amber agar, lighter in the middle of the plate and darker to the rim, with a slight wet shine.
+    # (Glass/Ice layers reflected the sky and washed the floor out to white: opaque + low Reflectance instead)
+    SHINE = '<float name="Reflectance">0.12</float>'
+    for d, col in ((2000, (196, 140, 60)), (1500, (208, 154, 70)), (1000, (220, 168, 82)), (520, (230, 182, 98))):
+        disc("AgarGloss", cx, Y + 0.02 + d / 100000, 0, d, 0.05, col, "SmoothPlastic", collide=False, shadow=False,
+             extra=SHINE)
+    # colonies the way they really grow on a plate
+    def dome(x, z, d, col):   # a low glossy colony: a flat base and a soft raised centre
+        disc("Colony", x, Y + 0.15, z, d, 0.3, col, "SmoothPlastic", collide=False, shadow=False)
+        ball("ColonyDome", x, Y - d * 0.3, z, d * 0.8, col, "SmoothPlastic", collide=False)
+    for _ in range(8):   # mould (Penicillium): white fuzzy rim, blue-green spores in the middle, a pale centre
+        spot = free_spot(rnd, clear, hi, lo, 40, taken)
+        if not spot:
+            continue
+        x, z = spot
+        d = rnd.uniform(46, 78)
+        disc("MouldRim", x, Y + 0.2, z, d, 0.4, (248, 248, 244), "SmoothPlastic", collide=False, shadow=False)
+        disc("MouldSpores", x, Y + 0.3, z, d * 0.72, 0.4, (70, 140, 120), "SmoothPlastic", collide=False, shadow=False)
+        disc("MouldCentre", x, Y + 0.4, z, d * 0.22, 0.4, (220, 230, 210), "SmoothPlastic", collide=False, shadow=False)
+        for q in range(14):
+            a = q * math.pi / 7
+            ball("MouldFuzz", x + math.cos(a) * d / 2, Y + 0.6, z + math.sin(a) * d / 2, rnd.uniform(3, 5), WHITE,
+                 "SmoothPlastic", collide=False, shadow=False)
+    for _ in range(5):   # Proteus swarming: faint concentric waves spreading over the agar
+        spot = free_spot(rnd, clear, hi, lo, 70, taken)
+        if not spot:
+            continue
+        x, z = spot
+        for k in range(6):
+            disc("SwarmWave", x, Y + 0.08 + k * 0.01, z, 140 - k * 22, 0.06, (232, 210, 160) if k % 2 else (214, 176, 108),
+                 "SmoothPlastic", collide=False, shadow=False)
+        dome(x, z, 12, (240, 230, 200))
+    for _ in range(4):   # quadrant streak plates: four zig-zag strokes, each thinner, ending in single colonies
+        spot = free_spot(rnd, clear, hi, lo, 110, taken)
+        if not spot:
+            continue
+        x0, z0 = spot
+        col = rnd.choice([(244, 232, 196), (248, 246, 238), (236, 186, 70)])
+        for stroke, (n, size) in enumerate(((60, 3.2), (36, 3.6), (18, 4.4), (7, 6.5))):
+            a = stroke * math.pi / 2   # each stroke turns a quarter round the plate
+            ox, oz = x0 + math.cos(a) * 55, z0 + math.sin(a) * 55
+            ux, uz = -math.sin(a), math.cos(a)
+            for i in range(n):
+                f = i / max(1, n - 1)
+                zig = (1 if int(f * 6) % 2 == 0 else -1) * (f * 6 % 1 - 0.5) * 40
+                px = ox + ux * (f - 0.5) * 90 + math.cos(a) * zig
+                pz = oz + uz * (f - 0.5) * 90 + math.sin(a) * zig
+                disc("StreakColony", px + rnd.uniform(-2, 2), Y + 0.18, pz + rnd.uniform(-2, 2), size * rnd.uniform(0.8, 1.3),
+                     0.3, col, "SmoothPlastic", collide=False, shadow=False)
+    for _ in range(9):   # a big colony with small satellite colonies round it
+        spot = free_spot(rnd, clear, hi, lo, 36, taken)
+        if not spot:
+            continue
+        x, z = spot
+        col = rnd.choice([(244, 232, 196), (236, 186, 70), (204, 64, 70), (248, 246, 238)])
+        dome(x, z, rnd.uniform(22, 32), col)
+        for q in range(7):
+            a = rnd.uniform(0, 2 * math.pi)
+            r = rnd.uniform(18, 32)
+            dome(x + math.cos(a) * r, z + math.sin(a) * r, rnd.uniform(4, 8), col)
     # skyline +z: a giant light microscope over the wall (classic silhouette: foot, C-arm, inclined tube, stage + slide)
     z, DARK = BACK + 40, (44, 48, 58)
     deco("ScopeFoot", (300, 40, 230), (cx, Y + 260, z + 40), DARK)

@@ -50,7 +50,7 @@ PATH = {
     "molecular": (30, 0), "forensic": (20, -4), "agri": (26, -2), "biotech": (32, -2),
 }
 GROUND = {
-    "micro": ((236, 214, 140), "SmoothPlastic"), "biochem": ((222, 216, 238), "Marble"),
+    "micro": ((182, 128, 52), "SmoothPlastic"), "biochem": ((222, 216, 238), "Marble"),   # v63: amber agar (rim colour)
     "animal": ((214, 188, 132), "Sand"), "plant": ((96, 156, 78), "Grass"),
     "molecular": ((24, 30, 60), "SmoothPlastic"), "forensic": ((70, 72, 84), "Slate"),
     "agri": ((140, 104, 66), "Ground"), "biotech": ((226, 236, 240), "SmoothPlastic"),
@@ -601,7 +601,8 @@ def _rod(x, y, z, yaw, col, L=44, D=14):
 def stage_micro(t, clear, cx, Y):
     lx, za, zb, ly = leg_x(t, "micro")
     vx, vy, vz = t.marks["micro:view"]
-    COLS = [(250, 240, 205), (240, 190, 90), (230, 140, 170), (246, 246, 240), (176, 214, 140)]
+    # v63 real colony colours: cream, golden (S. aureus), red (Serratia), white, yellow-cream (same count: same rng)
+    COLS = [(244, 232, 196), (236, 186, 70), (204, 64, 70), (248, 246, 238), (232, 214, 150)]
     # giant colonies = the hills of the agar plate; the ones near the viewpoint grow while you watch (event 1)
     n = 0
     for q in range(22):
@@ -940,7 +941,7 @@ def _base_pair(x, z, cols, y):
 
 RAIL_PROPS = {
     "micro": lambda x, z: disc("ColonyDot", x, GROUND_Y + 0.2, z, rng.uniform(6, 14), 0.5,
-                               rng.choice([(250, 240, 205), (240, 190, 90), (230, 140, 170)]), "SmoothPlastic", collide=False),
+                               rng.choice([(244, 232, 196), (236, 186, 70), (248, 246, 238)]), "SmoothPlastic", collide=False),
     "biochem": lambda x, z: CR._tube(x, GROUND_Y, z),
     "animal": lambda x, z: CR._cactus(x, GROUND_Y, z) if rng.random() < 0.6 else _bigpalm(x, z),
     "plant": lambda x, z: (CR._flower if rng.random() < 0.7 else CR._leaf)(x, GROUND_Y, z),
@@ -1201,7 +1202,7 @@ def grand_features(t, clear, k, key):
 
 
 PATCH = {   # ground patch colours per world: breaks the flat floor into readable zones
-    "micro": [(244, 226, 160), (226, 204, 128)], "biochem": [(210, 200, 232), (232, 226, 246)],
+    "micro": [(214, 166, 86), (188, 140, 62)], "biochem": [(210, 200, 232), (232, 226, 246)],
     "animal": [(226, 200, 146), (196, 168, 116)], "plant": [(110, 170, 86), (84, 140, 66)],
     "molecular": [(32, 40, 78), (20, 26, 52)], "forensic": [(80, 82, 96), (60, 62, 72)],
     "agri": [(156, 118, 76), (120, 92, 58)], "biotech": [(214, 230, 236), (236, 244, 248)],
