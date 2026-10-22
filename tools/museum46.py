@@ -6,14 +6,14 @@ CREAM=(235,232,220)
 DARK=(25,52,60)
 TEAL=(56,208,190)
 STATIONS=[
-    ("micro","عالم الميكروبات","Microbiology",235,-105,(70,205,170)),
-    ("enzyme","الإنزيم والركيزة","Biochemistry",235,-55,(255,176,83)),
-    ("animal","تكيفات الحياة","Animal Biology",235,-5,(244,142,112)),
-    ("plant","مصنع الورقة","Plant Biology",270,25,(132,210,93)),
-    ("dna","رمّم نموذج DNA","Molecular Biology",320,25,(164,153,247)),
-    ("evidence","مختبر الأنماط","Forensic Science",345,-25,(113,192,238)),
-    ("farm","حديقة التجربة","Agriculture",345,-80,(222,200,100)),
-    ("biotech","ابتكر بالتقنية الحيوية","Biotechnology",290,-60,(77,232,220)),
+    ("micro","مين هذا الميكروب؟","Microbiology",235,-105,(70,205,170)),
+    ("enzyme","ليش ناس ما يهضمون الحليب؟","Biochemistry",235,-55,(255,176,83)),
+    ("animal","حيوان الصحراء وحيوان الثلج","Animal Biology",235,-5,(244,142,112)),
+    ("plant","الورقة مصنع أكل","Plant Biology",270,25,(132,210,93)),
+    ("dna","صلّح شريط DNA","Molecular Biology",320,25,(164,153,247)),
+    ("evidence","مين صاحب العينة؟","Forensic Science",345,-25,(113,192,238)),
+    ("farm","ازرع بالصحراء","Agriculture",345,-80,(222,200,100)),
+    ("biotech","صنّع دوا بالخمائر","Biotechnology",290,-60,(77,232,220)),
 ]
 
 
@@ -90,6 +90,88 @@ def exhibit(kind,x,z,c):
                 deco("ProcessUnit",(4,7,5),(x+side*15,7,z),c,"Metal")
 
 
+def showcase(kind, x, z, c):
+    """v63 (owner: exhibits unclear): a big wordless sculpture behind each plinth, readable from the entrance, on a
+    coloured floor zone in the exhibit's colour"""
+    zz = z + 17
+    G.disc("ZoneFloor", x, 0.26, z + 3, 40, 0.06, tuple(int(v * 0.55) for v in c), "SmoothPlastic", collide=False,
+           shadow=False)
+    G.disc("ZoneRing", x, 0.25, z + 3, 41.5, 0.05, c, "Neon", collide=False, shadow=False)
+    if kind == "micro":   # a rod, a budding yeast and a slipper-shaped paramecium, giant
+        G.part("BigBacillus", (12, 5, 5), (x - 8, 6, zz), (120, 200, 130), "SmoothPlastic", shape="Cylinder",
+               rot=(0, 0, 20), collide=False)
+        for e in (-1, 1):
+            sphere("BigBacillusCap", (x - 8 + e * 5.6, 6 + e * 2.05, zz), 5, (120, 200, 130))
+        sphere("BigYeast", (x, 8, zz), 8, (233, 172, 203))
+        sphere("BigYeastBud", (x + 3.6, 12.4, zz), 4, (233, 172, 203))
+        sphere("BigYeastNucleus", (x - 1, 8.6, zz - 3.6), 2.4, (111, 72, 125))
+        deco("BigParamecium", (10, 4, 5), (x + 9, 6, zz), (140, 192, 242), rot=(0, 0, -15))
+        for j in range(10):
+            for side in (-1, 1):
+                deco("BigCilium", (.3, 1.6, .3), (x + 5 + j * .9, 6 + (j - 5) * -.26 + side * 2.6, zz), CREAM)
+    elif kind == "enzyme":   # lock and key: the enzyme with a lactose-shaped pocket, the sugar hovering above it
+        deco("BigEnzyme", (16, 8, 6), (x, 6, zz), c)
+        deco("BigEnzymeL", (5, 8, 6), (x - 5.5, 13, zz), c)
+        deco("BigEnzymeR", (5, 8, 6), (x + 5.5, 13, zz), c)
+        for k, col in ((-1.6, (120, 200, 255)), (1.6, (255, 220, 120))):   # glucose + galactose = lactose
+            for q in range(6):
+                a = q * math.pi / 3
+                sphere("BigSugar", (x + k * 2 + math.cos(a) * 1.4, 19 + math.sin(a) * 1.4, zz), 1.3, col)
+    elif kind == "animal":   # a sand dune with a fennec and an ice floe with a polar bear, back to back
+        G.part("BigDune", (14, 6, 12), (x - 7, 3, zz), (226, 190, 130), "Sand", shape="Ball", collide=False)
+        sphere("FennecBody", (x - 7, 8, zz), 5, (230, 190, 140))
+        sphere("FennecHead", (x - 7, 11.4, zz - 2), 3.2, (230, 190, 140))
+        for e in (-1, 1):
+            deco("FennecEar", (1.2, 5, .6), (x - 7 + e * 1.5, 15, zz - 2), (230, 190, 140), rot=(0, 0, -e * 18))
+        deco("IceFloe", (12, 3, 12), (x + 7, 1.8, zz), (220, 240, 250), "Ice")
+        deco("BearBody", (9, 6, 5), (x + 7, 6.5, zz), (248, 248, 244))
+        sphere("BearHead", (x + 7, 8.5, zz - 3.8), 4, (248, 248, 244))
+        for e in (-1, 1):
+            sphere("BearEar", (x + 7 + e * 1.4, 10.4, zz - 3.6), 1.2, (248, 248, 244))
+    elif kind == "plant":   # a giant leaf under a sun, arrows of gas in and out
+        deco("BigLeaf", (14, 1, 9), (x, 10, zz), (90, 170, 70), "Grass", rot=(0, 0, 18))
+        deco("BigLeafVein", (14, .4, .6), (x, 10.6, zz), (150, 210, 110), rot=(0, 0, 18))
+        G.vcyl("BigLeafStem", x + 6, 0, 8, zz, 1, (80, 140, 60), collide=False)
+        G.part("BigSun", (6, 6, 6), (x - 8, 20, zz), (255, 220, 90), "Neon", shape="Ball", collide=False, shadow=False)
+        for q in range(3):
+            sphere("BigO2", (x + 4 + q * 1.5, 13 + q * 2.5, zz - 2), 1.4, (230, 70, 70))
+    elif kind == "dna":   # a tall helix with one pair glowing (the repaired spot)
+        for j in range(20):
+            a = j * .55
+            dx, dz = math.cos(a) * 4, math.sin(a) * 4
+            for side in (-1, 1):
+                sphere("BigBackbone", (x + side * dx, 3 + j * .95, zz + side * dz), 1.2, c if side == 1 else TEAL)
+            deco("BigBasePair", (8, .45, .45), (x, 3 + j * .95, zz), (255, 230, 120) if j in (9, 10) else (226, 193, 113),
+                 "Neon" if j in (9, 10) else "SmoothPlastic", rot=(0, -math.degrees(a), 0))
+    elif kind == "evidence":   # a fingerprint under a magnifying glass, crime-scene tape
+        G.part("PrintPad", (.4, 12, 12), (x, 9, zz), (40, 44, 54), "SmoothPlastic", shape="Cylinder",
+               rot=(0, 90, 0), collide=False)
+        for k in range(4):
+            r = 1.5 + k * 1.3
+            for q in range(10 + k * 4):
+                a = q * 2 * math.pi / (10 + k * 4)
+                deco("PrintRidge", (.4, .4, .3), (x + math.cos(a) * r, 9 + math.sin(a) * r * 1.2, zz - .3), (90, 200, 255),
+                     "Neon")
+        G.part("BigLensRim", (.8, 9, 9), (x + 4, 11, zz - 3), (200, 170, 60), "Metal", shape="Cylinder",
+               rot=(0, 90, 0), collide=False)
+        G.part("BigLens", (.4, 8, 8), (x + 4, 11, zz - 3.2), (200, 230, 250), "Glass", shape="Cylinder", rot=(0, 90, 0),
+               transp=.5, collide=False)
+        deco("BigLensHandle", (1, 7, 1), (x + 7, 5.4, zz - 3), (60, 40, 30), "Wood", rot=(0, 0, -30))
+        deco("CrimeTape", (22, 1, .1), (x, 2.5, zz + 6), (250, 210, 40), rot=(0, 0, 4))
+    elif kind == "farm":   # a small greenhouse with tomato plants and a drip line
+        for e in (-1, 1):
+            deco("GreenhouseWall", (.4, 8, 14), (x + e * 8, 4, zz), (200, 235, 220), "Glass", transp=.5)
+            deco("GreenhouseRoof", (9, .4, 14), (x + e * 4, 9.4, zz), (200, 235, 220), "Glass", transp=.5,
+                 rot=(0, 0, -e * 22))
+        deco("GreenhouseShade", (16, .2, 14), (x, 10.8, zz), (40, 60, 40), transp=.4)
+        for k in range(4):
+            px = x - 5 + k * 3.4
+            G.vcyl("TomatoStem", px, 0, 6, zz, .5, (70, 130, 60), collide=False)
+            sphere("TomatoLeaves", (px, 6, zz), 3, (80, 150, 60))
+            sphere("Tomato", (px + .8, 4.8, zz - 1), 1.2, (220, 50, 40))
+        deco("DripLine", (14, .3, .3), (x, .6, zz - 1.5), (40, 40, 44))
+
+
 def build():
     with G.Group("Museum46"):
         with G.Group("Architecture"):
@@ -102,7 +184,7 @@ def build():
             for hx in (196, 384):
                 G.box("MuseumHedge",(3.5,3.2,216),(hx,1.6,-50),(68,128,68),"Grass",collide=False)
             G.box("MuseumRearHedge",(188,3.2,3.5),(290,1.6,62),(68,128,68),"Grass",collide=False)
-            G.box("MuseumFloor",(160,1.2,200),(290,-.4,-50),CREAM,"Concrete")
+            G.box("MuseumFloor",(160,1.2,200),(290,-.4,-50),(92,100,110),"Slate")   # v63: mid-value floor, the exhibits pop
             G.part("MuseumSpawn",(8,1,8),(290,.8,-142),TEAL,rot=(0,180,0),transp=1,collide=False,shadow=False)  # v63: face the museum (+z), not the exit
             # Wide route around the existing parking, not through it or the train station.
             G.box("MuseumApproach",(151,.5,12),(217.5,-.05,-205),CREAM,"Concrete")
@@ -120,13 +202,14 @@ def build():
                 G.box("EntryWall",(68,18,1),(x,9.2,-150),DARK,"Concrete")
                 deco("EntryRib",(68,.4,.3),(x,5,-150.6),TEAL,"Neon")
             for x in (230,350): G.box("RoofWing",(40,1.5,202),(x,26,-50),CREAM,"Concrete")
-            G.box("Skylight",(80,.4,200),(290,26,-50),(155,205,215),"Glass",transp=.6)
+            G.box("Skylight",(80,.4,200),(290,26,-50),(40,60,70),"Glass",transp=.35)   # v63: tinted, softer light
             for z in (-150,-100,-50,0,50): deco("RoofBeam",(160,.7,1.5),(290,25.1,z),DARK,"Metal")
             G.box("EntryCanopy",(58,1.2,18),(290,20,-155),DARK,"Metal")
             G.sign("MuseumTitle","متحف اكتشاف الأحياء\nBSC BIOLOGY DISCOVERY",(290,15,-151.2),(30,7,.5),"Front",bg=DARK)
             G.sign("ExitGuide","الخروج إلى الجامعة ↓\nCampus Exit",(290,13,-149),(22,4,.5),"Back",bg=DARK)
             G.sign("RouteGuide","المتحف ← حول المواقف\nMuseum via lit path",(145,5,-199),(18,5,.5),"Front",bg=DARK)
-            deco("MainAisle",(14,.05,190),(290,.23,-50),(195,216,211))
+            deco("MainAisle",(14,.05,190),(290,.23,-50),(60,66,76))
+            for z in range(-140, 45, 12): deco("AisleLight",(1,.06,4),(290,.27,z),TEAL,"Neon")
             for x,z in ((257,-115),(325,-120),(265,5),(320,0)):
                 G.box("Bench",(10,1,3),(x,1.5,z),DARK,"Wood")
             # Two gentle lights cover the gallery; most accents are unlit Neon.
@@ -137,6 +220,7 @@ def build():
                 G.box("DisplayPlinth",(23,3,19),(x,1.7,z),DARK,"Concrete")
                 deco("AccentRim",(23.2,.25,19.2),(x,3.3,z),c,"Neon")
                 exhibit(kind,x,z,c)
+                if kind!="biotech": showcase(kind,x,z,c)
                 G.box("Console",(6,3.5,3),(x,2,z-13),c,"Metal")
                 G.sign("StationName",f"{index:02d}  {ar}\n{en}",(x,5,z-13),(18,3.5,.4),"Front",bg=DARK)
                 if kind=="biotech":
