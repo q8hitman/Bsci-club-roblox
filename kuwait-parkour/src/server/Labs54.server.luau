@@ -1456,6 +1456,7 @@ local function guide(player)
 	event:FireClient(player, { kind = "guide", part = nil })
 end
 
+local CLICK_RANGE = 12
 local function bind(key, p, handler)
 	local function run(player)
 		handler(player)
@@ -1463,12 +1464,28 @@ local function bind(key, p, handler)
 	end
 	handlers[key] = run
 	p.Triggered:Connect(run)
+	-- v63 (owner: "E picks the wrong thing on a crowded bench"): the object itself is clickable / tappable too, so
+	-- the player chooses exactly what to use; Bench54.client outlines whatever the mouse is over
+	local part = p.Parent
+	if part and part:IsA("BasePart") then
+		part.CanQuery = true
+		local cd = Instance.new("ClickDetector")
+		cd.Name = "LabClick"
+		cd.MaxActivationDistance = CLICK_RANGE
+		cd.Parent = part
+		cd.MouseClick:Connect(function(player)
+			local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+			if root and (root.Position - part.Position).Magnitude <= CLICK_RANGE + 4 then
+				run(player)
+			end
+		end)
+	end
 end
 local function prompt(part, action, object, hold)
 	local p = Instance.new("ProximityPrompt")
 	p.ActionText = action
 	p.ObjectText = object or ""
-	p.MaxActivationDistance = 9
+	p.MaxActivationDistance = 7 -- v63: shorter, so fewer prompts compete for E (clicking the object always works)
 	p.RequiresLineOfSight = false
 	p.HoldDuration = hold or 0
 	p.Style = Enum.ProximityPromptStyle.Default

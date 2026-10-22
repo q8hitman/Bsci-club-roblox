@@ -4,6 +4,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 local event = ReplicatedStorage:WaitForChild("Bench54", 60)
@@ -448,6 +449,68 @@ task.spawn(function()
 			guideLight.OutlineTransparency = 0.15 + 0.35 * (0.5 + 0.5 * math.sin(os.clock() * 4))
 		end
 		task.wait(0.05)
+	end
+end)
+
+-- v63 click-to-use (owner: "E picks the wrong thing"): every bench object has a ClickDetector named LabClick
+-- (Labs54.server). Hovering one outlines it and shows what clicking does, so the player sees the target first.
+local hoverLight = Instance.new("Highlight")
+hoverLight.Name = "LabHover"
+hoverLight.FillColor = Color3.fromRGB(255, 255, 255)
+hoverLight.FillTransparency = 0.8
+hoverLight.OutlineColor = Color3.fromRGB(255, 230, 120)
+hoverLight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+hoverLight.Enabled = false
+hoverLight.Parent = workspace.CurrentCamera
+local tip = Instance.new("TextLabel")
+tip.Name = "LabHoverTip"
+tip.AnchorPoint = Vector2.new(0, 1)
+tip.Size = UDim2.fromOffset(220, 30)
+tip.BackgroundColor3 = Color3.fromRGB(20, 30, 44)
+tip.BackgroundTransparency = 0.15
+tip.TextColor3 = Color3.new(1, 1, 1)
+tip.Font = Enum.Font.GothamBold
+tip.TextScaled = true
+tip.Visible = false
+tip.Parent = gui
+corner(tip, 0.3)
+local hovered = nil
+local function hoverText(part)
+	local pr = part:FindFirstChildWhichIsA("ProximityPrompt")
+	if not pr then
+		return "اضغط"
+	end
+	return pr.ObjectText ~= "" and ("🖱️ %s • %s"):format(pr.ActionText, pr.ObjectText)
+		or ("🖱️ " .. pr.ActionText)
+end
+local function watch(cd)
+	if not (cd:IsA("ClickDetector") and cd.Name == "LabClick") then
+		return
+	end
+	cd.MouseHoverEnter:Connect(function()
+		local part = cd.Parent
+		hovered = part
+		hoverLight.Adornee = part
+		hoverLight.Enabled = true
+		tip.Text = hoverText(part)
+		tip.Visible = true
+	end)
+	cd.MouseHoverLeave:Connect(function()
+		if hovered == cd.Parent then
+			hovered = nil
+			hoverLight.Enabled = false
+			tip.Visible = false
+		end
+	end)
+end
+for _, d in ipairs(workspace:GetDescendants()) do
+	watch(d)
+end
+workspace.DescendantAdded:Connect(watch)
+UserInputService.InputChanged:Connect(function(input)
+	if tip.Visible and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local m = UserInputService:GetMouseLocation()
+		tip.Position = UDim2.fromOffset(m.X + 18, m.Y - 4)
 	end
 end)
 
