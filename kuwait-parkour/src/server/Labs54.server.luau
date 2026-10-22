@@ -1469,10 +1469,18 @@ local function bind(key, p, handler)
 	local part = p.Parent
 	if part and part:IsA("BasePart") then
 		part.CanQuery = true
+		-- an item is a small Model (Handle + cap, label, liquid...): the detector goes on the whole Model, or a click
+		-- on the cap (the part you usually see on a crowded rack) did nothing
+		local holder = part.Parent:IsA("Model") and part.Parent.Name:match("^Item|") and part.Parent or part
+		for _, d in ipairs(holder:GetDescendants()) do
+			if d:IsA("BasePart") then
+				d.CanQuery = true
+			end
+		end
 		local cd = Instance.new("ClickDetector")
 		cd.Name = "LabClick"
 		cd.MaxActivationDistance = CLICK_RANGE
-		cd.Parent = part
+		cd.Parent = holder
 		cd.MouseClick:Connect(function(player)
 			local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 			if root and (root.Position - part.Position).Magnitude <= CLICK_RANGE + 4 then
@@ -1493,6 +1501,7 @@ local function prompt(part, action, object, hold)
 	return p
 end
 
+local resetBench
 local function claim(player, b)
 	if b.owner and b.owner ~= player and b.owner.Parent then
 		toast(
@@ -1508,6 +1517,16 @@ local function claim(player, b)
 		return false
 	end
 	if b.owner ~= player then
+		-- One active experiment per player; switching returns the previous station's tools.
+		for _, previous in pairs(benches) do
+			if previous ~= b and previous.owner == player then
+				resetBench(previous)
+				toast(
+					player,
+					"انتقلت لطاولة جديدة؛ تم إنهاء التجربة السابقة وإرجاع أدواتها"
+				)
+			end
+		end
 		b.owner = player
 		EXP[b.kind].reset(b)
 	end
@@ -1515,7 +1534,7 @@ local function claim(player, b)
 	return true
 end
 
-local function resetBench(b)
+resetBench = function(b)
 	for player, c in pairs(carrying) do
 		if c.bench == b then
 			dropCarried(player, false)
@@ -1792,6 +1811,11 @@ task.spawn(function()
 end)
 
 Players.PlayerRemoving:Connect(function(player)
+	for _, b in pairs(benches) do
+		if b.owner == player then
+			resetBench(b)
+		end
+	end
 	carrying[player] = nil
 	lastReward[player] = nil
 end)
@@ -1799,6 +1823,11 @@ Players.PlayerAdded:Connect(function(player)
 	-- dying or resetting while carrying: the item goes back to its shelf instead of falling out of the world
 	player.CharacterRemoving:Connect(function()
 		dropCarried(player, true)
+		for _, b in pairs(benches) do
+			if b.owner == player then
+				resetBench(b)
+			end
+		end
 	end)
 	player.CharacterAdded:Connect(function()
 		player:SetAttribute("LabPPE", nil) -- a fresh character has no coat

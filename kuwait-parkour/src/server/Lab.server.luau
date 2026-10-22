@@ -147,7 +147,8 @@ if labSpawnPart then
 				local root = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
 				if root then
 					local d = root.Position - labSpawnPart.Position
-					local inLab = math.abs(d.X) < 85 and math.abs(d.Z) < 85 and math.abs(d.Y) < 40
+					-- v63: 130 covers the whole room from the entrance spawn (85 cut the far wall, where the Gram bench stands)
+					local inLab = math.abs(d.X) < 130 and math.abs(d.Z) < 130 and math.abs(d.Y) < 40
 					if not inLab and p:GetAttribute("LabPPE") then
 						takeOffPPE(p)
 					end
@@ -411,65 +412,31 @@ Players.PlayerRemoving:Connect(function(player)
 	attached[player] = nil
 end)
 
--- ------------------------------------------------------------------ Batch Hall board (live)
+-- Cohort details live in the picker/profile; the world wall stays a clean landmark.
 local board = mapFolder:FindFirstChild("BatchBoard", true)
 if board then
 	local gui = Instance.new("SurfaceGui")
+	gui.Name = "BatchHallSign"
 	gui.Face = Enum.NormalId.Back
 	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
 	gui.PixelsPerStud = 24
 	gui.LightInfluence = 0
 	gui.Parent = board
 	local title = Instance.new("TextLabel")
-	title.Size = UDim2.fromScale(1, 0.14)
-	title.BackgroundColor3 = Color3.fromRGB(24, 80, 56)
-	title.TextColor3 = Color3.new(1, 1, 1)
+	title.Name = "Title"
+	title.Position = UDim2.fromScale(0.05, 0.32)
+	title.Size = UDim2.fromScale(0.9, 0.36)
+	title.BackgroundTransparency = 1
+	title.TextColor3 = Color3.fromRGB(241, 235, 213)
 	title.TextScaled = true
 	title.Font = Enum.Font.GothamBold
-	title.Text = "🎓 قاعة الدفعات | Batch Hall"
+	title.Text = "دفعات النادي"
 	title.Parent = gui
-	local list = Instance.new("Frame")
-	list.Position = UDim2.fromScale(0.02, 0.17)
-	list.Size = UDim2.fromScale(0.96, 0.8)
-	list.BackgroundTransparency = 1
-	list.Parent = gui
-	local layout = Instance.new("UIGridLayout")
-	layout.CellSize = UDim2.fromScale(0.48, 0.46)
-	layout.CellPadding = UDim2.fromScale(0.02, 0.03)
-	layout.Parent = list
-	local cards = {}
-	for i, bt in ipairs(Batches) do
-		local card = Instance.new("TextLabel")
-		card.LayoutOrder = i
-		card.BackgroundColor3 = Color3.fromRGB(bt.color[1], bt.color[2], bt.color[3])
-		card.BackgroundTransparency = 0.1
-		card.TextColor3 = Color3.new(1, 1, 1)
-		card.TextScaled = true
-		card.TextWrapped = true
-		card.Font = Enum.Font.GothamBold
-		card.Parent = list
-		local c = Instance.new("UICorner")
-		c.CornerRadius = UDim.new(0.08, 0)
-		c.Parent = card
-		cards[bt.id] = { label = card, batch = bt }
-	end
-	task.spawn(function()
-		while true do
-			local online = {}
-			for _, p in ipairs(Players:GetPlayers()) do
-				local id = p:GetAttribute("Batch")
-				if id then
-					online[id] = (online[id] or 0) + 1
-				end
-			end
-			for id, c in pairs(cards) do
-				c.label.Text = ("%s\n%s\n🟢 متصلين الحين: %d"):format(
-					c.batch.ar,
-					table.concat(c.batch.achievements, "\n"),
-					online[id] or 0
-				)
-			end
-			task.wait(8)
-		end
-	end)
+	local club = title:Clone()
+	club.Name = "Club"
+	club.Position = UDim2.fromScale(0.3, 0.12)
+	club.Size = UDim2.fromScale(0.4, 0.14)
+	club.TextColor3 = Color3.fromRGB(157, 190, 166)
+	club.Text = "BSC"
+	club.Parent = gui
 end

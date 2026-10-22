@@ -300,7 +300,16 @@ def research_lab():
 
     with G.Group("ResearchLab"):
         # ---- shell
-        r("LabFloor", -72, 72, -1, 0, -52, 52, EPOXY, "SmoothPlastic")
+        r("LabFloor", -72, 72, -1, 0, -52, 52, (163, 178, 176), "Concrete")
+        # Large resin work zones over a fine concrete base; thin joints, no tile part grid.
+        r("WetFloor71", -59, -17, 0, .025, -47, 29, (107, 136, 130), "Concrete", collide=False)
+        r("DryFloor71", 20, 62, 0, .025, -29, 28, (113, 132, 147), "Concrete", collide=False)
+        for x in range(-60, 72, 12):
+            r("FloorJoint71", x, x+.06, .04, .06, -51, 51, (88, 105, 105), collide=False)
+        for z in range(-48, 52, 12):
+            r("FloorJoint71", -71, 71, .04, .06, z, z+.06, (88, 105, 105), collide=False)
+        for x in (-71.7, 71.4):
+            r("LabSkirting71", x, x+.3, 0, 1, -51, 51, (65, 82, 82), "Metal", collide=False)
         r("LabCeiling", -72, 72, 26, 27, -52, 52, WHITE)
         for (a, b, c_, d) in ((-73, -72, -52, 52), (72, 73, -52, 52)):
             r("LabWall", a, b, -1, 26, c_, d, WALL)
@@ -313,9 +322,9 @@ def research_lab():
         for x in (-42, 42):
             r("CleanroomDuct", x - 2.2, x + 2.2, 23.5, 25.4, -48, 48, (206, 212, 218), "Metal", collide=False)
         # floor guide lines from the entrance to each wing
-        r("GuideLine", -1, 1, 0, 0.06, -10, 50, (60, 180, 120), "Neon", collide=False)
-        r("GuideLineW", -45, 0, 0, 0.06, 9, 11, (60, 180, 120), "Neon", collide=False)
-        r("GuideLineE", 0, 45, 0, 0.06, 9, 11, (80, 160, 230), "Neon", collide=False)
+        r("GuideLine", -.3, .3, .065, .09, -10, 50, (75, 146, 119), "SmoothPlastic", collide=False)
+        r("GuideLineW", -45, 0, .065, .09, 9.7, 10.3, (75, 146, 119), "SmoothPlastic", collide=False)
+        r("GuideLineE", 0, 45, .065, .09, 9.7, 10.3, (80, 140, 174), "SmoothPlastic", collide=False)
         for x in (-40, 0, 40):
             for z in (-28, 12):
                 C5.light_panel(LX + x, LY + 25.6, LZ + z, 18, 4, 1.0 if x == 0 else 0.0001, 40 if x == 0 else 1)
@@ -368,7 +377,9 @@ def research_lab():
                 box("Chair", (2.6, 0.6, 2.6), at(x, 2.0, z + 4.2), (40, 60, 90), "Fabric", collide=False)
         # the projects terminal (big screen)
         r("LabComputer", 30, 50, 0, 4, -44, -38, (50, 56, 64), "SmoothPlastic")
-        r("TerminalScreen", 31, 49, 5, 15, -46.6, -46.2, (60, 200, 255), "Neon", transp=0.1, collide=False)
+        r("TerminalScreen", 31, 49, 5, 15, -46.6, -46.2, (18, 39, 48), "SmoothPlastic", collide=False)
+        for x in (31, 48.8):
+            r("TerminalEdge71", x, x+.2, 5, 15, -46.1, -45.95, (66, 164, 170), "Neon", collide=False)
         sign("TerminalLabel", "💻 مشاريع المختبر: طوّر قدراتك بنقاط البحث", at(40, 17, -46.0), (22, 2.4, 0.3), "Back",
              bg=(30, 50, 80))
         for z in (-30, -15, 0, 15, 30):  # server racks
@@ -393,9 +404,16 @@ def research_lab():
             vcyl("Bioreactor", LX + x, LY, LY + 12, LZ + 30, 5, (225, 242, 250), "Glass", transp=0.78, collide=True)
             vcyl("Culture", LX + x, LY + 0.5, LY + 9, LZ + 30, 4.2, (110, 220, 120), "Neon", transp=0.3, collide=False)
         # ---- Batch Hall (north wall) + picker kiosk
-        G.part("BatchBoard", (56, 20, 0.5), at(0, 13, -51.6), (30, 34, 40), "SmoothPlastic")
+        G.part("BatchBoard", (56, 20, 0.5), at(0, 13, -50.5), (22, 43, 46), "SmoothPlastic")
+        for x in (-29, 29):
+            G.part("BatchFrameSide", (1.2, 22, 0.8), at(x, 13, -50.4), (157, 131, 76), "Metal")
+            G.part("BatchFrameLight", (0.18, 19, 0.15), at(x * 0.96, 13, -49.95),
+                   (166, 211, 187), "Neon", collide=False, shadow=False)
+        for y in (2, 24):
+            G.part("BatchFrameRail", (59.2, 1, 0.8), at(0, y, -50.4), (157, 131, 76), "Metal")
+        r("BatchKioskBase", -4, 4, 0, 0.3, -43, -37, (38, 51, 55), "Slate")
         r("BatchPicker", -3, 3, 0, 4.4, -42, -38, GRN, "SmoothPlastic")
-        sign("BatchPickerLabel", "🎓 اختار دفعتك", at(0, 5.6, -37.9), (8, 1.8, 0.3), "Back", bg=GRN)
+        sign("BatchPickerLabel", "الدفعات", at(0, 5.6, -37.9), (8, 1.8, 0.3), "Back", bg=GRN)
 
 
 QX, QY, QZ = 0.0, 300.0, -6000.0   # science challenge center world

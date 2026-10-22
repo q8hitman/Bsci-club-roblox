@@ -86,6 +86,8 @@ corner(closeBtn, 0.3)
 local session = 0
 local function clear()
 	session += 1
+	body.Size = UDim2.fromScale(0.92, 0.66)
+	closeBtn.Size = UDim2.fromScale(0.3, 0.08)
 	for _, c in ipairs(body:GetChildren()) do
 		c:Destroy()
 	end
@@ -235,22 +237,36 @@ end
 
 -- ------------------------------------------------------------------ batch picker
 local function batch()
+	local previous = body:FindFirstChild("BatchList")
+	local scrollY = previous and previous.CanvasPosition.Y or 0
 	clear()
 	local my = session
 	header.Text = "🎓 اختار دفعتك"
+	body.Size = UDim2.new(0.92, 0, 0.77, -60)
+	closeBtn.Size = UDim2.new(0.3, 0, 0, 44)
 	local data = labFn:InvokeServer("batches")
 	if my ~= session or not data then
 		return
 	end
 	setRP()
-	local n = #data.list + 1
+	local list = Instance.new("ScrollingFrame")
+	list.Name = "BatchList"
+	list.Size = UDim2.fromScale(1, 1)
+	list.BackgroundTransparency = 1
+	list.BorderSizePixel = 0
+	list.ScrollBarThickness = 6
+	list.ScrollBarImageColor3 = GREEN
+	list.ScrollingDirection = Enum.ScrollingDirection.Y
+	list.CanvasSize = UDim2.fromOffset(0, (#data.list + 1) * 52)
+	list.Parent = body
+	list.CanvasPosition = Vector2.new(0, scrollY)
 	for i, b in ipairs(data.list) do
 		local mark = data.current == b.id and "✅ " or ""
 		button(
-			body,
+			list,
 			mark .. b.ar,
-			UDim2.fromScale(0.1, (i - 1) / n),
-			UDim2.fromScale(0.8, 0.8 / n),
+			UDim2.fromOffset(8, i * 52),
+			UDim2.new(1, -24, 0, 44),
 			Color3.fromRGB(b.color[1], b.color[2], b.color[3]),
 			function()
 				labFn:InvokeServer("setBatch", b.id)
@@ -261,10 +277,10 @@ local function batch()
 		)
 	end
 	button(
-		body,
+		list,
 		(data.current == nil and "✅ " or "") .. "بدون دفعة",
-		UDim2.fromScale(0.1, (n - 1) / n),
-		UDim2.fromScale(0.8, 0.8 / n),
+		UDim2.fromOffset(8, 0),
+		UDim2.new(1, -24, 0, 44),
 		Color3.fromRGB(110, 110, 120),
 		function()
 			labFn:InvokeServer("setBatch", nil)

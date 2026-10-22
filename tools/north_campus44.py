@@ -290,6 +290,35 @@ def amenities():
                         color=(70, 62, 50), bg=(222, 214, 194), bg_t=0))
 
 
+def science_gallery71():
+    # Low exhibits fit the existing 8-stud top storey. Atrium and both stairs stay clear.
+    with G.Group('ScienceGallery71'):
+        for x in (-46, 62):
+            box('GalleryRunner', (22, .06, 64), (x, 56.04, 76), (72, 94, 91), 'Fabric', collide=False)
+            for z in (52, 76, 100):
+                box('SamplePlinth', (8, 2.4, 5), (x, 57.2, z), DARK, 'Slate')
+                box('SampleTop', (8.2, .2, 5.2), (x, 58.5, z), WOOD, 'Wood', collide=False)
+                box('DisplayBacking', (7.8, 3.1, .3), (x, 60.1, z+2.25), (31, 69, 64), 'Concrete', collide=False)
+                if x < 0:
+                    # Pressed botanical specimens: branched stems with paired leaves.
+                    for dx in (-2.4, 0, 2.4):
+                        box('SpecimenStem', (.1, 2.4, .12), (x+dx, 60, z+2), (181, 160, 104), 'Wood', collide=False)
+                        for k in range(3):
+                            for side in (-1, 1):
+                                box('SpecimenLeaf', (.65, .22, .14), (x+dx+side*.3, 59.3+k*.65, z+1.87),
+                                    (112+k*19, 151+k*8, 80), 'Grass', collide=False, rot=(0, 0, side*30))
+                else:
+                    # Mineral collection: contrasting crystalline silhouettes, no new gameplay promises.
+                    for k, dx in enumerate((-2.2, 0, 2.2)):
+                        box('Crystal', (1.25, 1.5+k*.4, 1.3), (x+dx, 59.5+k*.2, z),
+                            ((116, 156, 158), (186, 152, 96), (135, 115, 156))[k], 'Slate', collide=False,
+                            rot=(0, 25+k*23, 12-k*12))
+                plaque('CollectionName', 'نباتات' if x < 0 else 'معادن', (x, 57.7, z-2.53), (4, .85, .08))
+            for z in (48, 96):
+                C5.light_panel(x, 63.1, z, 10, 1.5, .65, 18)
+        plaque('GalleryName', 'مجموعات العلوم', (7, 60, 112), (20, 2.2, .3))
+
+
 def build():
     # Consume the legacy north's RNG calls, then replace only its generated geometry.
     # Subsequent world generation keeps exactly the pre-v44 random state.
@@ -305,3 +334,4 @@ def build():
         flat_classroom()
         tiered_lecture()
         amenities()
+        science_gallery71()

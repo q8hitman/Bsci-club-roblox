@@ -1,33 +1,45 @@
--- Club batches (الدفعات). Edited ONLY here by the club admins (no in-game writing, so nothing can be spammed or vandalised).
--- Players can pick one of these ids to show on their name tag; the Batch Hall board in the research lab lists them
--- with their achievements and how many members are online right now.
--- To add a batch: copy an entry, give it a new unique id, and list real achievements (short lines).
-return {
+-- Optional cohort labels, selected in the lab or profile. No free-text entry.
+-- Keep existing string IDs stable for saved profiles.
+local batches = {
 	{
 		id = "2026",
 		ar = "دفعة 2026",
 		color = { 46, 140, 90 },
-		achievements = {
-			"تأسيس جزيرة BSC في Roblox 🧬",
-			"أول بنك أسئلة للنادي (48 سؤال)",
-		},
+		achievements = {},
 	},
 	{
 		id = "2025",
 		ar = "دفعة 2025",
 		color = { 70, 110, 200 },
-		achievements = { "أضف إنجازات الدفعة هنا" },
+		achievements = {},
 	},
 	{
 		id = "2024",
 		ar = "دفعة 2024",
 		color = { 180, 90, 160 },
-		achievements = { "أضف إنجازات الدفعة هنا" },
+		achievements = {},
 	},
 	{
 		id = "alumni",
 		ar = "الخريجين 🎓",
 		color = { 200, 160, 60 },
-		achievements = { "أضف إنجازات الخريجين هنا" },
+		achievements = {},
 	},
 }
+-- Optional year labels, not claims about club membership or achievements.
+-- Existing string IDs and colours remain compatible with saved profiles.
+for year = 2023, 1980, -1 do
+	table.insert(batches, #batches, {
+		id = tostring(year),
+		ar = "دفعة " .. year,
+		color = { 46, 110, 100 },
+		achievements = {},
+	})
+end
+table.insert(batches, #batches, {
+	id = "before1980",
+	ar = "قبل 1980",
+	color = { 70, 120, 130 },
+	achievements = {},
+})
+return batches
