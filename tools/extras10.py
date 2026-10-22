@@ -22,45 +22,96 @@ PASTELS = hq.PASTELS
 
 
 def virus_arena():
+    """v63 (owner audit: "plain pink walls and cylinders, no identity"): the arena is a patch of tissue in the
+    bloodstream fighting an infection. A giant virus in the middle, red blood cells standing on edge as cover, white
+    blood cells round the outside, antibodies floating above, a membrane wall (low lipid wall + an invisible
+    barrier). Names the server uses are unchanged: VirusCenter, VirusSpawn, VaccineSpot|1..4, Portal|HQ, Bounce|85."""
     R = 70.0
+    TISSUE, TISSUE2 = (238, 166, 182), (224, 146, 166)
     with G.Group("VirusArena"):
-        disc("ArenaFloor", VX, VY - 1, VZ, 2 * R, 2, (168, 132, 214), "SmoothPlastic")   # cytoplasm purple, less glare
-        for i in range(12):
-            a = i * 2 * math.pi / 12
-            A.floor_hex(VX + 40 * math.cos(a), VY + 0.05, VZ + 40 * math.sin(a), 4.0, PASTELS[i % 5])
-        disc("ArenaRing", VX, VY + 0.04, VZ, 2 * R - 2, 0.06, (120, 255, 200), "Neon", collide=False, shadow=False, transp=0.6)
-        # membrane wall: a ring of tall translucent pink panels (keeps everyone inside)
+        disc("ArenaFloor", VX, VY - 1, VZ, 2 * R, 2, (186, 100, 124), "SmoothPlastic")
+        # the floor is tissue: rings of cell tiles, each with a darker nucleus dot
+        for ring, (rr, n) in enumerate(((14, 8), (26, 14), (38, 20), (50, 26), (62, 32))):
+            for i in range(n):
+                a = (i + ring * 0.5) * 2 * math.pi / n
+                x, z = VX + rr * math.cos(a), VZ + rr * math.sin(a)
+                A.floor_hex(x, VY + 0.05, z, 4.6, TISSUE if (i + ring) % 2 else TISSUE2, name="TissueCell")
+                disc("TissueNucleus", x, VY + 0.1, z, 1.6, 0.06, (160, 80, 120), "SmoothPlastic", collide=False, shadow=False)
+        for i in range(72):   # glowing edge ring (the old full-floor neon disc washed the tissue out to yellow)
+            a = i * 2 * math.pi / 72
+            box("ArenaRing", (1, 0.1, 2 * math.pi * (R - 3) / 72 + 0.2), (VX + (R - 3) * math.cos(a), VY + 0.1,
+                VZ + (R - 3) * math.sin(a)), (255, 200, 120), "Neon", rot=(0, -math.degrees(a), 0), collide=False, shadow=False)
+        # membrane wall: a solid low wall, a double row of lipid heads on it, and an invisible barrier above
         n = 36
         for i in range(n):
             a = i * 2 * math.pi / n
             x, z = VX + R * math.cos(a), VZ + R * math.sin(a)
-            G.part("Membrane", (1.5, 16, 2 * math.pi * R / n + 0.6), (x, VY + 8, z), (246, 150, 205), "SmoothPlastic", transp=0.35,
+            G.part("MembraneWall", (2, 4, 2 * math.pi * R / n + 0.6), (x, VY + 2, z), (150, 70, 100), "SmoothPlastic",
                    rot=(0, -math.degrees(a), 0))
-        disc("ArenaUnder", VX, VY - 8, VZ, 2 * R * 0.9, 12, (200, 170, 230), "SmoothPlastic", collide=False)
-        # cover to dodge around: organelle-shaped blocks, a ramp ring, two trampolines
-        ball("CoverNucleus", VX, VY + 6, VZ, 16, (150, 90, 210), "SmoothPlastic")
+            G.part("Membrane", (1.5, 18, 2 * math.pi * R / n + 0.6), (x, VY + 9, z), (246, 150, 205), "SmoothPlastic",
+                   transp=1, rot=(0, -math.degrees(a), 0), shadow=False)
+        for i in range(72):
+            a = i * 2 * math.pi / 72
+            for rr, y in ((R - 0.6, VY + 4.6), (R + 0.6, VY + 4.6)):
+                ball("LipidHead", VX + rr * math.cos(a), y, VZ + rr * math.sin(a), 2.2, (255, 190, 215), "SmoothPlastic",
+                     collide=False, shadow=False)
+        disc("ArenaUnder", VX, VY - 8, VZ, 2 * R * 0.9, 12, (160, 80, 110), "SmoothPlastic", collide=False)
+        # the giant virus: capsid, spike proteins, a glowing genome core (the landmark from every corner)
+        ball("VirusCapsid", VX, VY + 9, VZ, 16, (110, 190, 120), "SmoothPlastic")
+        ball("VirusGenome", VX, VY + 9, VZ, 9, (230, 255, 120), "Neon", transp=0.3, collide=False, shadow=False,
+             light=(1.4, 30, (190, 255, 140)))
+        for i in range(14):
+            t = i * 2.4   # golden-angle spread over the sphere
+            yy = 1 - 2 * (i + 0.5) / 14
+            r2 = math.sqrt(1 - yy * yy)
+            nx, ny, nz = math.cos(t) * r2, yy, math.sin(t) * r2
+            G.part("SpikeStalk", (3.6, 1, 1), (VX + nx * 9.6, VY + 9 + ny * 9.6, VZ + nz * 9.6), (90, 160, 100),
+                   "SmoothPlastic", shape="Cylinder", rot=(0, math.degrees(math.asin(max(-1, min(1, -nz)))),
+                                                          math.degrees(math.atan2(ny, nx))), collide=False)
+            ball("SpikeTip", VX + nx * 11.6, VY + 9 + ny * 11.6, VZ + nz * 11.6, 2.4, (240, 120, 90), "SmoothPlastic",
+                 collide=False, shadow=False)
+        vcyl("VirusPedestal", VX, VY, VY + 2, VZ, 10, (150, 70, 100), "SmoothPlastic")
+        # red blood cells standing on edge: cover to dodge round (a disc with a dimple on both faces)
         for i in range(6):
             a = i * math.pi / 3 + 0.3
-            x, z = VX + 30 * math.cos(a), VZ + 30 * math.sin(a)
-            G.part("CoverMito", (14, 6, 6), (x, VY + 3, z), (250, 150, 80), "SmoothPlastic", shape="Cylinder",
-                   rot=(0, -math.degrees(a) + 90, 0))
+            x, z = VX + 28 * math.cos(a), VZ + 28 * math.sin(a)
+            yaw = -math.degrees(a)
+            G.part("RedBloodCell", (3.2, 13, 13), (x, VY + 6.5, z), (205, 40, 55), "SmoothPlastic", shape="Cylinder",
+                   rot=(0, yaw, 0))
+            G.part("RBCDimple", (3.4, 6, 6), (x, VY + 6.5, z), (160, 25, 40), "SmoothPlastic", shape="Cylinder",
+                   rot=(0, yaw, 0), collide=False)
+        # white blood cells round the outside (lobed nucleus), clear of the vaccine spots (45 deg) and the spawn
         for i in range(8):
-            a = i * math.pi / 4
-            x, z = VX + 52 * math.cos(a), VZ + 52 * math.sin(a)
-            vcyl("CoverPillar", x, VY, VY + 7, z, 5, PASTELS[i % 5], "SmoothPlastic")
+            a = i * math.pi / 4 + math.pi / 8
+            x, z = VX + 58 * math.cos(a), VZ + 58 * math.sin(a)   # 58: clear of the bounce pads
+            ball("WhiteBloodCell", x, VY + 4.5, z, 9, (240, 240, 246), "SmoothPlastic")
+            for k in range(3):
+                ball("WBCNucleus", x + math.cos(a + k * 2.1) * 1.6, VY + 5 + (k - 1) * 1.2, z + math.sin(a + k * 2.1) * 1.6,
+                     3.6, (140, 100, 200), "SmoothPlastic", collide=False, shadow=False)
+        # antibodies: glowing Y shapes floating over the arena (decor, out of reach)
+        for i in range(10):
+            a = i * 2 * math.pi / 10
+            x, z, y = VX + 40 * math.cos(a), VZ + 40 * math.sin(a), VY + 22 + (i % 3) * 3
+            box("AntibodyStem", (1, 5, 1), (x, y, z), (255, 220, 90), "Neon", collide=False, shadow=False)
+            for s_ in (-1, 1):
+                box("AntibodyArm", (1, 4.4, 1), (x + s_ * 1.6 * math.cos(a + math.pi / 2), y + 3.8, z + s_ * 1.6 *
+                    math.sin(a + math.pi / 2)), (255, 220, 90), "Neon", rot=(s_ * 35, -math.degrees(a), 0), collide=False,
+                    shadow=False)
         for (dx, dz) in ((-18, 44), (18, -44)):
             box("Bounce|85", (7, 1, 7), (VX + dx, VY - 0.4, VZ + dz), (255, 220, 60), "Neon")
         for i in range(4):
             a = i * math.pi / 2 + math.pi / 4
             G.part("VaccineSpot|%d" % (i + 1), (2, 2, 2), (VX + 44 * math.cos(a), VY + 2.5, VZ + 44 * math.sin(a)), (0, 0, 0),
                    "SmoothPlastic", transp=1, collide=False, shadow=False)
-        G.part("VirusSpawn", (8, 1, 8), (VX, VY + 0.5, VZ + 60), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
+            disc("VaccinePad", VX + 44 * math.cos(a), VY + 0.12, VZ + 44 * math.sin(a), 7, 0.1, (90, 220, 255), "Neon",
+                 transp=0.3, collide=False, shadow=False)
+        # v63: z 48 (was 60): the follow camera sat behind the HQ portal at z 66 and looked through its glow
+        G.part("VirusSpawn", (8, 1, 8), (VX, VY + 0.5, VZ + 48), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
         G.part("VirusCenter", (2, 2, 2), (VX, VY + 2, VZ), (0, 0, 0), "SmoothPlastic", transp=1, collide=False)
         G.part("Portal|HQ", (10, 12, 0.6), (VX, VY + 6.2, VZ + 66), (120, 255, 200), "Neon", transp=0.45, collide=False,
                shadow=False)
         sign("VirusBack", "↩ مقر النادي", (VX, VY + 13.5, VZ + 66.4), (10, 2.2, 0.4), "Front", bg=(24, 80, 56))
-        sign("VirusTitle", "🦠 لعبة الفيروس | Virus Tag\nالمصاب يلمس الأصحاء… الأصحاء يهربون ويجمعون اللقاح 💉",
-             (VX, VY + 20, VZ - 66), (40, 7, 0.6), "Back", bg=(110, 40, 90))
+        sign("VirusTitle", "🦠 لعبة الفيروس | Virus Tag", (VX, VY + 22, VZ - 66), (30, 5, 0.6), "Back", bg=(120, 40, 70))
         for q in range(30):
             a = rng.uniform(0, 2 * math.pi)
             r = rng.uniform(110, 200)

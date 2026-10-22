@@ -66,11 +66,11 @@ local PRESETS = {
 	}, -- daylight racing: silhouettes and road edges remain readable
 	virus = {
 		18.5,
-		rgb(100, 120, 96),
-		rgb(110, 132, 104),
-		{ 0.38, 1.4, rgb(196, 226, 186), rgb(150, 220, 120) },
-		{ rgb(236, 255, 232), 0.05, 0.12 },
-	},
+		rgb(124, 92, 104),
+		rgb(136, 100, 114),
+		{ 0.34, 1.4, rgb(236, 196, 206), rgb(255, 160, 170) },
+		{ rgb(255, 240, 244), 0.05, 0.12 },
+	}, -- v63: warm bloodstream (the arena is tissue fighting an infection; it was a green haze)
 	cell = {
 		13.5,
 		rgb(98, 76, 130),
